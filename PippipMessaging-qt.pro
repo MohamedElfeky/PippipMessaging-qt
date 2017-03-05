@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     Vault.cpp \
     NewAccountCreator.cpp \
     Authenticator.cpp \
-    EnclaveRequester.cpp
+    EnclaveRequester.cpp \
+    NewAccountDialog.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -31,9 +32,11 @@ HEADERS  += mainwindow.h \
     Vault.h \
     NewAccountCreator.h \
     Authenticator.h \
-    EnclaveRequester.h
+    EnclaveRequester.h \
+    NewAccountDialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    NewAccountDialog.ui
 
 QMAKE_CXXFLAGS += -std=c++11
 
