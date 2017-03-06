@@ -14,7 +14,7 @@
    <string>Create New Account</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="images.qrc">
+   <iconset>
     <normaloff>:/images/PippipTopHatSmall.png</normaloff>:/images/PippipTopHatSmall.png</iconset>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
@@ -30,7 +30,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Help|QDialogButtonBox::Ok</set>
    </property>
   </widget>
   <widget class="QWidget" name="verticalLayoutWidget">
@@ -39,14 +39,14 @@
      <x>10</x>
      <y>10</y>
      <width>381</width>
-     <height>131</height>
+     <height>140</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QLabel" name="AccountNameLabel">
       <property name="text">
-       <string>New Account Name</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;New Account Name&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
@@ -56,7 +56,7 @@
     <item>
      <widget class="QLabel" name="PassphraseLabel">
       <property name="text">
-       <string>Account Passphrase</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Account Passphrase&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
@@ -66,9 +66,7 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="images.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -78,11 +76,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
-     <y>254</y>
+     <y>184</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
-     <y>274</y>
+     <y>225</y>
     </hint>
    </hints>
   </connection>
@@ -94,11 +92,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>316</x>
-     <y>260</y>
+     <y>190</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
-     <y>274</y>
+     <y>225</y>
     </hint>
    </hints>
   </connection>

@@ -19,22 +19,33 @@
 #ifndef NEWACCOUNTDIALOG_H
 #define NEWACCOUNTDIALOG_H
 
+namespace Pippip {
+    class NewAccountCreator;
+}
+
 #include <QDialog>
 
 namespace Ui {
 class NewAccountDialog;
 }
 
-class NewAccountDialog : public QDialog
-{
+class NewAccountDialog : public QDialog {
     Q_OBJECT
 
-public:
-    explicit NewAccountDialog(QWidget *parent = 0);
-    ~NewAccountDialog();
+    public:
+        explicit NewAccountDialog(QWidget *parent = 0);
+        ~NewAccountDialog();
 
-private:
-    Ui::NewAccountDialog *ui;
+    public:
+        void accept();
+
+    public slots:
+        void doHelp();
+
+    private:
+        Ui::NewAccountDialog *ui;
+        Pippip::NewAccountCreator *creator;
+
 };
 
 #endif // NEWACCOUNTDIALOG_H

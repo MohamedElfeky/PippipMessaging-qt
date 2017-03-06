@@ -19,13 +19,20 @@
 #ifndef NEWACCOUNTCREATOR_H
 #define NEWACCOUNTCREATOR_H
 
+#include <QObject>
+#include <string>
+
 namespace Pippip {
 
-class NewAccountCreator {
+class NewAccountCreator : public QObject {
+    Q_OBJECT
 
     public:
         NewAccountCreator();
         ~NewAccountCreator();
+
+    public:
+        void createNewAccount(const std::string& accountName, const std::string& passphrase);
 
     private:
         NewAccountCreator(const NewAccountCreator& other);

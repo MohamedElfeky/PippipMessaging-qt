@@ -22,7 +22,9 @@ SOURCES += main.cpp\
     NewAccountCreator.cpp \
     Authenticator.cpp \
     EnclaveRequester.cpp \
-    NewAccountDialog.cpp
+    NewAccountDialog.cpp \
+    SessionState.cpp \
+    NewAccountHelpDialog.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -33,15 +35,18 @@ HEADERS  += mainwindow.h \
     NewAccountCreator.h \
     Authenticator.h \
     EnclaveRequester.h \
-    NewAccountDialog.h
+    NewAccountDialog.h \
+    SessionState.h \
+    NewAccountHelpDialog.h
 
 FORMS    += mainwindow.ui \
-    NewAccountDialog.ui
+    NewAccountDialog.ui \
+    NewAccountHelpDialog.ui
 
 QMAKE_CXXFLAGS += -std=c++11
 
 unix:!macx: LIBS += -L/usr/local/lib64/ -lcoder -lcthread -lcryptokitty
 
 RESOURCES += \
-    images.qrc
+    pippip.qrc
 

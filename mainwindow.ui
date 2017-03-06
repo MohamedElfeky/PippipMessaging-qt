@@ -14,8 +14,8 @@
    <string>Pippip Messaging</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="images.qrc">
-    <normaloff>:/images/PippipTopHatSmall.png</normaloff>:/images/PippipTopHatSmall.png</iconset>
+   <iconset resource="pippip.qrc">
+    <normaloff>:/mainwindow/images/PippipTopHatSmall.png</normaloff>:/mainwindow/images/PippipTopHatSmall.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
@@ -27,6 +27,22 @@
      <height>27</height>
     </rect>
    </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="menuPippip">
+    <property name="title">
+     <string>Pippip</string>
+    </property>
+    <addaction name="LoginAction"/>
+    <addaction name="NewAccountAction"/>
+    <addaction name="separator"/>
+    <addaction name="PippipQuitAction"/>
+   </widget>
+   <addaction name="menuPippip"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -37,10 +53,51 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="PippipQuitAction">
+   <property name="text">
+    <string>Quit Pippip Messaging</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="NewAccountAction">
+   <property name="text">
+    <string>New Account...</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new account</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="LoginAction">
+   <property name="text">
+    <string>Log in...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="images.qrc"/>
+  <include location="pippip.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>PippipQuitAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>406</x>
+     <y>210</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

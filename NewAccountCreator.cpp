@@ -23,4 +23,7 @@ namespace Pippip {
 NewAccountCreator::NewAccountCreator() {
 }
 
+NewAccountCreator::~NewAccountCreator() {
+}
+
 }
