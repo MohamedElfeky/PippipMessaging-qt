@@ -26,4 +26,8 @@ NewAccountCreator::NewAccountCreator() {
 NewAccountCreator::~NewAccountCreator() {
 }
 
+void NewAccountCreator::createNewAccount(const std::string &accountName, const std::string &passphrase) {
+
+}
+
 }
