@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     EnclaveRequester.cpp \
     NewAccountDialog.cpp \
     SessionState.cpp \
-    NewAccountHelpDialog.cpp
+    NewAccountHelpDialog.cpp \
+    RESTHandler.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -37,11 +38,14 @@ HEADERS  += mainwindow.h \
     EnclaveRequester.h \
     NewAccountDialog.h \
     SessionState.h \
-    NewAccountHelpDialog.h
+    NewAccountHelpDialog.h \
+    RESTHandler.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
     NewAccountHelpDialog.ui
+
+QT += network
 
 QMAKE_CXXFLAGS += -std=c++11
 

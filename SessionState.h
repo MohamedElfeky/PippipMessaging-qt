@@ -19,6 +19,8 @@
 #ifndef SESSIONSTATE_H
 #define SESSIONSTATE_H
 
+#include <string>
+
 namespace Pippip {
 
 class SessionState {
@@ -30,6 +32,13 @@ class SessionState {
     private:
         SessionState(const SessionState& other);
         SessionState& operator =(const SessionState& other);
+
+    public:
+        const std::string& getSessionId() const { return sessionId; }
+        bool startSession();
+
+    private:
+        std::string sessionId;
 
 };
 
