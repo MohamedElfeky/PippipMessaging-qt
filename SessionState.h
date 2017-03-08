@@ -20,13 +20,17 @@
 #define SESSIONSTATE_H
 
 #include <string>
+#include <QObject>
+
+class RESTHandler;
 
 namespace Pippip {
 
-class SessionState {
+class SessionState : public QObject {
+    Q_OBJECT
 
     public:
-        SessionState();
+        explicit SessionState(QObject *parent=0);
         ~SessionState();
 
     private:
@@ -34,11 +38,19 @@ class SessionState {
         SessionState& operator =(const SessionState& other);
 
     public:
+        const std::string& getError() const { return error; }
         const std::string& getSessionId() const { return sessionId; }
         bool startSession();
 
     private:
+        static void requestSession(SessionState *state);
+
+    private slots:
+        void requestComplete(RESTHandler *handler);
+
+    private:
         std::string sessionId;
+        std::string error;
 
 };
 

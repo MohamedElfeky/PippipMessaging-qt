@@ -17,13 +17,31 @@
  */
 
 #include "SessionState.h"
+#include <QtConcurrent/QtConcurrentRun>
 
 namespace Pippip {
 
-SessionState::SessionState() {
+SessionState::SessionState(QObject *parent)
+: QObject(parent) {
 }
 
 SessionState::~SessionState() {
+}
+
+void SessionState::requestComplete(RESTHandler *handler) {
+
+}
+
+void SessionState::requestSession(SessionState *state) {
+
+}
+
+bool SessionState::startSession() {
+
+    error = "";
+
+    return error.length() == 0;
+
 }
 
 }

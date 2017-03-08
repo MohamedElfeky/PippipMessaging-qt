@@ -18,7 +18,12 @@
 
 #include "RESTHandler.h"
 #include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QUrl>
 #include <QNetworkReply>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QByteArray>
 
 RESTHandler::RESTHandler(QObject *parent)
 : QObject(parent),
@@ -35,11 +40,27 @@ RESTHandler::~RESTHandler() {
 
 }
 
+void RESTHandler::doGet(const QString& url) {
+
+    manager->get(QNetworkRequest(QUrl(url)));
+
+}
+
+void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
+
+    QJsonDocument doc(jsonObj);
+    QByteArray json("jason=");
+    json.push_back(doc.toJson());
+    manager->post(QNetworkRequest(QUrl(url)), json);
+
+}
+
 void RESTHandler::managerFinished(QNetworkReply *reply) {
 
     QNetworkReply::NetworkError errorType = reply->error();
     if (errorType == QNetworkReply::NoError) {
-        response = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        response = doc.object();
         success = true;
     }
     else {

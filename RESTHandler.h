@@ -20,8 +20,8 @@
 #define RESTHANDLER_H
 
 #include <QObject>
-#include <QByteArray>
 #include <QString>
+#include <QJsonObject>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -34,8 +34,10 @@ class RESTHandler : public QObject {
         ~RESTHandler();
 
     public:
+        void doGet(const QString& url);
+        void doPost(const QString& url, const QJsonObject& json);
         const QString& getError() const { return error; }
-        const QByteArray&  getResponse() const { return response; }
+        const QJsonObject&  getResponse() const { return response; }
         bool hasError() const { return !success; }
 
     signals:
@@ -47,7 +49,7 @@ class RESTHandler : public QObject {
     private:
         QNetworkAccessManager *manager;
 
-        QByteArray response;
+        QJsonObject response;
         QString error;
         bool success;
 
