@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     NewAccountDialog.cpp \
     SessionState.cpp \
     NewAccountHelpDialog.cpp \
-    RESTHandler.cpp
+    RESTHandler.cpp \
+    RESTTimer.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     NewAccountDialog.h \
     SessionState.h \
     NewAccountHelpDialog.h \
-    RESTHandler.h
+    RESTHandler.h \
+    RESTTimer.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
