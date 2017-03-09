@@ -7,6 +7,10 @@ namespace Ui {
 class MainWindow;
 }
 
+namespace Pippip {
+    class SessionState;
+}
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -20,6 +24,7 @@ class MainWindow : public QMainWindow {
 
     private:
         Ui::MainWindow *ui;
+        Pippip::SessionState *session;
 
 };
 

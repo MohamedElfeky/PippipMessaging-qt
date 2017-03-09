@@ -35,7 +35,7 @@
    </property>
    <widget class="QMenu" name="menuPippip">
     <property name="title">
-     <string>Pippip</string>
+     <string>Pippip Messaging</string>
     </property>
     <addaction name="LoginAction"/>
     <addaction name="NewAccountAction"/>

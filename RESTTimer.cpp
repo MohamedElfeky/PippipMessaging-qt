@@ -18,13 +18,17 @@
 
 #include "RESTTimer.h"
 #include <QEventLoop>
+#include <QTimer>
+
+namespace Pippip {
 
 RESTTimer::RESTTimer(QObject *parent, const char *signal)
 : QObject(parent),
   timedout(false),
-  eventLoop(new QEventLoop(this)) {
+  eventLoop(new QEventLoop(this)),
+  timer(new QTimer(this)) {
 
-    connect(parent, signal, eventLoop, SLOT(quit));
+    connect(parent, signal, eventLoop, SLOT(quit()));
 
 }
 
@@ -34,8 +38,29 @@ RESTTimer::~RESTTimer() {
 
 void RESTTimer::timeout() {
 
+    timedout = true;
+    eventLoop->quit();
+
 }
 
 bool RESTTimer::wait(int milliseconds) {
+
+    timedout = false;
+    if (milliseconds != 0) {
+        timer->setInterval(milliseconds);
+        connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
+        timer->start();
+    }
+    // Else wait forever.
+
+    eventLoop->exec();
+
+    if (!timedout) {
+        timer->stop();
+    }
+
+    return !timedout;
+
+}
 
 }

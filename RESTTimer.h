@@ -22,6 +22,9 @@
 #include <QObject>
 
 class QEventLoop;
+class QTimer;
+
+namespace Pippip {
 
 class RESTTimer : public QObject {
         Q_OBJECT
@@ -31,7 +34,7 @@ class RESTTimer : public QObject {
         ~RESTTimer();
 
     public:
-        wait(int milliseconds);
+        bool wait(int milliseconds);
 
     public slots:
         void timeout();
@@ -39,7 +42,10 @@ class RESTTimer : public QObject {
     private:
         bool timedout;
         QEventLoop *eventLoop;
+        QTimer *timer;
 
 };
+
+}
 
 #endif // RESTTIMER_H

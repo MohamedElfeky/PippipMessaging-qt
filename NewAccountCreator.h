@@ -20,23 +20,34 @@
 #define NEWACCOUNTCREATOR_H
 
 #include <QObject>
+#include <QString>
 #include <string>
 
 namespace Pippip {
 
-class NewAccountCreator : public QObject {
+class SessionState;
+
+class NewAccountCreator : QObject {
     Q_OBJECT
 
     public:
-        NewAccountCreator();
+        explicit NewAccountCreator(SessionState *session);
         ~NewAccountCreator();
-
-    public:
-        void createNewAccount(const std::string& accountName, const std::string& passphrase);
 
     private:
         NewAccountCreator(const NewAccountCreator& other);
         NewAccountCreator& operator =(const NewAccountCreator& other);
+
+    public:
+        void createNewAccount(const QString& accountName, const QString& passphrase);
+
+    private:
+        bool startSession();
+
+    private:
+        SessionState *session;
+        std::string accountName;
+        std::string passphrase;
 
 };
 

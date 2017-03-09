@@ -17,7 +17,7 @@
  */
 
 #include "SessionState.h"
-#include <QtConcurrent/QtConcurrentRun>
+#include "RESTHandler.h"
 
 namespace Pippip {
 
@@ -36,11 +36,13 @@ void SessionState::requestSession(SessionState *state) {
 
 }
 
-bool SessionState::startSession() {
+void SessionState::startSession() {
 
     error = "";
 
-    return error.length() == 0;
+    RESTHandler *handler = new RESTHandler;
+    handler->doGet(QString("https://pippip.io:2880/session/"));
+
 
 }
 

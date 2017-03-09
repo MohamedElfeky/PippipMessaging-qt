@@ -21,6 +21,7 @@
 
 #include <string>
 #include <QObject>
+#include <QString>
 
 class RESTHandler;
 
@@ -38,19 +39,22 @@ class SessionState : public QObject {
         SessionState& operator =(const SessionState& other);
 
     public:
-        const std::string& getError() const { return error; }
+        const QString& getError() const { return error; }
         const std::string& getSessionId() const { return sessionId; }
-        bool startSession();
+        void startSession();
 
     private:
         static void requestSession(SessionState *state);
+
+    signals:
+        void sessionStarted();
 
     private slots:
         void requestComplete(RESTHandler *handler);
 
     private:
         std::string sessionId;
-        std::string error;
+        QString error;
 
 };
 

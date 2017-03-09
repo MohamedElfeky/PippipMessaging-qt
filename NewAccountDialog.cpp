@@ -18,12 +18,17 @@
 
 #include "NewAccountDialog.h"
 #include "ui_NewAccountDialog.h"
+#include "SessionState.h"
 #include "NewAccountCreator.h"
 #include "NewAccountHelpDialog.h"
+#include <QShowEvent>
+#include <QMessageBox>
+#include <memory>
 
-NewAccountDialog::NewAccountDialog(QWidget *parent)
+NewAccountDialog::NewAccountDialog(Pippip::SessionState *sess, QWidget *parent)
 : QDialog(parent),
   ui(new Ui::NewAccountDialog),
+  session(sess),
   creator(0) {
 
     ui->setupUi(this);
@@ -40,10 +45,33 @@ NewAccountDialog::~NewAccountDialog() {
 
 void NewAccountDialog::accept() {
 
-    creator = new Pippip::NewAccountCreator;
+    std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(session));
+    bool proceed = true;
     QString accountName = ui->AccountNameText->text();
+    if (accountName.length() == 0) {
+        accountNameAlert();
+        proceed = false;
+    }
+
     QString passphrase = ui->PassphraseText->text();
-    creator->createNewAccount(accountName.toUtf8().constData(), passphrase.toUtf8().constData());
+    if (proceed && passphrase.length() == 0) {
+        proceed = passphraseAlert();
+    }
+
+    if (proceed) {
+        creator->createNewAccount(accountName, passphrase);
+    }
+
+}
+
+void NewAccountDialog::accountNameAlert() {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("New Account Error");
+    message->setText("Account name must not be empty.");
+    message->setIcon(QMessageBox::Critical);
+    message->exec();
 
 }
 
@@ -51,5 +79,27 @@ void NewAccountDialog::doHelp() {
 
     NewAccountHelpDialog dialog;
     dialog.exec();
+
+}
+
+bool NewAccountDialog::passphraseAlert() {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Cancel);
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("New Account Error");
+    message->setText("You are about to create an account with no passphrase. This is not recommended");
+    message->setInformativeText("Click OK to proceed, Cancel to go back.");
+    message->setIcon(QMessageBox::Warning);
+    return message->exec() == QMessageBox::Ok;
+
+}
+
+void NewAccountDialog::showEvent(QShowEvent *event) {
+
+    QDialog::showEvent(event);
+    if (!event->spontaneous()) {
+        ui->AccountNameText->setFocus();
+    }
 
 }

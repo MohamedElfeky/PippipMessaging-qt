@@ -29,11 +29,15 @@ namespace Ui {
 class NewAccountDialog;
 }
 
+namespace Pippip {
+    class SessionState;
+}
+
 class NewAccountDialog : public QDialog {
     Q_OBJECT
 
     public:
-        explicit NewAccountDialog(QWidget *parent = 0);
+        explicit NewAccountDialog(Pippip::SessionState *session, QWidget *parent = 0);
         ~NewAccountDialog();
 
     public:
@@ -42,8 +46,16 @@ class NewAccountDialog : public QDialog {
     public slots:
         void doHelp();
 
+    protected:
+        void showEvent(QShowEvent *);
+
+    private:
+        void accountNameAlert();
+        bool passphraseAlert();
+
     private:
         Ui::NewAccountDialog *ui;
+        Pippip::SessionState *session;
         Pippip::NewAccountCreator *creator;
 
 };

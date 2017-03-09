@@ -17,16 +17,50 @@
  */
 
 #include "NewAccountCreator.h"
+#include "SessionState.h"
+#include "RESTTimer.h"
+#include <QMessageBox>
 
 namespace Pippip {
 
-NewAccountCreator::NewAccountCreator() {
+NewAccountCreator::NewAccountCreator(SessionState *sess)
+: session(sess) {
 }
 
 NewAccountCreator::~NewAccountCreator() {
 }
 
-void NewAccountCreator::createNewAccount(const std::string &accountName, const std::string &passphrase) {
+void NewAccountCreator::createNewAccount(const QString &name, const QString &pass) {
+
+    accountName = name.toUtf8().constData();
+    passphrase = pass.toUtf8().constData();
+
+    if (startSession()) {
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Session Success");
+        message->setText("Session started.");
+        message->setInformativeText(QString(session->getSessionId().c_str()));
+        message->setIcon(QMessageBox::Information);
+        message->exec();
+    }
+    else {
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Session Error");
+        message->setText("An error occurred while establishing a session with the server.");
+        message->setInformativeText(session->getError());
+        message->setIcon(QMessageBox::Critical);
+        message->exec();
+    }
+
+}
+
+bool NewAccountCreator::startSession() {
+
+    RESTTimer t1(session, "sessionStarted");   // See sequence diagrams
+    session->startSession();
+    return t1.wait(30000);
 
 }
 

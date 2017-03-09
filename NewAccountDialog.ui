@@ -10,6 +10,9 @@
     <height>226</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Create New Account</string>
   </property>
@@ -51,7 +54,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="AccountNameText"/>
+     <widget class="QLineEdit" name="AccountNameText">
+      <property name="focusPolicy">
+       <enum>Qt::StrongFocus</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="PassphraseLabel">
@@ -61,7 +68,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="PassphraseText"/>
+     <widget class="QLineEdit" name="PassphraseText">
+      <property name="focusPolicy">
+       <enum>Qt::StrongFocus</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
