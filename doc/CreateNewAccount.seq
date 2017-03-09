@@ -1,0 +1,24 @@
+# Objects
+a:NewAccountCreator
+/t1:RESTTimer
+b:SessionState
+c:RESTHandler
+d:QNetworkAccessManager
+PippipServer:Actor
+
+# Functions
+a:t1.new()
+a:t1.start()
+a:b.startSession()
+b:c.doGet()
+c:>d.get()
+d:PippipServer.get()
+a:finished=t1.wait()
+PippipServer:d.response
+d:c.managerFinished()
+c:b.requestComplete()
+b:>t1.functionComplete()&
+c:stop
+d:stop
+a:t1.destroy()
+
