@@ -23,20 +23,30 @@
 #include <QString>
 #include <string>
 
+class NewAccountDialog;
+
 namespace Pippip {
 
 class SessionState;
+class RESTTimer;
 
 class NewAccountCreator : QObject {
     Q_OBJECT
 
     public:
-        explicit NewAccountCreator(SessionState *session);
+        explicit NewAccountCreator(NewAccountDialog *parent, SessionState *session);
         ~NewAccountCreator();
 
     private:
         NewAccountCreator(const NewAccountCreator& other);
         NewAccountCreator& operator =(const NewAccountCreator& other);
+
+    signals:
+        void accountComplete();
+
+    public slots:
+        void sessionStarted();
+        void sessionFailed(QString eror);
 
     public:
         void createNewAccount(const QString& accountName, const QString& passphrase);
@@ -46,8 +56,10 @@ class NewAccountCreator : QObject {
 
     private:
         SessionState *session;
+        NewAccountDialog *dialog;
         std::string accountName;
         std::string passphrase;
+        RESTTimer *sessionTimer;
 
 };
 

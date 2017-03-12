@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QString>
 #include <QJsonObject>
+#include <QList>
+#include <QSslError>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -38,13 +40,15 @@ class RESTHandler : public QObject {
         void doPost(const QString& url, const QJsonObject& json);
         const QString& getError() const { return error; }
         const QJsonObject&  getResponse() const { return response; }
-        bool hasError() const { return !success; }
+        bool successful() const { return success; }
 
     signals:
         void requestComplete(RESTHandler *handler);
+        void requestFailed(RESTHandler *handler);
 
     private slots:
         void managerFinished(QNetworkReply* reply);
+        void managerSSLErrors(QNetworkReply* replay, QList<QSslError> errors);
 
     private:
         QNetworkAccessManager *manager;

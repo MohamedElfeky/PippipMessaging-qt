@@ -17,14 +17,24 @@
  */
 
 #include "NewAccountCreator.h"
+#include "NewAccountDialog.h"
 #include "SessionState.h"
 #include "RESTTimer.h"
 #include <QMessageBox>
 
 namespace Pippip {
 
-NewAccountCreator::NewAccountCreator(SessionState *sess)
-: session(sess) {
+NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, SessionState *sess)
+: QObject(parent),
+  session(sess),
+  dialog(parent) {
+
+    sessionTimer = new RESTTimer(this);
+    sessionTimer->addSource(session, SIGNAL(sessionStarted()));
+    sessionTimer->addSource(session, SIGNAL(sessionFailed(QString)));
+    connect(session, SIGNAL(sessionStarted()), this, SLOT(sessionStarted()));
+    connect(session, SIGNAL(sessionFailed(QString)), this, SLOT(sessionFailed(QString)));
+
 }
 
 NewAccountCreator::~NewAccountCreator() {
@@ -35,32 +45,45 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
     accountName = name.toUtf8().constData();
     passphrase = pass.toUtf8().constData();
 
-    if (startSession()) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Session Success");
-        message->setText("Session started.");
-        message->setInformativeText(QString(session->getSessionId().c_str()));
-        message->setIcon(QMessageBox::Information);
-        message->exec();
-    }
-    else {
+    if (!startSession()) {
         QMessageBox *message = new QMessageBox;
         message->addButton(QMessageBox::Ok);
         message->setWindowTitle("Session Error");
-        message->setText("An error occurred while establishing a session with the server.");
-        message->setInformativeText(session->getError());
+        message->setText("Session request timed out");
         message->setIcon(QMessageBox::Critical);
         message->exec();
     }
 
 }
 
+void NewAccountCreator::sessionFailed(QString error) {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("Session Error");
+    message->setText("An error occurred while establishing a session with the server.");
+    message->setInformativeText(error);
+    message->setIcon(QMessageBox::Critical);
+    message->exec();
+
+}
+
+void NewAccountCreator::sessionStarted() {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("Session Started");
+    message->setText("Session created");
+    message->setInformativeText(session->getSessionId());
+    message->setIcon(QMessageBox::Information);
+    message->exec();
+
+}
+
 bool NewAccountCreator::startSession() {
 
-    RESTTimer t1(session, "sessionStarted");   // See sequence diagrams
     session->startSession();
-    return t1.wait(30000);
+    return sessionTimer->wait(30000);
 
 }
 

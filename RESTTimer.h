@@ -30,10 +30,12 @@ class RESTTimer : public QObject {
         Q_OBJECT
 
     public:
-        explicit RESTTimer(QObject *parent, const char *signal);
+        explicit RESTTimer(QObject *parent=0);
         ~RESTTimer();
 
     public:
+        void addSource(QObject *source, const char *signal);
+        void stop();
         bool wait(int milliseconds);
 
     public slots:

@@ -22,17 +22,28 @@
 
 namespace Pippip {
 
-RESTTimer::RESTTimer(QObject *parent, const char *signal)
+RESTTimer::RESTTimer(QObject *parent)
 : QObject(parent),
   timedout(false),
   eventLoop(new QEventLoop(this)),
   timer(new QTimer(this)) {
 
-    connect(parent, signal, eventLoop, SLOT(quit()));
-
 }
 
 RESTTimer::~RESTTimer() {
+
+}
+
+void RESTTimer::addSource(QObject *source, const char *signal) {
+
+    connect(source, signal, eventLoop, SLOT(quit()));
+
+}
+
+void RESTTimer::stop() {
+
+    timedout = false;
+    eventLoop->quit();
 
 }
 

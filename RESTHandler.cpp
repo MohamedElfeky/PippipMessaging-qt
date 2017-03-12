@@ -24,6 +24,10 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QSslCertificate>
+#include <QSslConfiguration>
+
+static const QString CERTPATH = "/home/sbrenneis/.pippip/ca-chain.cert.pem";
 
 RESTHandler::RESTHandler(QObject *parent)
 : QObject(parent),
@@ -31,6 +35,8 @@ RESTHandler::RESTHandler(QObject *parent)
 
     manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(managerFinished(QNetworkReply*)));
+    connect(manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+                                    this, SLOT(managerSSLErrors(QNetworkReply*,QList<QSslError>)));
 
 }
 
@@ -42,12 +48,20 @@ RESTHandler::~RESTHandler() {
 
 void RESTHandler::doGet(const QString& url) {
 
-    manager->get(QNetworkRequest(QUrl(url)));
+    //QNetworkRequest getRequest(QUrl(url));
+    QNetworkRequest getRequest;     // Umm...
+    getRequest.setUrl(QUrl(url));
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(CERTPATH);
+    QSslConfiguration config = getRequest.sslConfiguration();
+    config.setCaCertificates(certs);
+    getRequest.setSslConfiguration(config);
+    manager->get(getRequest);
 
 }
 
 void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
 
+    success = false;
     QJsonDocument doc(jsonObj);
     QByteArray json("jason=");
     json.push_back(doc.toJson());
@@ -62,11 +76,18 @@ void RESTHandler::managerFinished(QNetworkReply *reply) {
         QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
         response = doc.object();
         success = true;
+        emit requestComplete(this);
     }
     else {
         error = reply->errorString();
+        emit requestFailed(this);
     }
 
-    emit requestComplete(this);
+
+}
+
+void RESTHandler::managerSSLErrors(QNetworkReply* reply, QList<QSslError> errors) {
+
+    reply->ignoreSslErrors(errors);
 
 }

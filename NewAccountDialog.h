@@ -44,6 +44,7 @@ class NewAccountDialog : public QDialog {
         void accept();
 
     public slots:
+        void accountComplete();
         void doHelp();
 
     protected:

@@ -45,7 +45,7 @@ NewAccountDialog::~NewAccountDialog() {
 
 void NewAccountDialog::accept() {
 
-    std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(session));
+    std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(this, session));
     bool proceed = true;
     QString accountName = ui->AccountNameText->text();
     if (accountName.length() == 0) {
@@ -61,6 +61,18 @@ void NewAccountDialog::accept() {
     if (proceed) {
         creator->createNewAccount(accountName, passphrase);
     }
+
+}
+
+void NewAccountDialog::accountComplete() {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("New Account Complete");
+    message->setText("Successfully created new account");
+    message->setIcon(QMessageBox::Information);
+    message->exec();
+    QDialog::accept();
 
 }
 

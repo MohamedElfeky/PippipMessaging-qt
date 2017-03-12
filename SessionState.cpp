@@ -21,26 +21,64 @@
 
 namespace Pippip {
 
+static const time_t SESSION_TTL = 1800; // 30 minutes
+
 SessionState::SessionState(QObject *parent)
 : QObject(parent) {
+
+    setObjectName("SessionState");
+
 }
 
 SessionState::~SessionState() {
 }
 
-void SessionState::requestComplete(RESTHandler *handler) {
+bool SessionState::expired() const {
+
+    time_t now = time(0);
+    return now - timestamp >= SESSION_TTL;
 
 }
 
-void SessionState::requestSession(SessionState *state) {
+void SessionState::requestComplete(RESTHandler *handler) {
+
+    QJsonValue value = handler->getResponse()["error"];
+    if (value != QJsonValue::Undefined) {
+        error = value.toString();
+        emit sessionFailed(error);
+    }
+    else {
+        value = handler->getResponse()["sessionId"];
+        if (value == QJsonValue::Undefined) {
+            error = "Invalid server response";
+            emit sessionFailed(error);
+        }
+        else {
+            sessionId = value.toString();
+            touch();
+            error = "";
+            emit sessionStarted();
+        }
+    }
+    handler->deleteLater();
+
+}
+
+void SessionState::requestFailed(RESTHandler *handler) {
+
+    error = handler->getError();
+    emit sessionFailed(error);
+    handler->deleteLater();
 
 }
 
 void SessionState::startSession() {
 
-    error = "";
+    error = "Request timed out";
 
     RESTHandler *handler = new RESTHandler;
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestFailed(RESTHandler*)));
     handler->doGet(QString("https://pippip.io:2880/session/"));
 
 

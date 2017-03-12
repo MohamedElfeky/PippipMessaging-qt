@@ -18,6 +18,9 @@ class MainWindow : public QMainWindow {
         explicit MainWindow(QWidget *parent = 0);
         ~MainWindow();
 
+    public:
+        void startFortuna();
+
     public slots:
         void logIn();
         void newAccount();

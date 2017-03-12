@@ -22,6 +22,7 @@
 #include <string>
 #include <QObject>
 #include <QString>
+#include <time.h>
 
 class RESTHandler;
 
@@ -39,22 +40,24 @@ class SessionState : public QObject {
         SessionState& operator =(const SessionState& other);
 
     public:
+        bool expired() const;
         const QString& getError() const { return error; }
-        const std::string& getSessionId() const { return sessionId; }
+        const QString& getSessionId() const { return sessionId; }
         void startSession();
-
-    private:
-        static void requestSession(SessionState *state);
+        void touch() { timestamp = time(0); }
 
     signals:
+        void sessionFailed(QString error);
         void sessionStarted();
 
     private slots:
         void requestComplete(RESTHandler *handler);
+        void requestFailed(RESTHandler *handler);
 
     private:
-        std::string sessionId;
+        QString sessionId;
         QString error;
+        time_t timestamp;
 
 };
 

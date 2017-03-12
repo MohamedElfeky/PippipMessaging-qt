@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "SessionState.h"
 #include "NewAccountDialog.h"
+#include "Fortuna.h"
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,5 +29,9 @@ void MainWindow::newAccount() {
 
     NewAccountDialog dialog(session);
     dialog.exec();
+
+}
+
+void MainWindow::startFortuna() {
 
 }

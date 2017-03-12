@@ -26,22 +26,17 @@ namespace CK {
     class RSAPublicKey;
 }
 
-class Vault;
-
 namespace Pippip {
 
 class AccountParameters {
 
     public:
         AccountParameters();
-        ~AccountParameters();
+        virtual ~AccountParameters();
+        AccountParameters& operator =(const AccountParameters& other);
 
     private:
         AccountParameters(const AccountParameters& other);
-        AccountParameters& operator =(const AccountParameters& other);
-
-    public:
-        AccountParameters& operator =(const Vault& other);
 
     protected:
         // Account random number. Used to build private ID

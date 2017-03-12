@@ -1,40 +1,43 @@
 /*
- * AccountParameters.cpp
+ * ParameterGenerator.h
  * Copyright (C) 2017 Steve Brenneis <steve.brenneis@secomm.org>
  *
  * PippipMessaging is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * PippipMessaging is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef PARAMETERGENERATOR_H
+#define PARAMETERGENERATOR_H
+
 #include "AccountParameters.h"
-#include <CryptoKitty-C/keys/RSAPrivateKey.h>
-#include <CryptoKitty-C/keys/RSAPublicKey.h>
 
 namespace Pippip {
 
-AccountParameters::AccountParameters()
-: serverPublicKey(0),
-  userPrivateKey(0),
-  userPublicKey(0) {
+class ParameterGenerator : public AccountParameters
+{
+    public:
+        ParameterGenerator();
+        ~ParameterGenerator();
+
+    private:
+        ParameterGenerator(const ParameterGenerator& other);
+        ParameterGenerator& operator =(const ParameterGenerator& other);
+
+    public:
+        void generateParameters();
+
+};
+
 }
 
-AccountParameters::~AccountParameters() {
-
-    delete serverPublicKey;
-    delete userPrivateKey;
-    delete userPublicKey;
-
-}
-
-}
-
+#endif // PARAMETERGENERATOR_H

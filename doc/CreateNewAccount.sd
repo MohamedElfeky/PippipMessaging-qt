@@ -1,15 +1,14 @@
 # Objects
 q:NewAccountDialog
 a:NewAccountCreator
-/t1:RESTTimer
+t1:RESTTimer
 b:SessionState
 c:RESTHandler
 d:QNetworkAccessManager
 PippipServer:Actor
 
 # Functions
-q:a.createNewAccount()
-a:t1.new()
+q:>a.createNewAccount()
 a:b.startSession()
 b:c.doGet()
 c:>d.get()
@@ -21,5 +20,4 @@ c:b.requestComplete()
 b:>t1.sessionStarted()&
 c:stop
 d:stop
-a:t1.destroy()
 
