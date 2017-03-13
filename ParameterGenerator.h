@@ -20,6 +20,7 @@
 #define PARAMETERGENERATOR_H
 
 #include "AccountParameters.h"
+#include <string>
 
 namespace Pippip {
 
@@ -34,7 +35,7 @@ class ParameterGenerator : public AccountParameters
         ParameterGenerator& operator =(const ParameterGenerator& other);
 
     public:
-        void generateParameters();
+        void generateParameters(const std::string& username);
 
 };
 

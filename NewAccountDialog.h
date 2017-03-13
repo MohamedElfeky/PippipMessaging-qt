@@ -43,6 +43,9 @@ class NewAccountDialog : public QDialog {
     public:
         void accept();
 
+    signals:
+        void startFortuna();
+
     public slots:
         void accountComplete();
         void doHelp();

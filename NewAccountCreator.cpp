@@ -19,6 +19,7 @@
 #include "NewAccountCreator.h"
 #include "NewAccountDialog.h"
 #include "SessionState.h"
+#include "ParameterGenerator.h"
 #include "RESTTimer.h"
 #include <QMessageBox>
 
@@ -44,6 +45,9 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
 
     accountName = name.toUtf8().constData();
     passphrase = pass.toUtf8().constData();
+    ParameterGenerator gen;
+    gen.generateParameters(accountName);
+    session->setAccountParameters(gen);
 
     if (!startSession()) {
         QMessageBox *message = new QMessageBox;

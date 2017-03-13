@@ -21,6 +21,7 @@
 #include "SessionState.h"
 #include "NewAccountCreator.h"
 #include "NewAccountHelpDialog.h"
+#include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
 #include <memory>
@@ -33,6 +34,8 @@ NewAccountDialog::NewAccountDialog(Pippip::SessionState *sess, QWidget *parent)
 
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
+    const MainWindow *main = qobject_cast<MainWindow*>(parent);
+    connect(main, SIGNAL(startFortuna()), this, SIGNAL(startFortuna()));
 
 }
 
@@ -44,6 +47,8 @@ NewAccountDialog::~NewAccountDialog() {
 }
 
 void NewAccountDialog::accept() {
+
+    emit startFortuna();
 
     std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(this, session));
     bool proceed = true;

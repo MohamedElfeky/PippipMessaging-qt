@@ -17,6 +17,14 @@
  */
 
 #include "ParameterGenerator.h"
+#include <CryptoKitty-C/random/FortunaSecureRandom.h>
+#include <coder/ByteArray.h>
+#include <digest/SHA256.h>
+#include <digest/SHA1.h>
+#include <coder/ByteStreamCodec.h>
+#include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
+#include <CryptoKitty-C/keys/KeyPair.h>
+#include <time.h>
 
 namespace Pippip {
 
@@ -26,7 +34,49 @@ ParameterGenerator::ParameterGenerator() {
 ParameterGenerator::~ParameterGenerator() {
 }
 
-void ParameterGenerator::generateParameters() {
+void ParameterGenerator::generateParameters(const std::string& username) {
+
+    CK::FortunaSecureRandom rnd;
+
+    // Generate the account password
+    genpass.setLength(20);
+    rnd.nextBytes(genpass);
+
+    // Generate the enclave block cipher key
+    CK::SHA256 sha256;
+    coder::ByteArray rndbytes(32,0);
+    rnd.nextBytes(rndbytes);
+    sha256.update(rndbytes);
+
+    // Encode time in milliseconds
+    timespec ctime;
+    clock_gettime(CLOCK_REALTIME, &ctime);
+    uint64_t millis = ctime.tv_sec;
+    millis += ctime.tv_nsec / 1.0e06;
+    coder::ByteStreamCodec bytecodec;
+    bytecodec << millis;
+
+    sha256.update(bytecodec.toArray());
+    enclaveKey = sha256.digest();
+
+    // Generate the user authentication keys.
+    CK::RSAKeyPairGenerator keygen(&rnd, 2048);
+    CK::KeyPair<CK::RSAPublicKey, CK::RSAPrivateKey> *keypair = keygen.generateKeyPair();
+    userPrivateKey = keypair->privateKey();
+    userPublicKey = keypair->publicKey();
+    keypair->releaseKeys();
+    delete keypair;
+
+    CK::SHA1 sha1;
+    sha1.update(coder::ByteArray(username));
+    clock_gettime(CLOCK_REALTIME, &ctime);
+    millis = ctime.tv_sec;
+    millis += ctime.tv_nsec / 1.0e06;
+    bytecodec.clear();
+    bytecodec << millis;
+    sha1.update(bytecodec.toArray());
+    sha1.update(coder::ByteArray("@secomm.org"));
+    publicId = sha1.digest();
 
 }
 

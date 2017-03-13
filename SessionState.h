@@ -19,6 +19,7 @@
 #ifndef SESSIONSTATE_H
 #define SESSIONSTATE_H
 
+#include "AccountParameters.h"
 #include <string>
 #include <QObject>
 #include <QString>
@@ -41,8 +42,10 @@ class SessionState : public QObject {
 
     public:
         bool expired() const;
+        const AccountParameters& getAccountParameters() const { return params; }
         const QString& getError() const { return error; }
         const QString& getSessionId() const { return sessionId; }
+        void setAccountParameters(const AccountParameters& other) { params = other; }
         void startSession();
         void touch() { timestamp = time(0); }
 
@@ -58,6 +61,7 @@ class SessionState : public QObject {
         QString sessionId;
         QString error;
         time_t timestamp;
+        AccountParameters params;
 
 };
 

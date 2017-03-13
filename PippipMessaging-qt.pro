@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     RESTHandler.cpp \
     RESTTimer.cpp \
     ParameterGenerator.cpp \
-    Fortuna.cpp
+    EntropyStream.cpp \
+    UDPListener.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     RESTHandler.h \
     RESTTimer.h \
     ParameterGenerator.h \
-    Fortuna.h
+    EntropyStream.h \
+    UDPListener.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
@@ -53,7 +55,7 @@ FORMS    += mainwindow.ui \
 
 QT += network
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -I/usr/local/include/CryptoKitty-C
 
 unix:!macx: LIBS += -L/usr/local/lib64/ -lcoder -lcthread -lcryptokitty
 

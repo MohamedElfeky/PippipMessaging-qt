@@ -72,6 +72,12 @@ void SessionState::requestFailed(RESTHandler *handler) {
 
 }
 
+/*void SessionState::setAccountParameters(const AccountParameters &otherparams) {
+
+    params = otherparams;
+
+}*/
+
 void SessionState::startSession() {
 
     error = "Request timed out";

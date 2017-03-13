@@ -17,7 +17,7 @@
  */
 
 #include "AccountParameters.h"
-#include <CryptoKitty-C/keys/RSAPrivateKey.h>
+#include <CryptoKitty-C/keys/RSAPrivateCrtKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
 
 namespace Pippip {
@@ -33,6 +33,31 @@ AccountParameters::~AccountParameters() {
     delete serverPublicKey;
     delete userPrivateKey;
     delete userPublicKey;
+
+}
+
+AccountParameters& AccountParameters::operator =(const AccountParameters& other) {
+
+    accountRandom = other.accountRandom;
+    additionalData = other.additionalData;
+    enclaveKey = other.enclaveKey;
+    genpass = other.genpass;
+    publicId = other.publicId;
+
+    if (serverPublicKey != 0) {
+        serverPublicKey = new CK::RSAPublicKey(*other.serverPublicKey);
+    }
+
+    if (userPublicKey != 0) {
+        userPublicKey = new CK::RSAPublicKey(*other.serverPublicKey);
+    }
+
+    if (userPrivateKey != 0) {
+        CK::RSAPrivateCrtKey *prv = dynamic_cast<CK::RSAPrivateCrtKey*>(other.userPrivateKey);
+        userPrivateKey = new CK::RSAPrivateCrtKey(*prv);
+    }
+
+    return *this;
 
 }
 
