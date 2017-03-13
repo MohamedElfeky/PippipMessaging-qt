@@ -35,7 +35,6 @@ NewAccountDialog::NewAccountDialog(Pippip::SessionState *sess, QWidget *parent)
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
     const MainWindow *main = qobject_cast<MainWindow*>(parent);
-    connect(main, SIGNAL(startFortuna()), this, SIGNAL(startFortuna()));
 
 }
 
@@ -47,8 +46,6 @@ NewAccountDialog::~NewAccountDialog() {
 }
 
 void NewAccountDialog::accept() {
-
-    emit startFortuna();
 
     std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(this, session));
     bool proceed = true;
@@ -99,6 +96,14 @@ void NewAccountDialog::doHelp() {
 
 }
 
+void NewAccountDialog::incrementProgress(int incr) {
+
+    int value = ui->progressBar->value() + incr;
+    ui->progressBar->setValue(value);
+    qApp->processEvents();
+
+}
+
 bool NewAccountDialog::passphraseAlert() {
 
     QMessageBox *message = new QMessageBox;
@@ -120,3 +125,11 @@ void NewAccountDialog::showEvent(QShowEvent *event) {
     }
 
 }
+
+void NewAccountDialog::updateInfo(QString info) {
+
+    ui->infoLabel->setText(info);
+    qApp->processEvents();
+
+}
+

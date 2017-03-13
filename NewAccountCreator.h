@@ -43,6 +43,8 @@ class NewAccountCreator : QObject {
 
     signals:
         void accountComplete();
+        void incrementProgress(int incr);
+        void updateInfo(QString info);
 
     public slots:
         void sessionStarted();

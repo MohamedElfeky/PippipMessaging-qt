@@ -35,6 +35,8 @@ NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, SessionState *ses
     sessionTimer->addSource(session, SIGNAL(sessionFailed(QString)));
     connect(session, SIGNAL(sessionStarted()), this, SLOT(sessionStarted()));
     connect(session, SIGNAL(sessionFailed(QString)), this, SLOT(sessionFailed(QString)));
+    connect(this, SIGNAL(incrementProgress(int)), dialog, SLOT(incrementProgress(int)));
+    connect(this, SIGNAL(updateInfo(QString)), dialog, SLOT(updateInfo(QString)));
 
 }
 
@@ -45,10 +47,14 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
 
     accountName = name.toUtf8().constData();
     passphrase = pass.toUtf8().constData();
+
+    emit updateInfo("Generating account paramters");
+
     ParameterGenerator gen;
     gen.generateParameters(accountName);
     session->setAccountParameters(gen);
 
+    emit updateInfo("Contacting the server");
     if (!startSession()) {
         QMessageBox *message = new QMessageBox;
         message->addButton(QMessageBox::Ok);
@@ -56,6 +62,7 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
         message->setText("Session request timed out");
         message->setIcon(QMessageBox::Critical);
         message->exec();
+        emit updateInfo("Unable to establish a session with the server");
     }
 
 }
@@ -69,18 +76,13 @@ void NewAccountCreator::sessionFailed(QString error) {
     message->setInformativeText(error);
     message->setIcon(QMessageBox::Critical);
     message->exec();
+    emit updateInfo("Unable to establish a session with the server");
 
 }
 
 void NewAccountCreator::sessionStarted() {
 
-    QMessageBox *message = new QMessageBox;
-    message->addButton(QMessageBox::Ok);
-    message->setWindowTitle("Session Started");
-    message->setText("Session created");
-    message->setInformativeText(session->getSessionId());
-    message->setIcon(QMessageBox::Information);
-    message->exec();
+    emit updateInfo("Session started");
 
 }
 

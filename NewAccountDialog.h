@@ -43,12 +43,11 @@ class NewAccountDialog : public QDialog {
     public:
         void accept();
 
-    signals:
-        void startFortuna();
-
     public slots:
         void accountComplete();
+        void incrementProgress(int incr);
         void doHelp();
+        void updateInfo(QString info);
 
     protected:
         void showEvent(QShowEvent *);
