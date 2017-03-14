@@ -43,9 +43,13 @@ class SessionState : public QObject {
     public:
         bool expired() const;
         const AccountParameters& getAccountParameters() const { return params; }
+        const QString& getauthToken() const { return authToken; }
         const QString& getError() const { return error; }
+        const QString& getHandlerKey() const { return handlerKey; }
         const QString& getSessionId() const { return sessionId; }
         void setAccountParameters(const AccountParameters& other) { params = other; }
+        void setAuthToken(const QString& token) { authToken = token; }
+        void setHandlerKey(const QString& key) { handlerKey = key; }
         void startSession();
         void touch() { timestamp = time(0); }
 
@@ -62,6 +66,8 @@ class SessionState : public QObject {
         QString error;
         time_t timestamp;
         AccountParameters params;
+        QString authToken;
+        QString handlerKey;
 
 };
 

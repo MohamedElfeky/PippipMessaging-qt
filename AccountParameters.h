@@ -20,6 +20,7 @@
 #define ACCOUNTPARAMETERS_H
 
 #include <coder/ByteArray.h>
+#include <string>
 
 namespace CK {
     class RSAPrivateKey;
@@ -39,8 +40,13 @@ class AccountParameters {
         AccountParameters(const AccountParameters& other);
 
     public:
+        const coder::ByteArray& getEnclaveKey() const { return enclaveKey; }
         const coder::ByteArray& getPublicId() const { return publicId; }
+        CK::RSAPublicKey *getServerPublicKey() const { return serverPublicKey; }
+        CK::RSAPrivateKey *getUserPrivateKey() const { return userPrivateKey; }
         CK::RSAPublicKey *getUserPublicKey() const { return userPublicKey; }
+        void setAccountRandom(const coder::ByteArray& rnd) { accountRandom = rnd; }
+        void setServerPublicKey(const std::string& pem);
 
     protected:
         // Account random number. Used to build private ID

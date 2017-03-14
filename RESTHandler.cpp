@@ -52,8 +52,7 @@ void RESTHandler::doGet(const QString& url) {
 
     success = false;
 
-    //QNetworkRequest getRequest(QUrl(url));
-    QNetworkRequest getRequest;     // Umm...
+    QNetworkRequest getRequest((QUrl(url)));
     getRequest.setUrl(QUrl(url));
     QList<QSslCertificate> certs = QSslCertificate::fromPath(CERTPATH);
     QSslConfiguration config = getRequest.sslConfiguration();
@@ -67,10 +66,12 @@ void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
 
     success = false;
 
+    QNetworkRequest postRequest((QUrl(url)));
+    postRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QJsonDocument doc(jsonObj);
     QByteArray json("jason=");
     json.push_back(doc.toJson());
-    manager->post(QNetworkRequest(QUrl(url)), json);
+    manager->post(postRequest, json);
 
 }
 

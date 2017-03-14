@@ -17,8 +17,10 @@
  */
 
 #include "AccountParameters.h"
+#include "StringCodec.h"
 #include <CryptoKitty-C/keys/RSAPrivateCrtKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
+#include <CryptoKitty-C/encoding/PEMCodec.h>
 
 namespace Pippip {
 
@@ -58,6 +60,13 @@ AccountParameters& AccountParameters::operator =(const AccountParameters& other)
     }
 
     return *this;
+
+}
+
+void AccountParameters::setServerPublicKey(const std::string &pem) {
+
+    CK::PEMCodec codec;
+    serverPublicKey = codec.decodePublicKey(pem);
 
 }
 

@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     RESTTimer.cpp \
     ParameterGenerator.cpp \
     EntropyStream.cpp \
-    UDPListener.cpp
+    UDPListener.cpp \
+    StringCodec.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     RESTTimer.h \
     ParameterGenerator.h \
     EntropyStream.h \
-    UDPListener.h
+    UDPListener.h \
+    StringCodec.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

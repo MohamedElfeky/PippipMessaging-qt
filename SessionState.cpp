@@ -88,7 +88,6 @@ void SessionState::startSession() {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestFailed(RESTHandler*)));
     handler->doGet(SESSION_URL);
 
-
 }
 
 }

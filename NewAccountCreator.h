@@ -48,6 +48,7 @@ class NewAccountCreator : QObject {
         void updateInfo(QString info);
 
     public slots:
+        void finalComplete(RESTHandler*);
         void requestComplete(RESTHandler*);
         void requestFailed(RESTHandler*);
         void sessionStarted();
@@ -59,6 +60,7 @@ class NewAccountCreator : QObject {
 
     private:
         void doAccountRequest();
+        void doFinish();
         bool startSession();
 
     private:
