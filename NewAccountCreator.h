@@ -28,7 +28,8 @@ class NewAccountDialog;
 namespace Pippip {
 
 class SessionState;
-class RESTTimer;
+class ParameterGenerator;
+class RESTHandler;
 
 class NewAccountCreator : QObject {
     Q_OBJECT
@@ -47,13 +48,17 @@ class NewAccountCreator : QObject {
         void updateInfo(QString info);
 
     public slots:
+        void requestComplete(RESTHandler*);
+        void requestFailed(RESTHandler*);
         void sessionStarted();
-        void sessionFailed(QString eror);
+        void sessionFailed(QString error);
 
     public:
         void createNewAccount(const QString& accountName, const QString& passphrase);
+        void progress();
 
     private:
+        void doAccountRequest();
         bool startSession();
 
     private:
@@ -61,7 +66,7 @@ class NewAccountCreator : QObject {
         NewAccountDialog *dialog;
         std::string accountName;
         std::string passphrase;
-        RESTTimer *sessionTimer;
+        ParameterGenerator *generator;
 
 };
 

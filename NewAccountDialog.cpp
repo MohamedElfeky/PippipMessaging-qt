@@ -61,6 +61,7 @@ void NewAccountDialog::accept() {
     }
 
     if (proceed) {
+        ui->progressBar->setValue(0);
         creator->createNewAccount(accountName, passphrase);
     }
 

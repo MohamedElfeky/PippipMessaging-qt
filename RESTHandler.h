@@ -28,6 +28,8 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
+namespace Pippip {
+
 class RESTHandler : public QObject {
     Q_OBJECT
 
@@ -58,5 +60,7 @@ class RESTHandler : public QObject {
         bool success;
 
 };
+
+}
 
 #endif // RESTHANDLER_H

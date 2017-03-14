@@ -25,9 +25,9 @@
 #include <QString>
 #include <time.h>
 
-class RESTHandler;
-
 namespace Pippip {
+
+class RESTHandler;
 
 class SessionState : public QObject {
     Q_OBJECT

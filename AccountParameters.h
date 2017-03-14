@@ -38,6 +38,10 @@ class AccountParameters {
     private:
         AccountParameters(const AccountParameters& other);
 
+    public:
+        const coder::ByteArray& getPublicId() const { return publicId; }
+        CK::RSAPublicKey *getUserPublicKey() const { return userPublicKey; }
+
     protected:
         // Account random number. Used to build private ID
         coder::ByteArray accountRandom;

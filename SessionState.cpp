@@ -22,6 +22,7 @@
 namespace Pippip {
 
 static const time_t SESSION_TTL = 1800; // 30 minutes
+static const QString SESSION_URL = "https://pippip.io:2880/session/";
 
 SessionState::SessionState(QObject *parent)
 : QObject(parent) {
@@ -85,7 +86,7 @@ void SessionState::startSession() {
     RESTHandler *handler = new RESTHandler;
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestFailed(RESTHandler*)));
-    handler->doGet(QString("https://pippip.io:2880/session/"));
+    handler->doGet(SESSION_URL);
 
 
 }

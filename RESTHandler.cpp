@@ -27,6 +27,8 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 
+namespace Pippip {
+
 static const QString CERTPATH = "/home/sbrenneis/.pippip/ca-chain.cert.pem";
 
 RESTHandler::RESTHandler(QObject *parent)
@@ -48,6 +50,8 @@ RESTHandler::~RESTHandler() {
 
 void RESTHandler::doGet(const QString& url) {
 
+    success = false;
+
     //QNetworkRequest getRequest(QUrl(url));
     QNetworkRequest getRequest;     // Umm...
     getRequest.setUrl(QUrl(url));
@@ -62,6 +66,7 @@ void RESTHandler::doGet(const QString& url) {
 void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
 
     success = false;
+
     QJsonDocument doc(jsonObj);
     QByteArray json("jason=");
     json.push_back(doc.toJson());
@@ -89,5 +94,7 @@ void RESTHandler::managerFinished(QNetworkReply *reply) {
 void RESTHandler::managerSSLErrors(QNetworkReply* reply, QList<QSslError> errors) {
 
     reply->ignoreSslErrors(errors);
+
+}
 
 }

@@ -17,6 +17,7 @@
  */
 
 #include "ParameterGenerator.h"
+#include "NewAccountCreator.h"
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
 #include <coder/ByteArray.h>
 #include <digest/SHA256.h>
@@ -28,7 +29,8 @@
 
 namespace Pippip {
 
-ParameterGenerator::ParameterGenerator() {
+ParameterGenerator::ParameterGenerator(NewAccountCreator *creator)
+: newAccountCreator(creator) {
 }
 
 ParameterGenerator::~ParameterGenerator() {
@@ -41,6 +43,7 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     // Generate the account password
     genpass.setLength(20);
     rnd.nextBytes(genpass);
+    newAccountCreator->progress();
 
     // Generate the enclave block cipher key
     CK::SHA256 sha256;
@@ -58,6 +61,7 @@ void ParameterGenerator::generateParameters(const std::string& username) {
 
     sha256.update(bytecodec.toArray());
     enclaveKey = sha256.digest();
+    newAccountCreator->progress();
 
     // Generate the user authentication keys.
     CK::RSAKeyPairGenerator keygen(&rnd, 2048);
@@ -66,6 +70,7 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     userPublicKey = keypair->publicKey();
     keypair->releaseKeys();
     delete keypair;
+    newAccountCreator->progress();
 
     CK::SHA1 sha1;
     sha1.update(coder::ByteArray(username));
@@ -77,6 +82,7 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     sha1.update(bytecodec.toArray());
     sha1.update(coder::ByteArray("@secomm.org"));
     publicId = sha1.digest();
+    newAccountCreator->progress();
 
 }
 

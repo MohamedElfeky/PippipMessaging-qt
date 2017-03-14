@@ -24,10 +24,12 @@
 
 namespace Pippip {
 
+class NewAccountCreator;
+
 class ParameterGenerator : public AccountParameters
 {
     public:
-        ParameterGenerator();
+        ParameterGenerator(NewAccountCreator *creator);
         ~ParameterGenerator();
 
     private:
@@ -36,6 +38,9 @@ class ParameterGenerator : public AccountParameters
 
     public:
         void generateParameters(const std::string& username);
+
+    private:
+        NewAccountCreator *newAccountCreator;
 
 };
 
