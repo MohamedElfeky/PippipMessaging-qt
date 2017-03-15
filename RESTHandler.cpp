@@ -69,9 +69,7 @@ void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
     QNetworkRequest postRequest((QUrl(url)));
     postRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QJsonDocument doc(jsonObj);
-    QByteArray json("jason=");
-    json.push_back(doc.toJson());
-    manager->post(postRequest, json);
+    manager->post(postRequest, doc.toJson());
 
 }
 
@@ -79,7 +77,8 @@ void RESTHandler::managerFinished(QNetworkReply *reply) {
 
     QNetworkReply::NetworkError errorType = reply->error();
     if (errorType == QNetworkReply::NoError) {
-        QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        QByteArray result = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(result);
         response = doc.object();
         success = true;
         emit requestComplete(this);

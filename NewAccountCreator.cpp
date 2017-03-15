@@ -34,8 +34,8 @@
 
 namespace Pippip {
 
-static const QString REQUEST_URL = "https://pippip.io:2880/newaccount";
-static const QString FINISH_URL = "https://pippip.io:2880/accountfinish";
+static const QString REQUEST_URL = "https://pippip.io:2880/newaccount/";
+static const QString FINISH_URL = "https://pippip.io:2880/accountfinish/";
 
 NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, SessionState *sess)
 : QObject(parent),
@@ -87,10 +87,11 @@ void NewAccountCreator::doAccountRequest() {
     json["sessionId"] = session->getSessionId();
     QString publicId = StringCodec(generator->getPublicId().toHexString());
     json["publicId"] = publicId;
-    CK::PEMCodec codec;
+    CK::PEMCodec codec(true);   // X509 key
     std::ostringstream pemstr;
     codec.encode(pemstr, *generator->getUserPublicKey());
-    json["userPublicKey"] = pemstr.str().c_str();
+    QString pem = StringCodec(pemstr.str());
+    json["userPublicKey"] = pem;
 
     RESTHandler *handler = new RESTHandler;
     RESTTimer *timer = new RESTTimer(this);
@@ -116,6 +117,7 @@ void NewAccountCreator::doFinish() {
 
     QJsonObject json;
 
+    json["sessionId"] = session->getSessionId();
     CK::RSACodec codec;
     codec << generator->getEnclaveKey();
     codec.encrypt(*generator->getServerPublicKey());
@@ -145,7 +147,7 @@ void NewAccountCreator::doFinish() {
 
 void NewAccountCreator::progress() {
 
-    emit incrementProgress(5);
+    emit incrementProgress(10);
     qApp->processEvents();
 
 }
