@@ -109,7 +109,7 @@ void NewAccountCreator::doFinish() {
 
     json["sessionId"] = session->getSessionId();
     CK::RSACodec codec;
-    codec << generator->getEnclaveKey();
+    codec << generator->getGenpass() << generator->getEnclaveKey();
     codec.encrypt(*generator->getServerPublicKey());
     QString encrypted = StringCodec(codec.toArray().toHexString());
     json["encrypted"] = encrypted;
