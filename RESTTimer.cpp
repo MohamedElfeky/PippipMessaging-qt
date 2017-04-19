@@ -36,7 +36,7 @@ RESTTimer::~RESTTimer() {
 
 void RESTTimer::addSource(QObject *source, const char *signal) {
 
-    connect(source, signal, eventLoop, SLOT(quit()));
+    connect(source, signal, this, SLOT(stop()));
 
 }
 

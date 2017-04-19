@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QMessageBox>
 #include <string>
 
 class NewAccountDialog;
@@ -61,6 +62,8 @@ class NewAccountCreator : QObject {
     private:
         void doAccountRequest();
         void doFinish();
+        void doMessageBox(QMessageBox::Icon, const QString& title, const QString& message,
+                                                                    const QString& informative = "");
         bool startSession();
 
     private:

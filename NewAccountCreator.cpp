@@ -26,7 +26,6 @@
 #include <CryptoKitty-C/encoding/PEMCodec.h>
 #include <CryptoKitty-C/encoding/RSACodec.h>
 #include <coder/ByteArray.h>
-#include <QMessageBox>
 #include <QApplication>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -69,12 +68,7 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
 
     emit updateInfo("Contacting the server");
     if (!startSession()) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Session Error");
-        message->setText("Session request timed out");
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
+        doMessageBox(QMessageBox::Critical, "Session Error", "Session request timed out");
         emit updateInfo("Unable to establish a session with the server");
     }
 
@@ -102,13 +96,9 @@ void NewAccountCreator::doAccountRequest() {
 
     handler->doPost(REQUEST_URL, json);
     if (!timer->wait(30000)) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Request Error");
-        message->setText("New account request timed out");
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
+        doMessageBox(QMessageBox::Critical, "Request Error", "New account request timed out");
         emit updateInfo("Unable to complete the request");
+        qApp->processEvents();
     }
 
 }
@@ -133,15 +123,26 @@ void NewAccountCreator::doFinish() {
 
     handler->doPost(FINISH_URL, json);
     if (!timer->wait(30000)) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Request Error");
-        message->setText("New account request timed out");
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
+        doMessageBox(QMessageBox::Critical, "Request Error", "Finalize new account timed out");
         emit updateInfo("Unable to complete the request");
         qApp->processEvents();
     }
+
+}
+
+void NewAccountCreator::doMessageBox(QMessageBox::Icon icon, const QString& title, const QString& message,
+                                                                        const QString& informative) {
+
+    QMessageBox *messageBox = new QMessageBox;
+    messageBox->addButton(QMessageBox::Ok);
+    messageBox->setWindowTitle(title);
+    messageBox->setText(message);
+    if (informative.length() > 0) {
+        messageBox->setInformativeText(informative);
+    }
+    messageBox->setIcon(icon);
+    messageBox->exec();
+    messageBox->deleteLater();
 
 }
 
@@ -159,13 +160,8 @@ void NewAccountCreator::finalComplete(RESTHandler *handler) {
 
     QJsonValue value = json["error"];
     if (value != QJsonValue::Null) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Request Error");
-        message->setText("An error occurred while processing the request");
-        message->setInformativeText(value.toString());
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
+        doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                    value.toString());
         emit updateInfo("Unable to complete the request");
         qApp->processEvents();
     }
@@ -173,13 +169,8 @@ void NewAccountCreator::finalComplete(RESTHandler *handler) {
         QJsonValue tokenValue = json["authToken"];
         QJsonValue keyValue = json["handlerKey"];
         if (tokenValue == QJsonValue::Null || keyValue == QJsonValue::Null) {
-            QMessageBox *message = new QMessageBox;
-            message->addButton(QMessageBox::Ok);
-            message->setWindowTitle("Request Error");
-            message->setText("An error occurred while processing the request");
-            message->setInformativeText("Invalid server response");
-            message->setIcon(QMessageBox::Critical);
-            message->exec();
+            doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                    "Invalid server response");
             emit updateInfo("Unable to complete the request");
             qApp->processEvents();
         }
@@ -202,13 +193,8 @@ void NewAccountCreator::requestComplete(RESTHandler *handler) {
 
     QJsonValue value = json["error"];
     if (value != QJsonValue::Null) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Request Error");
-        message->setText("An error occurred while processing the request");
-        message->setInformativeText(value.toString());
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
+        doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                    value.toString());
         emit updateInfo("Unable to complete the request");
         qApp->processEvents();
     }
@@ -216,13 +202,8 @@ void NewAccountCreator::requestComplete(RESTHandler *handler) {
         QJsonValue keyValue = json["serverPublicKey"];
         QJsonValue encValue = json["encrypted"];
         if (keyValue == QJsonValue::Null || encValue == QJsonValue::Null) {
-            QMessageBox *message = new QMessageBox;
-            message->addButton(QMessageBox::Ok);
-            message->setWindowTitle("Request Error");
-            message->setText("An error occurred while processing the request");
-            message->setInformativeText("Invalid server response");
-            message->setIcon(QMessageBox::Critical);
-            message->exec();
+            doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                    "Invalid server response");
             emit updateInfo("Unable to complete the request");
             qApp->processEvents();
         }
@@ -245,28 +226,20 @@ void NewAccountCreator::requestComplete(RESTHandler *handler) {
 
 void NewAccountCreator::requestFailed(RESTHandler *handler) {
 
-    QMessageBox *message = new QMessageBox;
-    message->addButton(QMessageBox::Ok);
-    message->setWindowTitle("Request Error");
-    message->setText("An error occurred while processing the request");
-    message->setInformativeText(handler->getError());
-    message->setIcon(QMessageBox::Critical);
-    message->exec();
+    doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                    handler->getError());
     emit updateInfo("Unable to complete the Request");
+    qApp->processEvents();
     handler->deleteLater();
 
 }
 
 void NewAccountCreator::sessionFailed(QString error) {
 
-    QMessageBox *message = new QMessageBox;
-    message->addButton(QMessageBox::Ok);
-    message->setWindowTitle("Session Error");
-    message->setText("An error occurred while establishing a session with the server.");
-    message->setInformativeText(error);
-    message->setIcon(QMessageBox::Critical);
-    message->exec();
+    doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
+                                                                                                error);
     emit updateInfo("Unable to establish a session with the server");
+    qApp->processEvents();
 
 }
 

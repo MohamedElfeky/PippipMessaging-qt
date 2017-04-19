@@ -35,10 +35,10 @@ class RESTTimer : public QObject {
 
     public:
         void addSource(QObject *source, const char *signal);
-        void stop();
         bool wait(int milliseconds);
 
     public slots:
+        void stop();
         void timeout();
 
     private:
