@@ -41,6 +41,7 @@ class AccountParameters {
 
     public:
         const coder::ByteArray& getEnclaveKey() const { return enclaveKey; }
+        const coder::ByteArray& getGenpass() const { return genpass; }
         const coder::ByteArray& getPublicId() const { return publicId; }
         CK::RSAPublicKey *getServerPublicKey() const { return serverPublicKey; }
         CK::RSAPrivateKey *getUserPrivateKey() const { return userPrivateKey; }
