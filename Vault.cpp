@@ -26,4 +26,9 @@ Vault::Vault() {
 Vault::~Vault() {
 }
 
+Vault::Vault(const SessionState &state)
+: SessionState(state) {
 }
+
+}
+

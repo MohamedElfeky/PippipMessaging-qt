@@ -17,6 +17,7 @@
  */
 
 #include "RESTHandler.h"
+#include "PostPacket.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QUrl>
@@ -26,6 +27,7 @@
 #include <QByteArray>
 #include <QSslCertificate>
 #include <QSslConfiguration>
+#include <memory>
 
 namespace Pippip {
 
@@ -62,13 +64,14 @@ void RESTHandler::doGet(const QString& url) {
 
 }
 
-void RESTHandler::doPost(const QString& url, const QJsonObject& jsonObj) {
+void RESTHandler::doPost(const PostPacket& packet) {
 
     success = false;
 
-    QNetworkRequest postRequest((QUrl(url)));
+    QNetworkRequest postRequest((QUrl(packet.getUrl())));
     postRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    QJsonDocument doc(jsonObj);
+    std::unique_ptr<QJsonObject> json(packet.getJson());
+    QJsonDocument doc(*json);
     manager->post(postRequest, doc.toJson());
 
 }

@@ -19,26 +19,25 @@
 #ifndef VAULT_H
 #define VAULT_H
 
-#include "AccountParameters.h"
+#include "SessionState.h"
 #include <coder/ByteArray.h>
 #include <string>
 
 namespace Pippip {
 
-class Vault : public AccountParameters {
+class Vault : public SessionState {
 
     public:
         Vault();
         ~Vault();
+        Vault(const SessionState& state);
 
     private:
         Vault(const Vault& other);
         Vault& operator&(const Vault& other);
 
     private:
-        coder::ByteArray passphrase;
-        std::string ServerKeyPEM;
-        std::string UserKeyPEM;
+        coder::ByteArray vaultKey;
 
 };
 

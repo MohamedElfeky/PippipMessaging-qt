@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "SessionState.h"
+#include "ParameterGenerator.h"
 #include "NewAccountDialog.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
@@ -9,7 +9,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    session(new Pippip::SessionState(this)) {
+    session(0) {
 
     ui->setupUi(this);
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
@@ -17,11 +17,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+MainWindow::~MainWindow() {
 
+    delete session;
+    delete ui;
+
+}
+/*
 void MainWindow::fortunaStreamError(QString error) {
 
     // EntropyStream doesn't emit errors at the moment.
@@ -31,14 +33,16 @@ void MainWindow::fortunaStreamError(QString error) {
 void MainWindow::fortunaUDPError(QString errstr, bool fatal) {
    // TODO: Add message box and quit on fatal
 }
-
+*/
 void MainWindow::logIn() {
 
 }
 
 void MainWindow::newAccount() {
 
-    NewAccountDialog dialog(session);
+    Pippip::ParameterGenerator *gen = new Pippip::ParameterGenerator;
+    session = gen;
+    NewAccountDialog dialog(gen);
     dialog.exec();
 
 }

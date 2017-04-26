@@ -30,6 +30,8 @@ class QNetworkReply;
 
 namespace Pippip {
 
+class PostPacket;
+
 class RESTHandler : public QObject {
     Q_OBJECT
 
@@ -39,7 +41,7 @@ class RESTHandler : public QObject {
 
     public:
         void doGet(const QString& url);
-        void doPost(const QString& url, const QJsonObject& json);
+        void doPost(const PostPacket& packet);
         const QString& getError() const { return error; }
         const QJsonObject&  getResponse() const { return response; }
         bool successful() const { return success; }

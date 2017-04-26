@@ -19,17 +19,15 @@
 #ifndef PARAMETERGENERATOR_H
 #define PARAMETERGENERATOR_H
 
-#include "AccountParameters.h"
+#include "SessionState.h"
 #include <string>
 
 namespace Pippip {
 
-class NewAccountCreator;
+class ParameterGenerator : public SessionState {
 
-class ParameterGenerator : public AccountParameters
-{
     public:
-        ParameterGenerator(NewAccountCreator *creator);
+        ParameterGenerator();
         ~ParameterGenerator();
 
     private:
@@ -38,9 +36,6 @@ class ParameterGenerator : public AccountParameters
 
     public:
         void generateParameters(const std::string& username);
-
-    private:
-        NewAccountCreator *newAccountCreator;
 
 };
 

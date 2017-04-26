@@ -17,20 +17,17 @@
  */
 
 #include "ParameterGenerator.h"
-#include "NewAccountCreator.h"
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
-#include <coder/ByteArray.h>
 #include <digest/SHA256.h>
 #include <digest/SHA1.h>
 #include <coder/ByteStreamCodec.h>
 #include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
 #include <CryptoKitty-C/keys/KeyPair.h>
-#include <time.h>
+#include <ctime>
 
 namespace Pippip {
 
-ParameterGenerator::ParameterGenerator(NewAccountCreator *creator)
-: newAccountCreator(creator) {
+ParameterGenerator::ParameterGenerator() {
 }
 
 ParameterGenerator::~ParameterGenerator() {
@@ -43,7 +40,6 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     // Generate the account password
     genpass.setLength(20);
     rnd.nextBytes(genpass);
-    newAccountCreator->progress();
 
     // Generate the enclave block cipher key
     CK::SHA256 sha256;
@@ -54,14 +50,13 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     // Encode time in milliseconds
     timespec ctime;
     clock_gettime(CLOCK_REALTIME, &ctime);
-    uint64_t millis = ctime.tv_sec;
+    uint64_t millis = ctime.tv_sec * 1000;
     millis += ctime.tv_nsec / 1.0e06;
     coder::ByteStreamCodec bytecodec;
     bytecodec << millis;
 
     sha256.update(bytecodec.toArray());
     enclaveKey = sha256.digest();
-    newAccountCreator->progress();
 
     // Generate the user authentication keys.
     CK::RSAKeyPairGenerator keygen(&rnd, 2048);
@@ -70,7 +65,6 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     userPublicKey = keypair->publicKey();
     keypair->releaseKeys();
     delete keypair;
-    newAccountCreator->progress();
 
     CK::SHA1 sha1;
     sha1.update(coder::ByteArray(username));
@@ -82,7 +76,6 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     sha1.update(bytecodec.toArray());
     sha1.update(coder::ByteArray("@secomm.org"));
     publicId = sha1.digest();
-    newAccountCreator->progress();
 
 }
 

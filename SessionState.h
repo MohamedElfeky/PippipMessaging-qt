@@ -19,56 +19,27 @@
 #ifndef SESSIONSTATE_H
 #define SESSIONSTATE_H
 
-#include "AccountParameters.h"
-#include <string>
-#include <QObject>
-#include <QString>
-#include <time.h>
+#include <coder/ByteArray.h>
 
+namespace CK {
+    class RSAPublicKey;
+    class RSAPrivateKey;
+}
 namespace Pippip {
 
-class RESTHandler;
-
-class SessionState : public QObject {
-    Q_OBJECT
-
-    public:
-        explicit SessionState(QObject *parent=0);
-        ~SessionState();
-
-    private:
-        SessionState(const SessionState& other);
-        SessionState& operator =(const SessionState& other);
-
-    public:
-        bool expired() const;
-        const AccountParameters& getAccountParameters() const { return params; }
-        const QString& getauthToken() const { return authToken; }
-        const QString& getError() const { return error; }
-        const QString& getHandlerKey() const { return handlerKey; }
-        const QString& getSessionId() const { return sessionId; }
-        void setAccountParameters(const AccountParameters& other) { params = other; }
-        void setAuthToken(const QString& token) { authToken = token; }
-        void setHandlerKey(const QString& key) { handlerKey = key; }
-        void startSession();
-        void touch() { timestamp = time(0); }
-
-    signals:
-        void sessionFailed(QString error);
-        void sessionStarted();
-
-    private slots:
-        void requestComplete(RESTHandler *handler);
-        void requestFailed(RESTHandler *handler);
-
-    private:
-        QString sessionId;
-        QString error;
-        time_t timestamp;
-        AccountParameters params;
-        QString authToken;
-        QString handlerKey;
-
+struct SessionState {
+    enum StateValue { authenticated, established, failed, not_started, started };
+    StateValue sessionState;
+    uint32_t sessionId;
+    uint32_t handlerKey;
+    uint64_t authToken;
+    coder::ByteArray publicId;
+    coder::ByteArray genpass;
+    coder::ByteArray enclaveKey;
+    coder::ByteArray accountRandom;
+    CK::RSAPrivateKey *userPrivateKey;
+    CK::RSAPublicKey *userPublicKey;
+    CK::RSAPublicKey *serverPublicKey;
 };
 
 }

@@ -22,8 +22,8 @@ class MainWindow : public QMainWindow {
         void startFortuna();
 
     public slots:
-        void fortunaStreamError(QString error);
-        void fortunaUDPError(QString error, bool fatal);
+        //void fortunaStreamError(QString error);
+        //void fortunaUDPError(QString error, bool fatal);
         void logIn();
         void newAccount();
 

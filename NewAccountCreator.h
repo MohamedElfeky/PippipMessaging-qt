@@ -19,7 +19,7 @@
 #ifndef NEWACCOUNTCREATOR_H
 #define NEWACCOUNTCREATOR_H
 
-#include <QObject>
+#include "SessionTask.h"
 #include <QString>
 #include <string>
 
@@ -27,15 +27,15 @@ class NewAccountDialog;
 
 namespace Pippip {
 
-class SessionState;
 class ParameterGenerator;
 class RESTHandler;
+class PostPacket;
 
-class NewAccountCreator : QObject {
+class NewAccountCreator : public SessionTask {
     Q_OBJECT
 
     public:
-        explicit NewAccountCreator(NewAccountDialog *parent, SessionState *session);
+        explicit NewAccountCreator(NewAccountDialog *parent, ParameterGenerator *gen);
         ~NewAccountCreator();
 
     private:
@@ -45,29 +45,31 @@ class NewAccountCreator : QObject {
     signals:
         void accountComplete();
         void incrementProgress(int incr);
+        void resetProgress();
         void updateInfo(QString info);
 
     public slots:
-        void finalComplete(RESTHandler*);
+        void finishComplete(RESTHandler*);
         void requestComplete(RESTHandler*);
-        void requestFailed(RESTHandler*);
-        void sessionStarted();
-        void sessionFailed(QString error);
+        void requestTimedOut();
 
     public:
         void createNewAccount(const QString& accountName, const QString& passphrase);
-        void progress();
+
+    protected:
+        void sessionComplete(const QString& result);
 
     private:
-        void doAccountRequest();
+        void doRequest();
         void doFinish();
-        bool startSession();
+        void requestFailed(const QString& error);
 
     private:
-        SessionState *session;
-        NewAccountDialog *dialog;
+        enum RequestState { complete, in_progress, not_started, timed_out };
+        RequestState requestState;
         std::string accountName;
         std::string passphrase;
+        NewAccountDialog *dialog;
         ParameterGenerator *generator;
 
 };

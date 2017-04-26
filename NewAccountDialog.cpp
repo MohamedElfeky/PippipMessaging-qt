@@ -24,17 +24,16 @@
 #include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
-#include <memory>
 
-NewAccountDialog::NewAccountDialog(Pippip::SessionState *sess, QWidget *parent)
+NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *parent)
 : QDialog(parent),
   ui(new Ui::NewAccountDialog),
-  session(sess),
+  generator(gen),
   creator(0) {
 
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
-    const MainWindow *main = qobject_cast<MainWindow*>(parent);
+    // const MainWindow *main = qobject_cast<MainWindow*>(parent);
 
 }
 
@@ -47,7 +46,6 @@ NewAccountDialog::~NewAccountDialog() {
 
 void NewAccountDialog::accept() {
 
-    std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(this, session));
     bool proceed = true;
     QString accountName = ui->AccountNameText->text();
     if (accountName.length() == 0) {
@@ -61,6 +59,7 @@ void NewAccountDialog::accept() {
     }
 
     if (proceed) {
+        Pippip::NewAccountCreator *creator = new Pippip::NewAccountCreator(this, generator);
         ui->progressBar->setValue(0);
         creator->createNewAccount(accountName, passphrase);
     }
@@ -115,6 +114,13 @@ bool NewAccountDialog::passphraseAlert() {
     message->setInformativeText("Click OK to proceed, Cancel to go back.");
     message->setIcon(QMessageBox::Warning);
     return message->exec() == QMessageBox::Ok;
+
+}
+
+void NewAccountDialog::resetProgress() {
+
+    ui->progressBar->setValue(0);
+    qApp->processEvents();
 
 }
 
