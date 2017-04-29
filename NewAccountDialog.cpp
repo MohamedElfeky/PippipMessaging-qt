@@ -18,10 +18,10 @@
 
 #include "NewAccountDialog.h"
 #include "ui_NewAccountDialog.h"
-#include "SessionState.h"
+#include "ParameterGenerator.h"
 #include "NewAccountCreator.h"
 #include "NewAccountHelpDialog.h"
-#include "mainwindow.h"
+//#include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
 
@@ -33,14 +33,12 @@ NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *par
 
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
-    // const MainWindow *main = qobject_cast<MainWindow*>(parent);
 
 }
 
 NewAccountDialog::~NewAccountDialog() {
 
     delete ui;
-    delete creator;
 
 }
 
@@ -126,6 +124,7 @@ void NewAccountDialog::resetProgress() {
 
 void NewAccountDialog::showEvent(QShowEvent *event) {
 
+    // Have to do this to give account name the focus.
     QDialog::showEvent(event);
     if (!event->spontaneous()) {
         ui->AccountNameText->setFocus();

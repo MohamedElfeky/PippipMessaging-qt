@@ -33,7 +33,15 @@ SOURCES += main.cpp\
     NewAccountRequest.cpp \
     NewAccountResponse.cpp \
     NewAccountFinish.cpp \
-    NewAccountFinal.cpp
+    NewAccountFinal.cpp \
+    LoginDialog.cpp \
+    Alert.cpp \
+    CriticalAlert.cpp \
+    AuthRequest.cpp \
+    AuthChallenge.cpp \
+    AuthResponse.cpp \
+    ServerAuthorized.cpp \
+    ClientAuthorized.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -58,11 +66,20 @@ HEADERS  += mainwindow.h \
     NewAccountResponse.h \
     NewAccountFinish.h \
     NewAccountFinal.h \
-    VaultException.h
+    VaultException.h \
+    LoginDialog.h \
+    Alert.h \
+    CriticalAlert.h \
+    AuthRequest.h \
+    AuthChallenge.h \
+    AuthResponse.h \
+    ServerAuthorized.h \
+    ClientAuthorized.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
-    NewAccountHelpDialog.ui
+    NewAccountHelpDialog.ui \
+    LoginDialog.ui
 
 QT += network
 

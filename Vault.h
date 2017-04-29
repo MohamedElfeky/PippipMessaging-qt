@@ -36,8 +36,19 @@ class Vault : public SessionState {
         Vault(const Vault& other);
         Vault& operator&(const Vault& other);
 
+    public:
+        void loadVault(const std::string& accountName, const std::string& passphrase);
+        void storeVault(const std::string& accountName, const std::string& passphrase);
+
+    private:
+        void encodeVault(const std::string& passphrase);
+        void decodeVault(const coder::ByteArray& ciphertext, const std::string& passphrase);
+        void s2k(const std::string& passphrase);
+
     private:
         coder::ByteArray vaultKey;
+        coder::ByteArray encoded;
+        std::string vaultPath;
 
 };
 

@@ -12,9 +12,6 @@ NewAccountFinish::NewAccountFinish(SessionState *sess)
 : state(sess) {
 }
 
-NewAccountFinish::~NewAccountFinish() {
-}
-
 QJsonObject *NewAccountFinish::getJson() const {
 
     QJsonObject *json  = new QJsonObject;

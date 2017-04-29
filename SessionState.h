@@ -37,6 +37,8 @@ struct SessionState {
     coder::ByteArray genpass;
     coder::ByteArray enclaveKey;
     coder::ByteArray accountRandom;
+    coder::ByteArray serverAuthRandom;
+    coder::ByteArray clientAuthRandom;
     CK::RSAPrivateKey *userPrivateKey;
     CK::RSAPublicKey *userPublicKey;
     CK::RSAPublicKey *serverPublicKey;

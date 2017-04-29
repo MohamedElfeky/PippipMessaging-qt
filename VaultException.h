@@ -10,7 +10,7 @@ namespace Pippip {
 
 class VaultException  : public std::exception {
 
-    protected:
+    public:
         VaultException() {}
         VaultException(const std::string& msg) : message(msg) {}
         VaultException(const VaultException& other)

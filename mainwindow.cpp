@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "ParameterGenerator.h"
+#include "Vault.h"
 #include "NewAccountDialog.h"
+#include "LoginDialog.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
 #include <QThread>
@@ -36,6 +38,11 @@ void MainWindow::fortunaUDPError(QString errstr, bool fatal) {
 */
 void MainWindow::logIn() {
 
+    Pippip::Vault *gen = new Pippip::Vault;
+    session = gen;
+    LoginDialog dialog(gen);
+    dialog.exec();
+
 }
 
 void MainWindow::newAccount() {
@@ -52,7 +59,7 @@ void MainWindow::startFortuna() {
     QThread *streamThread = new QThread;
     Pippip::EntropyStream *stream = new Pippip::EntropyStream;
     stream->moveToThread(streamThread);
-    connect(stream, SIGNAL(error(QString)), this, SLOT(fortunaStreamError(QString)));
+    //connect(stream, SIGNAL(error(QString)), this, SLOT(fortunaStreamError(QString)));
     connect(streamThread, SIGNAL(started()), stream, SLOT(threadFunction()));
     connect(stream, SIGNAL(finished()), streamThread, SLOT(quit()));
     streamThread->start();
@@ -60,7 +67,7 @@ void MainWindow::startFortuna() {
     QThread *udpThread = new QThread;
     Pippip::UDPListener *udp = new Pippip::UDPListener(stream);
     udp->moveToThread(udpThread);
-    connect(udp, SIGNAL(error(QString, bool)), this, SLOT(fortunaUDPError(QString, bool)));
+    //connect(udp, SIGNAL(error(QString, bool)), this, SLOT(fortunaUDPError(QString, bool)));
     connect(udpThread, SIGNAL(started()), udp, SLOT(runListener()));
     connect(udp, SIGNAL(finished()), udpThread, SLOT(quit()));
     udpThread->start();

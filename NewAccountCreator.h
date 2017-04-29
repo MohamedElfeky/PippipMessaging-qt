@@ -43,13 +43,14 @@ class NewAccountCreator : public SessionTask {
         NewAccountCreator& operator =(const NewAccountCreator& other);
 
     signals:
-        void accountComplete();
+        void accountComplete(int response);
         void incrementProgress(int incr);
         void resetProgress();
         void updateInfo(QString info);
 
     public slots:
         void finishComplete(RESTHandler*);
+        void finishTimedOut();
         void requestComplete(RESTHandler*);
         void requestTimedOut();
 
@@ -65,8 +66,11 @@ class NewAccountCreator : public SessionTask {
         void requestFailed(const QString& error);
 
     private:
-        enum RequestState { complete, in_progress, not_started, timed_out };
-        RequestState requestState;
+        //enum RequestState { initial, get_session, request, finish, complete, failed, timed_out };
+        //RequestState requestState;
+        bool timedOut;
+        bool responseComplete;
+        bool finalComplete;
         std::string accountName;
         std::string passphrase;
         NewAccountDialog *dialog;

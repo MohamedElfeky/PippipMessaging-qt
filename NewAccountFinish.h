@@ -11,7 +11,7 @@ class NewAccountFinish : public PostPacket {
 
     public:
         NewAccountFinish(SessionState *state);
-        ~NewAccountFinish();
+        ~NewAccountFinish() {}
 
     private:
         NewAccountFinish(const NewAccountFinish& other);

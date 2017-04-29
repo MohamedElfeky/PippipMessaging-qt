@@ -36,11 +36,13 @@ namespace Pippip {
 
 NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, ParameterGenerator *gen)
 : SessionTask(parent, gen),
-  requestState(not_started),
+  timedOut(false),
+  responseComplete(false),
+  finalComplete(false),
   dialog(parent),
   generator(gen) {
 
-    connect(this, SIGNAL(accountComplete()), dialog, SLOT(quit()));
+    connect(this, SIGNAL(accountComplete(int)), dialog, SLOT(done(int)));
     connect(this, SIGNAL(incrementProgress(int)), dialog, SLOT(incrementProgress(int)));
     connect(this, SIGNAL(updateInfo(QString)), dialog, SLOT(updateInfo(QString)));
     connect(this, SIGNAL(resetProgress()), dialog, SLOT(resetProgress()));
@@ -59,7 +61,7 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
 
     generator->generateParameters(accountName);
 
-    emit incrementProgress(10);
+    emit incrementProgress(20);
     emit updateInfo("Contacting the server");
     startSession();
 
@@ -67,11 +69,12 @@ void NewAccountCreator::createNewAccount(const QString &name, const QString &pas
 
 void NewAccountCreator::doRequest() {
 
+    emit incrementProgress(20);
+    emit updateInfo("Starting the request");
     NewAccountRequest req(state);
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
-    requestState = in_progress;
     QTimer::singleShot(20000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
@@ -80,12 +83,13 @@ void NewAccountCreator::doRequest() {
 
 void NewAccountCreator::doFinish() {
 
+    emit incrementProgress(20);
+    emit updateInfo("Finalizing the account");
     NewAccountFinish finish(state);
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(finishComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(finishComplete(RESTHandler*)));
-    requestState = in_progress;
-    QTimer::singleShot(60000, this, SLOT(requestTimedOut()));
+    QTimer::singleShot(90000, this, SLOT(finishTimedOut()));
     handler->doPost(finish);
 
 }
@@ -93,21 +97,25 @@ void NewAccountCreator::doFinish() {
 void NewAccountCreator::finishComplete(RESTHandler *handler) {
 
 
-    if (requestState == in_progress) {
-        requestState = complete;
+    if (!timedOut) {
+        finalComplete = true;
         emit incrementProgress(10);
 
         NewAccountFinal final(handler->getResponse(), state);
-        if (final) {
+        if (!handler->successful()) {
+            requestFailed(handler->getError());
+        }
+        else if (final) {
             try {
                 std::unique_ptr<Vault> vault(new Vault(*state));
+                vault->storeVault(accountName, passphrase);
                 QMessageBox *message = new QMessageBox;
                 message->addButton(QMessageBox::Ok);
                 message->setWindowTitle("Account Complete");
                 message->setText("New account created");
                 message->setIcon(QMessageBox::Information);
                 message->exec();
-                emit accountComplete();
+                emit accountComplete(1);
             }
             catch (VaultException& e) {
                 requestFailed(QString(e.what()));
@@ -120,15 +128,33 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
 
 }
 
+void NewAccountCreator::finishTimedOut() {
+
+    if (!finalComplete) {
+        timedOut = true;
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Account Request Error");
+        message->setText("Account request timed out");
+        message->setIcon(QMessageBox::Critical);
+        message->exec();
+        emit updateInfo("Request timed out");
+        emit resetProgress();
+    }
+
+}
+
 void NewAccountCreator::requestComplete(RESTHandler *handler) {
 
-    if (requestState == in_progress) {
-        requestState = complete;
+    if (!timedOut) {
+        responseComplete = true;
         emit incrementProgress(10);
 
         NewAccountResponse response(handler->getResponse(), state);
-        if (response) {
-            requestState = not_started;
+        if (!handler->successful()) {
+            requestFailed(handler->getError());
+        }
+        else if (response) {
             doFinish();
         }
         else {
@@ -154,8 +180,8 @@ void NewAccountCreator::requestFailed(const QString& error) {
 
 void NewAccountCreator::requestTimedOut() {
 
-    if (requestState != complete) {
-        requestState = timed_out;
+    if (!responseComplete) {
+        timedOut = true;
         QMessageBox *message = new QMessageBox;
         message->addButton(QMessageBox::Ok);
         message->setWindowTitle("Account Request Error");
@@ -172,15 +198,13 @@ void NewAccountCreator::sessionComplete(const QString& result) {
 
     if (state->sessionState == SessionState::established) {
         emit updateInfo("Session started");
-        emit incrementProgress(5);
+        emit incrementProgress(20);
         doRequest();
     }
     else {
         emit updateInfo(result);
         emit resetProgress();
     }
-
-    //doAccountRequest();
 
 }
 
