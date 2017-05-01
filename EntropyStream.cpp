@@ -17,12 +17,12 @@
  */
 
 #include "EntropyStream.h"
-#include <QMutex>
-#include <QMutexLocker>
+#include <QReadWriteLock>
+#include <QReadLocker>
+#include <QWriteLocker>
+#include <QThread>
 #include <CryptoKitty-C/random/FortunaGenerator.h>
 #include <coder/ByteArray.h>
-#include <algorithm>
-#include <cstring>
 
 static const int BUCKETSIZE = 16384;
 static const int BUCKETCOUNT = 8;
@@ -33,7 +33,7 @@ EntropyStream::EntropyStream(QObject *parent)
 : QObject(parent),
   run(false),
   generator(0),
-  mutex(new QMutex) {
+  mutex(new QReadWriteLock) {
 }
 
 EntropyStream::~EntropyStream() {
@@ -52,12 +52,12 @@ void EntropyStream::quit() {
 void EntropyStream::readStream(coder::ByteArray& bytes, unsigned count) {
 
     while (buckets.size() * BUCKETSIZE < count) {
-        cthread::Thread::sleep(100);
+        QThread::msleep(100);
     }
 
     coder::ByteArray data;
     unsigned bytesOut = 0;
-    QMutexLocker locker(mutex);
+    QReadLocker locker(mutex);
     while (bytesOut < count) {
         unsigned toRead = count - bytesOut;
         data.setLength(std::min(toRead, buckets.front().available()));
@@ -79,7 +79,7 @@ void EntropyStream::threadFunction() {
 
     coder::ByteArray data;
     while (run) {
-        QMutexLocker lock(mutex);
+        QWriteLocker locker(mutex);
         while (buckets.size() < BUCKETCOUNT) {
             data.clear();
             generator->generateRandomData(data, BUCKETSIZE);

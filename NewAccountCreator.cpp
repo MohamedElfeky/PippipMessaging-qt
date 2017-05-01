@@ -18,248 +18,192 @@
 
 #include "NewAccountCreator.h"
 #include "NewAccountDialog.h"
-#include "SessionState.h"
 #include "ParameterGenerator.h"
-#include "RESTTimer.h"
 #include "RESTHandler.h"
-#include "StringCodec.h"
-#include <CryptoKitty-C/encoding/PEMCodec.h>
-#include <CryptoKitty-C/encoding/RSACodec.h>
-#include <coder/ByteArray.h>
+#include "NewAccountRequest.h"
+#include "NewAccountResponse.h"
+#include "NewAccountFinish.h"
+#include "NewAccountFinal.h"
+#include "Vault.h"
+#include "VaultException.h"
+#include <QMessageBox>
 #include <QApplication>
-#include <QJsonObject>
-#include <QJsonValue>
+#include <QTimer>
 #include <sstream>
+#include <memory>
 
 namespace Pippip {
 
-static const QString REQUEST_URL = "https://pippip.io:2880/newaccount/";
-static const QString FINISH_URL = "https://pippip.io:2880/accountfinish/";
-
-NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, SessionState *sess)
-: QObject(parent),
-  session(sess),
+NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, ParameterGenerator *gen)
+: SessionTask(parent, gen),
+  timedOut(false),
+  responseComplete(false),
+  finalComplete(false),
   dialog(parent),
-  generator(0) {
+  generator(gen) {
 
-    connect(session, SIGNAL(sessionStarted()), this, SLOT(sessionStarted()));
-    connect(session, SIGNAL(sessionFailed(QString)), this, SLOT(sessionFailed(QString)));
+    connect(this, SIGNAL(accountComplete(int)), dialog, SLOT(done(int)));
     connect(this, SIGNAL(incrementProgress(int)), dialog, SLOT(incrementProgress(int)));
     connect(this, SIGNAL(updateInfo(QString)), dialog, SLOT(updateInfo(QString)));
+    connect(this, SIGNAL(resetProgress()), dialog, SLOT(resetProgress()));
 
 }
 
 NewAccountCreator::~NewAccountCreator() {
-
-    delete generator;
-
 }
 
 void NewAccountCreator::createNewAccount(const QString &name, const QString &pass) {
 
-    accountName = StringCodec(name);
-    passphrase = StringCodec(pass);
+    accountName = name.toStdString();
+    passphrase = pass.toStdString();
 
     emit updateInfo("Generating account parameters");
 
-    generator = new ParameterGenerator(this);
     generator->generateParameters(accountName);
-    session->setAccountParameters(*generator);
 
+    emit incrementProgress(20);
     emit updateInfo("Contacting the server");
-    if (!startSession()) {
-        doMessageBox(QMessageBox::Critical, "Session Error", "Session request timed out");
-        emit updateInfo("Unable to establish a session with the server");
-    }
+    startSession();
 
 }
 
-void NewAccountCreator::doAccountRequest() {
+void NewAccountCreator::doRequest() {
 
-    QJsonObject json;
-
-    json["sessionId"] = session->getSessionId();
-    QString publicId = StringCodec(generator->getPublicId().toHexString());
-    json["publicId"] = publicId;
-    CK::PEMCodec codec(true);   // X509 key
-    std::ostringstream pemstr;
-    codec.encode(pemstr, *generator->getUserPublicKey());
-    QString pem = StringCodec(pemstr.str());
-    json["userPublicKey"] = pem;
-
-    RESTHandler *handler = new RESTHandler;
-    RESTTimer *timer = new RESTTimer(this);
-    timer->addSource(handler, SIGNAL(requestComplete(RESTHandler*)));
-    timer->addSource(handler, SIGNAL(requestFailed(RESTHandler*)));
+    emit incrementProgress(20);
+    emit updateInfo("Starting the request");
+    NewAccountRequest req(state);
+    RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestFailed(RESTHandler*)));
-
-    handler->doPost(REQUEST_URL, json);
-    if (!timer->wait(30000)) {
-        doMessageBox(QMessageBox::Critical, "Request Error", "New account request timed out");
-        emit updateInfo("Unable to complete the request");
-        qApp->processEvents();
-    }
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    QTimer::singleShot(20000, this, SLOT(requestTimedOut()));
+    handler->doPost(req);
 
 }
+
 
 void NewAccountCreator::doFinish() {
 
-    QJsonObject json;
-
-    json["sessionId"] = session->getSessionId();
-    CK::RSACodec codec;
-    codec << generator->getGenpass() << generator->getEnclaveKey();
-    codec.encrypt(*generator->getServerPublicKey());
-    QString encrypted = StringCodec(codec.toArray().toHexString());
-    json["encrypted"] = encrypted;
-
-    RESTHandler *handler = new RESTHandler;
-    RESTTimer *timer = new RESTTimer(this);
-    timer->addSource(handler, SIGNAL(requestComplete(RESTHandler*)));
-    timer->addSource(handler, SIGNAL(requestFailed(RESTHandler*)));
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(finalComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestFailed(RESTHandler*)));
-
-    handler->doPost(FINISH_URL, json);
-    if (!timer->wait(30000)) {
-        doMessageBox(QMessageBox::Critical, "Request Error", "Finalize new account timed out");
-        emit updateInfo("Unable to complete the request");
-        qApp->processEvents();
-    }
+    emit incrementProgress(20);
+    emit updateInfo("Finalizing the account");
+    NewAccountFinish finish(state);
+    RESTHandler *handler = new RESTHandler(this);
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(finishComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(finishComplete(RESTHandler*)));
+    QTimer::singleShot(90000, this, SLOT(finishTimedOut()));
+    handler->doPost(finish);
 
 }
 
-void NewAccountCreator::doMessageBox(QMessageBox::Icon icon, const QString& title, const QString& message,
-                                                                        const QString& informative) {
+void NewAccountCreator::finishComplete(RESTHandler *handler) {
 
-    QMessageBox *messageBox = new QMessageBox;
-    messageBox->addButton(QMessageBox::Ok);
-    messageBox->setWindowTitle(title);
-    messageBox->setText(message);
-    if (informative.length() > 0) {
-        messageBox->setInformativeText(informative);
-    }
-    messageBox->setIcon(icon);
-    messageBox->exec();
-    messageBox->deleteLater();
+    if (!timedOut) {
+        finalComplete = true;
+        emit incrementProgress(10);
 
-}
-
-void NewAccountCreator::progress() {
-
-    emit incrementProgress(10);
-    qApp->processEvents();
-
-}
-
-void NewAccountCreator::finalComplete(RESTHandler *handler) {
-
-    progress();
-    QJsonObject json = handler->getResponse();
-
-    QJsonValue value = json["error"];
-    if (value != QJsonValue::Null) {
-        doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                    value.toString());
-        emit updateInfo("Unable to complete the request");
-        qApp->processEvents();
-    }
-    else {
-        QJsonValue tokenValue = json["authToken"];
-        QJsonValue keyValue = json["handlerKey"];
-        if (tokenValue == QJsonValue::Null || keyValue == QJsonValue::Null) {
-            doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                    "Invalid server response");
-            emit updateInfo("Unable to complete the request");
-            qApp->processEvents();
+        NewAccountFinal final(handler->getResponse(), state);
+        if (!handler->successful()) {
+            requestFailed(handler->getError());
+        }
+        else if (final) {
+            try {
+                std::unique_ptr<Vault> vault(new Vault(*state));
+                vault->storeVault(accountName, passphrase);
+                QMessageBox *message = new QMessageBox;
+                message->addButton(QMessageBox::Ok);
+                message->setWindowTitle("Account Complete");
+                message->setText("New account created");
+                message->setIcon(QMessageBox::Information);
+                message->exec();
+                emit accountComplete(1);
+            }
+            catch (VaultException& e) {
+                requestFailed(QString(e.what()));
+            }
         }
         else {
-            session->setAuthToken(tokenValue.toString());
-            session->setHandlerKey(keyValue.toString());
-            progress();
-            emit updateInfo("New account complete");
-            qApp->processEvents();
+            requestFailed(final.getError());
         }
     }
-    handler->deleteLater();
+
+}
+
+void NewAccountCreator::finishTimedOut() {
+
+    if (!finalComplete) {
+        timedOut = true;
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Account Request Error");
+        message->setText("Account request timed out");
+        message->setIcon(QMessageBox::Critical);
+        message->exec();
+        emit updateInfo("Request timed out");
+        emit resetProgress();
+    }
 
 }
 
 void NewAccountCreator::requestComplete(RESTHandler *handler) {
 
-    progress();
-    QJsonObject json = handler->getResponse();
+    if (!timedOut) {
+        responseComplete = true;
+        emit incrementProgress(10);
 
-    QJsonValue value = json["error"];
-    if (value != QJsonValue::Null) {
-        doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                    value.toString());
-        emit updateInfo("Unable to complete the request");
-        qApp->processEvents();
-    }
-    else {
-        QJsonValue keyValue = json["serverPublicKey"];
-        QJsonValue encValue = json["encrypted"];
-        if (keyValue == QJsonValue::Null || encValue == QJsonValue::Null) {
-            doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                    "Invalid server response");
-            emit updateInfo("Unable to complete the request");
-            qApp->processEvents();
+        NewAccountResponse response(handler->getResponse(), state);
+        if (!handler->successful()) {
+            requestFailed(handler->getError());
         }
-        else {
-            generator->setServerPublicKey(StringCodec(keyValue.toString()));
-            CK::RSACodec codec(coder::ByteArray(StringCodec(encValue.toString()), true));
-            codec.decrypt(*generator->getUserPrivateKey());
-            coder::ByteArray accountRandom;
-            codec >> accountRandom;
-            generator->setAccountRandom(accountRandom);
-            progress();
-            emit updateInfo("Finalizing the account");
-            qApp->processEvents();
+        else if (response) {
             doFinish();
         }
+        else {
+            requestFailed(response.getError());
+        }
     }
-    handler->deleteLater();
 
 }
 
-void NewAccountCreator::requestFailed(RESTHandler *handler) {
+void NewAccountCreator::requestFailed(const QString& error) {
 
-    doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                    handler->getError());
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("Request Error");
+    message->setText("An error occurred while processing the request");
+    message->setInformativeText(error);
+    message->setIcon(QMessageBox::Critical);
+    message->exec();
     emit updateInfo("Unable to complete the Request");
-    qApp->processEvents();
-    handler->deleteLater();
+    emit resetProgress();
 
 }
 
-void NewAccountCreator::sessionFailed(QString error) {
+void NewAccountCreator::requestTimedOut() {
 
-    doMessageBox(QMessageBox::Critical, "Request Error", "An error occurred while processing the request",
-                                                                                                error);
-    emit updateInfo("Unable to establish a session with the server");
-    qApp->processEvents();
-
-}
-
-void NewAccountCreator::sessionStarted() {
-
-    emit updateInfo("Session started");
-    emit incrementProgress(5);
-    qApp->processEvents();
-
-    doAccountRequest();
+    if (!responseComplete) {
+        timedOut = true;
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Account Request Error");
+        message->setText("Account request timed out");
+        message->setIcon(QMessageBox::Critical);
+        message->exec();
+        emit updateInfo("Request timed out");
+        emit resetProgress();
+    }
 
 }
 
-bool NewAccountCreator::startSession() {
+void NewAccountCreator::sessionComplete(const QString& result) {
 
-    RESTTimer *sessionTimer = new RESTTimer(this);
-    sessionTimer->addSource(session, SIGNAL(sessionStarted()));
-    sessionTimer->addSource(session, SIGNAL(sessionFailed(QString)));
-    session->startSession();
-    return sessionTimer->wait(30000);
+    if (state->sessionState == SessionState::established) {
+        emit updateInfo("Session started");
+        emit incrementProgress(20);
+        doRequest();
+    }
+    else {
+        emit updateInfo(result);
+        emit resetProgress();
+    }
 
 }
 

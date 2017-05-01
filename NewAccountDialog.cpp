@@ -18,36 +18,32 @@
 
 #include "NewAccountDialog.h"
 #include "ui_NewAccountDialog.h"
-#include "SessionState.h"
+#include "ParameterGenerator.h"
 #include "NewAccountCreator.h"
 #include "NewAccountHelpDialog.h"
-#include "mainwindow.h"
+//#include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
-#include <memory>
 
-NewAccountDialog::NewAccountDialog(Pippip::SessionState *sess, QWidget *parent)
+NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *parent)
 : QDialog(parent),
   ui(new Ui::NewAccountDialog),
-  session(sess),
+  generator(gen),
   creator(0) {
 
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
-    const MainWindow *main = qobject_cast<MainWindow*>(parent);
 
 }
 
 NewAccountDialog::~NewAccountDialog() {
 
     delete ui;
-    delete creator;
 
 }
 
 void NewAccountDialog::accept() {
 
-    std::unique_ptr<Pippip::NewAccountCreator> creator(new Pippip::NewAccountCreator(this, session));
     bool proceed = true;
     QString accountName = ui->AccountNameText->text();
     if (accountName.length() == 0) {
@@ -61,6 +57,7 @@ void NewAccountDialog::accept() {
     }
 
     if (proceed) {
+        Pippip::NewAccountCreator *creator = new Pippip::NewAccountCreator(this, generator);
         ui->progressBar->setValue(0);
         creator->createNewAccount(accountName, passphrase);
     }
@@ -118,8 +115,16 @@ bool NewAccountDialog::passphraseAlert() {
 
 }
 
+void NewAccountDialog::resetProgress() {
+
+    ui->progressBar->setValue(0);
+    qApp->processEvents();
+
+}
+
 void NewAccountDialog::showEvent(QShowEvent *event) {
 
+    // Have to do this to give account name the focus.
     QDialog::showEvent(event);
     if (!event->spontaneous()) {
         ui->AccountNameText->setFocus();

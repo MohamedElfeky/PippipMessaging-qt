@@ -16,23 +16,64 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef AUTHENTICATOR_H
-#define AUTHENTICATOR_H
+#ifndef PIPPIP_AUTHENTICATOR_H
+#define PIPPIP_AUTHENTICATOR_H
+
+#include "SessionTask.h"
+
+class LoginDialog;
+class QString;
 
 namespace Pippip {
 
-class Authenticator {
+class Vault;
+class RESTHandler;
+
+class Authenticator : public SessionTask {
+        Q_OBJECT
 
     public:
-        Authenticator();
+        Authenticator(LoginDialog *parent, Vault *vault);
         ~Authenticator();
 
     private:
         Authenticator(const Authenticator& other);
         Authenticator& operator =(const Authenticator& other);
 
+    signals:
+        void authenticationComplete(int);
+        void updateInfo(QString info);
+
+    public slots:
+        void authorizeComplete(RESTHandler*);
+        void authorizeTimedOut();
+        void challengeComplete(RESTHandler*);
+        void challengeTimedOut();
+        void requestComplete(RESTHandler*);
+        void requestTimedOut();
+
+    public:
+        void authenticate(const QString& accountName, const QString& passphrase);
+
+    protected:
+        void sessionComplete(const QString& result);
+
+    private:
+        void authFailed(const QString& error);
+        void doAuthorized();
+        void doChallenge();
+        void doLogin();
+
+    private:
+        bool responseComplete;
+        bool challengeCompleted;
+        bool authComplete;
+        bool timedOut;
+        LoginDialog *dialog;
+        Vault *vault;
+
 };
 
 }
 
-#endif // AUTHENTICATOR_H
+#endif // PIPPIP_AUTHENTICATOR_H

@@ -30,14 +30,14 @@ class NewAccountDialog;
 }
 
 namespace Pippip {
-    class SessionState;
+    class ParameterGenerator;
 }
 
 class NewAccountDialog : public QDialog {
     Q_OBJECT
 
     public:
-        explicit NewAccountDialog(Pippip::SessionState *session, QWidget *parent = 0);
+        explicit NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *parent = 0);
         ~NewAccountDialog();
 
     public:
@@ -47,6 +47,7 @@ class NewAccountDialog : public QDialog {
         void accountComplete();
         void incrementProgress(int incr);
         void doHelp();
+        void resetProgress();
         void updateInfo(QString info);
 
     protected:
@@ -58,7 +59,7 @@ class NewAccountDialog : public QDialog {
 
     private:
         Ui::NewAccountDialog *ui;
-        Pippip::SessionState *session;
+        Pippip::ParameterGenerator *generator;
         Pippip::NewAccountCreator *creator;
 
 };

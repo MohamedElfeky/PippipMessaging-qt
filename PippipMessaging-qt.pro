@@ -23,14 +23,25 @@ SOURCES += main.cpp\
     Authenticator.cpp \
     EnclaveRequester.cpp \
     NewAccountDialog.cpp \
-    SessionState.cpp \
     NewAccountHelpDialog.cpp \
     RESTHandler.cpp \
     RESTTimer.cpp \
     ParameterGenerator.cpp \
     EntropyStream.cpp \
     UDPListener.cpp \
-    StringCodec.cpp
+    SessionTask.cpp \
+    NewAccountRequest.cpp \
+    NewAccountResponse.cpp \
+    NewAccountFinish.cpp \
+    NewAccountFinal.cpp \
+    LoginDialog.cpp \
+    Alert.cpp \
+    CriticalAlert.cpp \
+    AuthRequest.cpp \
+    AuthChallenge.cpp \
+    AuthResponse.cpp \
+    ServerAuthorized.cpp \
+    ClientAuthorized.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -49,11 +60,26 @@ HEADERS  += mainwindow.h \
     ParameterGenerator.h \
     EntropyStream.h \
     UDPListener.h \
-    StringCodec.h
+    SessionTask.h \
+    PostPacket.h \
+    NewAccountRequest.h \
+    NewAccountResponse.h \
+    NewAccountFinish.h \
+    NewAccountFinal.h \
+    VaultException.h \
+    LoginDialog.h \
+    Alert.h \
+    CriticalAlert.h \
+    AuthRequest.h \
+    AuthChallenge.h \
+    AuthResponse.h \
+    ServerAuthorized.h \
+    ClientAuthorized.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
-    NewAccountHelpDialog.ui
+    NewAccountHelpDialog.ui \
+    LoginDialog.ui
 
 QT += network
 

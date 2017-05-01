@@ -23,7 +23,7 @@
 #include <coder/ByteStreamCodec.h>
 #include <deque>
 
-class QMutex;
+class QReadWriteLock;
 
 namespace CK {
     class FortunaGenerator;
@@ -59,7 +59,7 @@ class EntropyStream : public QObject {
         typedef std::deque<coder::ByteStreamCodec> BucketQueue;
         BucketQueue buckets;
         CK::FortunaGenerator *generator;
-        QMutex *mutex;
+        QReadWriteLock *mutex;
 
 };
 

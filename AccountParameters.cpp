@@ -17,7 +17,6 @@
  */
 
 #include "AccountParameters.h"
-#include "StringCodec.h"
 #include <CryptoKitty-C/keys/RSAPrivateCrtKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <CryptoKitty-C/encoding/PEMCodec.h>
