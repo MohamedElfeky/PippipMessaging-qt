@@ -26,6 +26,7 @@ void AuthChallenge::generateClientHmac() const {
     mac.setKey(hmacKey);
     coder::ByteArray message(state->serverAuthRandom);
     message.append("secomm server");
+    mac.setMessage(message);
     hmac = mac.getHMAC();
     CK::PKCS1rsassa rsassa(new CK::SHA256);
     signature = rsassa.sign(*state->userPrivateKey, hmac);

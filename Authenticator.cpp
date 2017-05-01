@@ -80,7 +80,7 @@ void Authenticator::authFailed(const QString& error) {
 void Authenticator::authorizeComplete(RESTHandler *handler) {
 
     if (!timedOut) {
-        responseComplete = true;
+        authComplete = true;
 
         ClientAuthorized auth(handler->getResponse(), state);
         if (!handler->successful()) {
@@ -146,7 +146,7 @@ void Authenticator::doAuthorized() {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(authorizeComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(authorizeComplete(RESTHandler*)));
-    QTimer::singleShot(10000, this, SLOT(authorizeTimedOut()));
+    QTimer::singleShot(20000, this, SLOT(authorizeTimedOut()));
     handler->doPost(auth);
 
 }
