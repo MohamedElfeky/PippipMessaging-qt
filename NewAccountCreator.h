@@ -67,8 +67,6 @@ class NewAccountCreator : public SessionTask {
         void requestFailed(const QString& error);
 
     private:
-        //enum RequestState { initial, get_session, request, finish, complete, failed, timed_out };
-        //RequestState requestState;
         bool timedOut;
         bool responseComplete;
         bool finalComplete;

@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>814</width>
-    <height>421</height>
+    <height>517</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>1</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Pippip Messaging</string>
@@ -17,7 +23,52 @@
    <iconset resource="pippip.qrc">
     <normaloff>:/mainwindow/images/PippipTopHatSmall.png</normaloff>:/mainwindow/images/PippipTopHatSmall.png</iconset>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="hsplitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QListView" name="contactList">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+      <widget class="QSplitter" name="vsplitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>4</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QListView" name="messagesView">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>5</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="messageEdit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -42,7 +93,18 @@
     <addaction name="separator"/>
     <addaction name="PippipQuitAction"/>
    </widget>
+   <widget class="QMenu" name="menuContacts">
+    <property name="title">
+     <string>Contacts</string>
+    </property>
+    <addaction name="NicknamesAction"/>
+    <addaction name="separator"/>
+    <addaction name="RequestAction"/>
+    <addaction name="CancelAction"/>
+    <addaction name="DeleteAction"/>
+   </widget>
    <addaction name="menuPippip"/>
+   <addaction name="menuContacts"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -75,6 +137,32 @@
   <action name="LoginAction">
    <property name="text">
     <string>Log in...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="NicknamesAction">
+   <property name="text">
+    <string>Nicknames...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="RequestAction">
+   <property name="text">
+    <string>Request contact</string>
+   </property>
+  </action>
+  <action name="CancelAction">
+   <property name="text">
+    <string>Cancel request</string>
+   </property>
+  </action>
+  <action name="DeleteAction">
+   <property name="text">
+    <string>Delete contact</string>
    </property>
   </action>
  </widget>

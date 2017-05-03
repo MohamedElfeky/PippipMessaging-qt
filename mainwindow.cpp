@@ -4,6 +4,7 @@
 #include "Vault.h"
 #include "NewAccountDialog.h"
 #include "LoginDialog.h"
+#include "NicknamesDialog.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
 #include <QThread>
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
+    connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
 
 }
 
@@ -41,6 +43,13 @@ void MainWindow::logIn() {
     Pippip::Vault *gen = new Pippip::Vault;
     session = gen;
     LoginDialog dialog(gen);
+    dialog.exec();
+
+}
+
+void MainWindow::manageNicknames() {
+
+    NicknamesDialog dialog(session);
     dialog.exec();
 
 }

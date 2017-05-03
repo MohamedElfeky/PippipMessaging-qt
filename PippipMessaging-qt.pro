@@ -41,7 +41,11 @@ SOURCES += main.cpp\
     AuthChallenge.cpp \
     AuthResponse.cpp \
     ServerAuthorized.cpp \
-    ClientAuthorized.cpp
+    ClientAuthorized.cpp \
+    EnclaveRequest.cpp \
+    NicknamesDialog.cpp \
+    EditNicknameDialog.cpp \
+    NicknameModel.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -74,12 +78,18 @@ HEADERS  += mainwindow.h \
     AuthChallenge.h \
     AuthResponse.h \
     ServerAuthorized.h \
-    ClientAuthorized.h
+    ClientAuthorized.h \
+    EnclaveRequest.h \
+    NicknamesDialog.h \
+    EditNicknameDialog.h \
+    NicknameModel.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
     NewAccountHelpDialog.ui \
-    LoginDialog.ui
+    LoginDialog.ui \
+    NicknamesDialog.ui \
+    EditNicknameDialog.ui
 
 QT += network
 

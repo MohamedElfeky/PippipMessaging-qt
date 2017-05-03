@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow {
         //void fortunaStreamError(QString error);
         //void fortunaUDPError(QString error, bool fatal);
         void logIn();
+        void manageNicknames();
         void newAccount();
 
     private:
