@@ -58,15 +58,21 @@
     <string>-</string>
    </property>
   </widget>
-  <widget class="QListView" name="nicknameListView">
+  <widget class="QTableView" name="nicknameTableView">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>311</width>
+     <width>321</width>
      <height>192</height>
     </rect>
    </property>
+   <attribute name="horizontalHeaderVisible">
+    <bool>true</bool>
+   </attribute>
+   <attribute name="verticalHeaderVisible">
+    <bool>false</bool>
+   </attribute>
   </widget>
  </widget>
  <resources/>

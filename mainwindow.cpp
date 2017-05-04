@@ -5,6 +5,7 @@
 #include "NewAccountDialog.h"
 #include "LoginDialog.h"
 #include "NicknamesDialog.h"
+#include "NicknameModel.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
 #include <QThread>
@@ -50,6 +51,10 @@ void MainWindow::logIn() {
 void MainWindow::manageNicknames() {
 
     NicknamesDialog dialog(session);
+    NicknameModel *model = new NicknameModel(&dialog);
+    //NicknameModel::Nickname nickname = { "FredBob", 2 };
+    //model->addNickname(nickname);
+    dialog.setNicknames(model);
     dialog.exec();
 
 }

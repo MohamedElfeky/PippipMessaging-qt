@@ -12,8 +12,6 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
 
     ui->setupUi(this);
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addNickname()));
-    nicknames = new NicknameModel(this);
-    ui->nicknameListView->setModel(nicknames);
 
 }
 
@@ -22,20 +20,15 @@ NicknamesDialog::~NicknamesDialog() {
 }
 
 void NicknamesDialog::addNickname() {
-/*
+
     EditNicknameDialog editDialog;
     if (editDialog.exec() == QDialog::Accepted) {
-        Nickname nickname;
+        NicknameModel::Nickname nickname;
         nickname.nickname = editDialog.getNickname();
         nickname.policy = editDialog.getPolicy();
-        nicknames.push_back(nickname);
-        QListWidgetItem *item = new QListWidgetItem(ui->nicknameListWidget);
-        QString line = nickname.nickname;
-        line.append(" - ").append(policyNames[nickname.policy]);
-        item->setText(line);
-        ui->nicknameListWidget->addItem(item);
+        nicknames->addNickname(nickname);
     }
-*/
+
 }
 
 void NicknamesDialog::deleteNickname() {
@@ -55,4 +48,12 @@ void NicknamesDialog::editNickname(QModelIndex index) {
         ui->nicknameListWidget->currentItem()->setText(line);
     }
 */
+}
+
+void NicknamesDialog::setNicknames(NicknameModel *model) {
+
+    nicknames = model;
+    ui->nicknameTableView->setModel(model);
+    //connect(nicknames, SIGNAL(dataChanged(QModelIndex,QModelIndex)), ui->nicknameTableView, SLOT(dataChanged(QModelIndex,QModelIndex)));
+
 }

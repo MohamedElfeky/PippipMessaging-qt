@@ -1,10 +1,11 @@
 #ifndef NICKNAMEMODEL_H
 #define NICKNAMEMODEL_H
 
-#include <QAbstractListModel>
-#include <QList>
+#include <QAbstractTableModel>
+#include <vector>
+#include <map>
 
-class NicknameModel : public QAbstractListModel {
+class NicknameModel : public QAbstractTableModel {
     Q_OBJECT
 
     public:
@@ -21,20 +22,29 @@ class NicknameModel : public QAbstractListModel {
         static const int FRIENDSONLY;
         static const int FRIEDSOFFRIENDS;
 
-        typedef QList<Nickname> NicknameList;
+        typedef std::vector<Nickname> NicknameList;
 
     public:
+        void addNickname(const Nickname& nickname);
+        int columnCount(const QModelIndex&) const { return 2; }
         QVariant data(const QModelIndex& index, int role) const;
         Qt::ItemFlags flags(const QModelIndex &index) const;
-        int rowCount(const QModelIndex&) const { return nicknames.count(); }
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+        bool insertRows(int row, int count, const QModelIndex &parent);
+        int rowCount(const QModelIndex&) const { return nicknames.size(); }
         bool setData(const QModelIndex &index, const QVariant &value, int role);
-        void setNicknames(const NicknameList& list) { nicknames = list; }
+        void setNicknames(const NicknameList& list);
 
     private:
-        QString stringifyRow(int row) const;
+        QString nicknameValue(int row, int column)const;
 
     private:
-        NicknameList nicknames;
+        typedef std::map<QString, int> NicknameMap;
+        typedef NicknameMap::iterator NickIter;
+        typedef NicknameMap::const_iterator NickConstIter;
+
+        NicknameList nicknameList;
+        NicknameMap nicknames;
 
 };
 
