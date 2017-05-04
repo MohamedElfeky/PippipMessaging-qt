@@ -1,8 +1,8 @@
 #include "EditNicknameDialog.h"
 #include "ui_EditNicknameDialog.h"
 
-const int EditNicknameDialog::PUBLIC = 0;
-const int EditNicknameDialog::PRIVATE = 1;
+const int EditNicknameDialog::PRIVATE = 0;
+const int EditNicknameDialog::PUBLIC = 1;
 const int EditNicknameDialog::FRIENDSONLY = 2;
 const int EditNicknameDialog::FRIEDSOFFRIENDS = 3;
 

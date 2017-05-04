@@ -2,7 +2,6 @@
 #define NICKNAMESDIALOG_H
 
 #include <QDialog>
-#include <QModelIndex>
 #include <vector>
 
 namespace Ui {
@@ -25,16 +24,31 @@ class NicknamesDialog : public QDialog
 
     private slots:
         void addNickname();
-        void editNickname(QModelIndex);
+        void editNickname();
         void deleteNickname();
 
     public:
-        void setNicknames(NicknameModel *model);
+        struct Nickname {
+            QString nickname;
+            int policy;
+        };
+
+        typedef std::vector<Nickname> NicknameList;
+        typedef NicknameList::iterator NickIter;
+        typedef NicknameList::const_iterator NickConstIter;
+
+        static const int PUBLIC;
+        static const int PRIVATE;
+        static const int FRIENDSONLY;
+        static const int FRIEDSOFFRIENDS;
+
+    public:
+        void setNicknames(const NicknameList& list);
 
     private:
         Ui::NicknamesDialog *ui;
         Pippip::SessionState *state;
-        NicknameModel *nicknames;
+        NicknameList nicknames;
 
 };
 

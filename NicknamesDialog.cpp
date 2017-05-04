@@ -1,9 +1,16 @@
 #include "NicknamesDialog.h"
 #include "EditNicknameDialog.h"
 #include "ui_NicknamesDialog.h"
-#include "NicknameModel.h"
 #include "SessionState.h"
-#include <QStringListModel>
+#include <QTableWidgetItem>
+
+// Keep the policy indexes in sync
+const int NicknamesDialog::PRIVATE = EditNicknameDialog::PRIVATE;
+const int NicknamesDialog::PUBLIC = EditNicknameDialog::PUBLIC;
+const int NicknamesDialog::FRIENDSONLY = EditNicknameDialog::FRIENDSONLY;
+const int NicknamesDialog::FRIEDSOFFRIENDS = EditNicknameDialog::FRIEDSOFFRIENDS;
+
+static QString policyNames[] = { "Private", "Public", "Friends Only", "Friends of Friends" };
 
 NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
 : QDialog(parent),
@@ -11,7 +18,17 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
   state(sess) {
 
     ui->setupUi(this);
+    QStringList headers;
+    headers << "Nickname" << "Policy";
+    ui->nicknameTableWidget->setShowGrid(false);
+    ui->nicknameTableWidget->setColumnCount(2);
+    ui->nicknameTableWidget->setHorizontalHeaderLabels(headers);
+    ui->nicknameTableWidget->verticalHeader()->setVisible(false);
+    ui->nicknameTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->nicknameTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addNickname()));
+    connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteNickname()));
 
 }
 
@@ -23,18 +40,34 @@ void NicknamesDialog::addNickname() {
 
     EditNicknameDialog editDialog;
     if (editDialog.exec() == QDialog::Accepted) {
-        NicknameModel::Nickname nickname;
+        Nickname nickname;
         nickname.nickname = editDialog.getNickname();
         nickname.policy = editDialog.getPolicy();
-        nicknames->addNickname(nickname);
+        nicknames.push_back(nickname);
+        int rows = ui->nicknameTableWidget->rowCount();
+        ui->nicknameTableWidget->setRowCount(rows + 1);
+        ui->nicknameTableWidget->setItem(rows, 0, new QTableWidgetItem(nickname.nickname));
+        ui->nicknameTableWidget->setItem(rows, 1, new QTableWidgetItem(policyNames[nickname.policy]));
     }
 
 }
 
 void NicknamesDialog::deleteNickname() {
+
+    int row = ui->nicknameTableWidget->currentRow();
+    QString nickname = nicknames[row].nickname;
+    NicknameList tmp;
+    for (Nickname nick : nicknames) {
+        if (nick.nickname != nickname) {
+            tmp.push_back(nick);
+        }
+    }
+    nicknames.swap(tmp);
+    ui->nicknameTableWidget->removeRow(row);
+
 }
 
-void NicknamesDialog::editNickname(QModelIndex index) {
+void NicknamesDialog::editNickname() {
 /*
     int row = index.row();
     Nickname& nickname = nicknames[row];
@@ -50,10 +83,6 @@ void NicknamesDialog::editNickname(QModelIndex index) {
 */
 }
 
-void NicknamesDialog::setNicknames(NicknameModel *model) {
-
-    nicknames = model;
-    ui->nicknameTableView->setModel(model);
-    //connect(nicknames, SIGNAL(dataChanged(QModelIndex,QModelIndex)), ui->nicknameTableView, SLOT(dataChanged(QModelIndex,QModelIndex)));
-
+void NicknamesDialog::setNicknames(const NicknameList& list) {
+    nicknames = list;
 }

@@ -58,7 +58,7 @@
     <string>-</string>
    </property>
   </widget>
-  <widget class="QTableView" name="nicknameTableView">
+  <widget class="QTableWidget" name="nicknameTableWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -67,12 +67,6 @@
      <height>192</height>
     </rect>
    </property>
-   <attribute name="horizontalHeaderVisible">
-    <bool>true</bool>
-   </attribute>
-   <attribute name="verticalHeaderVisible">
-    <bool>false</bool>
-   </attribute>
   </widget>
  </widget>
  <resources/>

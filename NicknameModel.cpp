@@ -19,12 +19,9 @@ void NicknameModel::addNickname(const Nickname &nickname) {
 
     NickIter it = nicknames.find(nickname.nickname);
     if (it == nicknames.end()) {
-        QModelIndex after = createIndex(nicknames.size() - 1, 0);
         nicknameList.push_back(nickname);
         nicknames[nickname.nickname] = nickname.policy;
-        QModelIndex topLeft = createIndex(nicknames.size() - 1, 0);
-        QModelIndex bottomRight = createIndex(nicknames.size() - 1, 1);
-        emit dataChanged(topLeft, bottomRight);
+        resetInternalData();
     }
     // TODO Throw an exception?
 
@@ -69,9 +66,14 @@ QVariant NicknameModel::headerData(int section, Qt::Orientation, int role) const
 
 }
 
-bool NicknameModel::insertRows(int row, int count, const QModelIndex &parent) {
-    std::cout << "Insert rows called";
-}
+/*bool NicknameModel::insertRows(int row, int count, const QModelIndex &parent) {
+
+    beginInsertRows(parent, row, row);
+    // Nothing to do here. The model has already been updated.
+    endInsertRows();
+    return true;
+
+}*/
 
 QString NicknameModel::nicknameValue(int row, int column) const {
 
