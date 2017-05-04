@@ -20,12 +20,22 @@
 #define SESSIONSTATE_H
 
 #include <coder/ByteArray.h>
+#include <QString>
 
 namespace CK {
     class RSAPublicKey;
     class RSAPrivateKey;
 }
 namespace Pippip {
+
+struct Nickname {
+    QString nickname;
+    int policy;
+};
+
+typedef std::vector<Nickname> NicknameList;
+typedef NicknameList::iterator NickIter;
+typedef NicknameList::const_iterator NickConstIter;
 
 struct SessionState {
     enum StateValue { authenticated, established, failed, not_started, started };
@@ -42,6 +52,7 @@ struct SessionState {
     CK::RSAPrivateKey *userPrivateKey;
     CK::RSAPublicKey *userPublicKey;
     CK::RSAPublicKey *serverPublicKey;
+    NicknameList nicknames;
 };
 
 }

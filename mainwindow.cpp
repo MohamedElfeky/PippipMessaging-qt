@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
 
+    session = new Pippip::SessionState; // Debugging only!
 }
 
 MainWindow::~MainWindow() {
