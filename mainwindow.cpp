@@ -4,7 +4,7 @@
 #include "Vault.h"
 #include "NewAccountDialog.h"
 #include "LoginDialog.h"
-#include "NicknamesDialog.h"
+#include "NicknameManager.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
 #include <QThread>
@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
 
-    session = new Pippip::SessionState; // Debugging only!
+    //session = new Pippip::SessionState; // Debugging only!
 }
 
 MainWindow::~MainWindow() {
@@ -50,8 +50,8 @@ void MainWindow::logIn() {
 
 void MainWindow::manageNicknames() {
 
-    NicknamesDialog dialog(session);
-    dialog.exec();
+    Pippip::NicknameManager *manager = new Pippip::NicknameManager(this, session);
+    manager->manageNicknames();
 
 }
 

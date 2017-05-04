@@ -18,8 +18,8 @@
 
 #include "ParameterGenerator.h"
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
-#include <digest/SHA256.h>
-#include <digest/SHA1.h>
+#include <CryptoKitty-C/digest/SHA256.h>
+#include <CryptoKitty-C/digest/SHA1.h>
 #include <coder/ByteStreamCodec.h>
 #include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
 #include <CryptoKitty-C/keys/KeyPair.h>
@@ -41,11 +41,15 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     genpass.setLength(20);
     rnd.nextBytes(genpass);
 
+    // Generate the GCM authentication data.
+    CK::SHA256 digest;
+    authData = digest.digest(genpass);
+
     // Generate the enclave block cipher key
-    CK::SHA256 sha256;
+    digest.reset();
     coder::ByteArray rndbytes(32,0);
     rnd.nextBytes(rndbytes);
-    sha256.update(rndbytes);
+    digest.update(rndbytes);
 
     // Encode time in milliseconds
     timespec ctime;
@@ -55,8 +59,8 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     coder::ByteStreamCodec bytecodec;
     bytecodec << millis;
 
-    sha256.update(bytecodec.toArray());
-    enclaveKey = sha256.digest();
+    digest.update(bytecodec.toArray());
+    enclaveKey = digest.digest();
 
     // Generate the user authentication keys.
     CK::RSAKeyPairGenerator keygen(&rnd, 2048);

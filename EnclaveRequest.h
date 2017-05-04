@@ -1,30 +1,34 @@
 #ifndef PIPPIP_ENCLAVEREQUEST_H
 #define PIPPIP_ENCLAVEREQUEST_H
 
-#include "SessionTask.h"
-#include <QJsonObject>
+#include "PostPacket.h"
 #include <QString>
+#include <map>
+
+class QJsonObject;
 
 namespace Pippip {
 
-class EnclaveRequest : public SessionTask {
-    Q_OBJECT
+class SessionState;
+
+class EnclaveRequest : public PostPacket {
 
     public:
-        EnclaveRequest(QObject *parent, SessionState *state);
-        ~EnclaveRequest() {}
+        EnclaveRequest(SessionState *state);
+        ~EnclaveRequest();
 
     public:
-        QString getValue(const QString& name);
-        void setRequestType(const QString& requestType);
+        QString getValue(const QString& name) const;
+        void setRequestType(const QString& type);
         void setValue(const QString& name, const QString& value);
 
-    protected:
-        void sessionComplete();
+    public:
+        QJsonObject *getJson() const;
+        const QString& getUrl() const;
 
     protected:
-        QJsonObject request;
-        QJsonObject response;
+        SessionState *state;
+        QJsonObject *request;
 
 };
 

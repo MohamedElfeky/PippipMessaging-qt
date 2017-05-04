@@ -25,7 +25,6 @@ SOURCES += main.cpp\
     NewAccountDialog.cpp \
     NewAccountHelpDialog.cpp \
     RESTHandler.cpp \
-    RESTTimer.cpp \
     ParameterGenerator.cpp \
     EntropyStream.cpp \
     UDPListener.cpp \
@@ -45,7 +44,8 @@ SOURCES += main.cpp\
     EnclaveRequest.cpp \
     NicknamesDialog.cpp \
     EditNicknameDialog.cpp \
-    NicknameModel.cpp
+    NicknameManager.cpp \
+    EnclaveResponse.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -60,7 +60,6 @@ HEADERS  += mainwindow.h \
     SessionState.h \
     NewAccountHelpDialog.h \
     RESTHandler.h \
-    RESTTimer.h \
     ParameterGenerator.h \
     EntropyStream.h \
     UDPListener.h \
@@ -82,7 +81,9 @@ HEADERS  += mainwindow.h \
     EnclaveRequest.h \
     NicknamesDialog.h \
     EditNicknameDialog.h \
-    NicknameModel.h
+    NicknameManager.h \
+    SessionException.h \
+    EnclaveResponse.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

@@ -46,6 +46,7 @@ struct SessionState {
     coder::ByteArray publicId;
     coder::ByteArray genpass;
     coder::ByteArray enclaveKey;
+    coder::ByteArray authData;
     coder::ByteArray accountRandom;
     coder::ByteArray serverAuthRandom;
     coder::ByteArray clientAuthRandom;

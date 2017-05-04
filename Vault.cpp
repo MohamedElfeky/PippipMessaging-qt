@@ -64,6 +64,9 @@ void Vault::decodeVault(const coder::ByteArray &ciphertext, const std::string &p
         serverPublicKey = pem.decodePublicKey(serverkey);
         userPrivateKey = pem.decodePrivateKey(userkey);
         userPublicKey = pem.decodePublicFromPrivate(userkey);
+
+        CK::SHA256 digest;
+        authData = digest.digest(genpass);
     }
     catch (CK::EncodingException& e) {
         throw VaultException(e.what());

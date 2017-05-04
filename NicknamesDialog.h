@@ -12,12 +12,10 @@ class NicknamesDialog;
 namespace Pippip {
     struct SessionState;
     struct Nickname;
+    class NicknameManager;
 }
 
-class NicknameModel;
-
-class NicknamesDialog : public QDialog
-{
+class NicknamesDialog : public QDialog {
         Q_OBJECT
 
     public:
@@ -33,7 +31,10 @@ class NicknamesDialog : public QDialog
         static const int PUBLIC;
         static const int PRIVATE;
         static const int FRIENDSONLY;
-        static const int FRIEDSOFFRIENDS;
+        static const int FRIENDSOFFRIENDS;
+
+    public:
+        void setManager(Pippip::NicknameManager *man) { manager = man; }
 
     private:
         void addNickname(const Pippip::Nickname& nickname, int row);
@@ -42,6 +43,7 @@ class NicknamesDialog : public QDialog
     private:
         Ui::NicknamesDialog *ui;
         Pippip::SessionState *state;
+        Pippip::NicknameManager *manager;
 
 };
 

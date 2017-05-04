@@ -80,7 +80,6 @@ void NewAccountCreator::doRequest() {
 
 }
 
-
 void NewAccountCreator::doFinish() {
 
     emit incrementProgress(20);

@@ -4,7 +4,7 @@
 const int EditNicknameDialog::PRIVATE = 0;
 const int EditNicknameDialog::PUBLIC = 1;
 const int EditNicknameDialog::FRIENDSONLY = 2;
-const int EditNicknameDialog::FRIEDSOFFRIENDS = 3;
+const int EditNicknameDialog::FRIENDSOFFRIENDS = 3;
 
 EditNicknameDialog::EditNicknameDialog(QWidget *parent) :
     QDialog(parent),

@@ -18,7 +18,7 @@ class EditNicknameDialog : public QDialog {
         static const int PUBLIC;
         static const int PRIVATE;
         static const int FRIENDSONLY;
-        static const int FRIEDSOFFRIENDS;
+        static const int FRIENDSOFFRIENDS;
 
     public:
         void accept();

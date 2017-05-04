@@ -9,7 +9,7 @@
 const int NicknamesDialog::PRIVATE = EditNicknameDialog::PRIVATE;
 const int NicknamesDialog::PUBLIC = EditNicknameDialog::PUBLIC;
 const int NicknamesDialog::FRIENDSONLY = EditNicknameDialog::FRIENDSONLY;
-const int NicknamesDialog::FRIEDSOFFRIENDS = EditNicknameDialog::FRIEDSOFFRIENDS;
+const int NicknamesDialog::FRIENDSOFFRIENDS = EditNicknameDialog::FRIENDSOFFRIENDS;
 
 static QString policyNames[] = { "Private", "Public", "Friends Only", "Friends of Friends" };
 
