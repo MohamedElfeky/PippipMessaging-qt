@@ -23,6 +23,7 @@
 #include <QThread>
 #include <CryptoKitty-C/random/FortunaGenerator.h>
 #include <coder/ByteArray.h>
+#include <algorithm>
 
 static const int BUCKETSIZE = 16384;
 static const int BUCKETCOUNT = 8;
@@ -59,7 +60,7 @@ void EntropyStream::readStream(coder::ByteArray& bytes, unsigned count) {
     unsigned bytesOut = 0;
     QReadLocker locker(mutex);
     while (bytesOut < count) {
-        unsigned toRead = count - bytesOut;
+        size_t toRead = count - bytesOut;
         data.setLength(std::min(toRead, buckets.front().available()));
         buckets.front().getBytes(data);
         bytesOut += toRead;

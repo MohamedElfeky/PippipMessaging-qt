@@ -7,7 +7,7 @@
 
 namespace Pippip {
 
-class SessionState;
+struct SessionState;
 
 class AuthChallenge : public PostPacket {
 

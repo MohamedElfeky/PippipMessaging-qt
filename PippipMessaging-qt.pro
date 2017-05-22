@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = PippipMessaging-qt
 TEMPLATE = app
-
+CONFIG += debug declarative_debug
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -94,10 +94,13 @@ FORMS    += mainwindow.ui \
 
 QT += network
 
-QMAKE_CXXFLAGS += -std=c++11 -I/usr/local/include/CryptoKitty-C
+QMAKE_CXXFLAGS += -std=c++14
 
-unix:!macx: LIBS += -L/usr/local/lib64/ -lcoder -lcthread -lcryptokitty
 
 RESOURCES += \
     pippip.qrc
+
+LIBPATH += /Users/stevebrenneis/Development/git/pippip/lib
+INCLUDEPATH += /Users/stevebrenneis/Development/git/pippip/include
+LIBS += -lcoder -lcryptokitty
 
