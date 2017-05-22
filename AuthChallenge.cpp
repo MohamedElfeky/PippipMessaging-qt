@@ -3,11 +3,10 @@
 #include <CryptoKitty-C/digest/SHA256.h>
 #include <CryptoKitty-C/mac/HMAC.h>
 #include <CryptoKitty-C/cipher/PKCS1rsassa.h>
-#include <sstream>
 
 namespace Pippip {
 
-static const QString CHALLENGE_URL = "https://pippip.io:2880/authchallenge/";
+static const QString CHALLENGE_URL = "https://pippip.io:2880/io.pippip.rest/AuthChallenge";
 
 AuthChallenge::AuthChallenge(SessionState *sess)
 : state(sess){
@@ -36,9 +35,7 @@ void AuthChallenge::generateClientHmac() const {
 QJsonObject *AuthChallenge::getJson() const {
 
     QJsonObject *json  = new QJsonObject;
-    std::ostringstream sstr;
-    sstr << std::hex << state->sessionId;
-    (*json)["sessionId"] = QString(sstr.str().c_str());
+    (*json)["sessionId"] = static_cast<int>(state->sessionId);
 
     generateClientHmac();
     (*json)["hmac"] = QString(hmac.toHexString().c_str());

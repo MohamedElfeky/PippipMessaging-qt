@@ -21,6 +21,7 @@
 
 #include <coder/ByteArray.h>
 #include <QString>
+#include <vector>
 
 namespace CK {
     class RSAPublicKey;

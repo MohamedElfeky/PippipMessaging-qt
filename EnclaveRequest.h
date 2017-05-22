@@ -9,7 +9,7 @@ class QJsonObject;
 
 namespace Pippip {
 
-class SessionState;
+struct SessionState;
 
 class EnclaveRequest : public PostPacket {
 

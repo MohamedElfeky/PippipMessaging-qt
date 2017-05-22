@@ -22,6 +22,8 @@
 #include <CryptoKitty-C/digest/SHA1.h>
 #include <coder/ByteStreamCodec.h>
 #include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
+#include <CryptoKitty-C/keys/RSAPrivateKey.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <CryptoKitty-C/keys/KeyPair.h>
 #include <ctime>
 

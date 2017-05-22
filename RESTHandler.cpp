@@ -28,6 +28,7 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <memory>
+#include <iostream>
 
 namespace Pippip {
 

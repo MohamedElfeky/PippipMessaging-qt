@@ -8,7 +8,7 @@ class MainWindow;
 }
 
 namespace Pippip {
-    class SessionState;
+    struct SessionState;
 }
 
 class MainWindow : public QMainWindow {

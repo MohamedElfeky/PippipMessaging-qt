@@ -5,7 +5,7 @@
 
 namespace Pippip {
 
-class SessionState;
+struct SessionState;
 
 class NewAccountFinish : public PostPacket {
 

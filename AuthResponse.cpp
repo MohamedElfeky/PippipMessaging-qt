@@ -1,6 +1,7 @@
 #include "AuthResponse.h"
 #include "SessionState.h"
 #include <coder/ByteArray.h>
+#include <CryptoKitty-C/encoding/RSACodec.h>
 
 namespace Pippip {
 
@@ -20,14 +21,15 @@ AuthResponse::operator bool() {
         return false;
     }
 
-    QJsonValue rndValue = json["authRandom"];
+    QJsonValue rndValue = json["encrypted"];
     if (rndValue == QJsonValue::Null) {
         error = "Invalid server response";
         return false;
     }
     else {
-        state->serverAuthRandom =
-                coder::ByteArray(rndValue.toString().toStdString(), true);
+        CK::RSACodec codec(coder::ByteArray(rndValue.toString().toStdString(), true));
+        codec.decrypt(*state->userPrivateKey);
+        codec >> state->serverAuthRandom;
         return true;
     }
 

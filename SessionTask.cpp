@@ -9,7 +9,7 @@
 
 namespace Pippip {
 
-static const QString SESSION_URL = "https://pippip.io:2880/session/";
+static const QString SESSION_URL = "https://pippip.io:2880/io.pippip.rest/SessionRequest";
 
 SessionTask::SessionTask(QObject *parent, SessionState *sess)
 : QObject(parent),
@@ -43,14 +43,13 @@ void SessionTask::sessionResponse(RESTHandler *handler) {
         QJsonValue value = json["error"];
         if (value != QJsonValue::Null) {
             errorResponse(value.toString());
+            state->sessionState = SessionState::failed;
             sessionComplete("Unable to complete the request");
         }
         else {
             QJsonValue sessionId = json["sessionId"];
-            bool format;
-            uint32_t id = sessionId.toString().toUInt(&format, 16);
-            if (format) {
-                state->sessionId = id;
+            if (sessionId.isDouble()) {
+                state->sessionId = sessionId.toInt();
                 state->sessionState = SessionState::established;
                 sessionComplete("Success");
             }
@@ -82,7 +81,8 @@ void SessionTask::sessionFailed(RESTHandler *handler) {
 
 void SessionTask::sessionTimedOut() {
 
-    if (state->sessionState != SessionState::established) {
+    if (state->sessionState != SessionState::established
+                            && state->sessionState != SessionState::failed) {
         QMessageBox *message = new QMessageBox;
         message->addButton(QMessageBox::Ok);
         message->setWindowTitle("Session Error");

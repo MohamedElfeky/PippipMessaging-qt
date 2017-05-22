@@ -5,7 +5,7 @@
 
 namespace Pippip {
 
-static const QString REQUEST_URL = "https://pippip.io:2880/newaccount/";
+static const QString REQUEST_URL = "https://pippip.io:2880/io.pippip.rest/NewAccountRequest";
 
 NewAccountRequest::NewAccountRequest(SessionState *sess)
 : state(sess) {
@@ -17,9 +17,7 @@ NewAccountRequest::~NewAccountRequest() {
 QJsonObject *NewAccountRequest::getJson() const {
 
     QJsonObject *json  = new QJsonObject;
-    std::ostringstream sstr;
-    sstr << std::hex << state->sessionId;
-    (*json)["sessionId"] = QString(sstr.str().c_str());
+    (*json)["sessionId"] = static_cast<int>(state->sessionId);
     (*json)["publicId"] = QString(state->publicId.toHexString().c_str());
     CK::PEMCodec codec(true);   // X.509 keys
     std::ostringstream kstr;

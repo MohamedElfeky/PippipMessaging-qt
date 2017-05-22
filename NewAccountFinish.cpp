@@ -6,7 +6,7 @@
 
 namespace Pippip {
 
-static const QString FINISH_URL = "https://pippip.io:2880/accountfinish/";
+static const QString FINISH_URL = "https://pippip.io:2880/io.pippip.rest/NewAccountFinish";
 
 NewAccountFinish::NewAccountFinish(SessionState *sess)
 : state(sess) {
@@ -15,9 +15,7 @@ NewAccountFinish::NewAccountFinish(SessionState *sess)
 QJsonObject *NewAccountFinish::getJson() const {
 
     QJsonObject *json  = new QJsonObject;
-    std::ostringstream sstr;
-    sstr << std::hex << state->sessionId;
-    (*json)["sessionId"] = QString(sstr.str().c_str());
+    (*json)["sessionId"] = static_cast<int>(state->sessionId);
 
     CK::RSACodec codec;
     codec << state->genpass << state->enclaveKey;
