@@ -19,17 +19,39 @@
 #ifndef ENCLAVEREQUESTER_H
 #define ENCLAVEREQUESTER_H
 
+#include "SessionTask.h"
+
 namespace Pippip {
 
-class EnclaveRequester {
+struct SessionState;
+class EnclaveRequest;
+class EnclaveResponse;
+class RESTHandler;
+
+class EnclaveRequester : public SessionTask {
+    Q_OBJECT
 
     public:
-        EnclaveRequester();
+        EnclaveRequester(SessionState *state, QObject *parent = 0);
         ~EnclaveRequester();
 
     private:
         EnclaveRequester(const EnclaveRequester& other);
         EnclaveRequester& operator=(const EnclaveRequester& other);
+
+    public slots:
+        void requestComplete(RESTHandler*);
+        void requestTimedOut();
+
+    signals:
+        void requestComplete(EnclaveResponse& response);
+        void requestFailed(QString error);
+
+    public:
+        void request(EnclaveRequest& request);
+
+    private:
+        bool requestCompleted;
 
 };
 

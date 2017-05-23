@@ -8,7 +8,7 @@
 
 namespace Pippip {
 
-static const QString ENCLAVE_REQUEST_URL = "https://pippip.io:2880/enclave/request/";
+static const QString ENCLAVE_REQUEST_URL = "https://pippip.io:2880/io.pippip.rest/EnclaveRequest";
 
 EnclaveRequest::EnclaveRequest(SessionState *sess)
 : state(sess),
@@ -52,6 +52,8 @@ QJsonObject *EnclaveRequest::getJson() const {
     codec << enclaveData;
     codec.encrypt(state->enclaveKey, state->authData);
     QJsonObject *json = new QJsonObject;
+    (*json)["sessionId"] = state->sessionId;
+    (*json)["authToken"] = state->authToken;
     (*json)["enclaveData"] = QString(codec.toArray().toHexString().c_str());
     return json;
 

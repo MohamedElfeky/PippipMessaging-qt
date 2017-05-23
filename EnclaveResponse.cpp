@@ -40,7 +40,28 @@ EnclaveResponse::operator bool() {
         QJsonDocument doc = QJsonDocument::fromJson(jbytes);
         // Get json object.
         json = doc.object();
-        return true;
+        // Get the request name
+        QJsonValue name = json["requestName"];
+        if (name.isNull() || !name.isString()) {
+            error = "Invalid response from server";
+            return false;
+        }
+        else {
+            requestName = name.toString();
+            return true;
+        }
+    }
+
+}
+
+QString EnclaveResponse::getValue(const QString &name) const {
+
+    QJsonValue value = json[name];
+    if (value.isNull() || !value.isString()) {
+        return "";
+    }
+    else {
+        return value.toString();
     }
 
 }

@@ -45,6 +45,7 @@ void LoginDialog::login() {
         accountNameAlert();
     }
     else {
+        auth->reset();
         auth->authenticate(accountName, passphrase);
     }
 

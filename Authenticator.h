@@ -56,6 +56,7 @@ class Authenticator : public SessionTask {
 
     public:
         void authenticate(const QString& accountName, const QString& passphrase);
+        void reset();
 
     protected:
         void sessionComplete(const QString& result);

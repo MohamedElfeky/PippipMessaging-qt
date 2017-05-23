@@ -207,6 +207,15 @@ void Authenticator::requestTimedOut() {
 
 }
 
+void Authenticator::reset() {
+
+    responseComplete = false;
+    challengeCompleted = false;
+    timedOut = false;
+    state->sessionState = SessionState::not_started;
+
+}
+
 void Authenticator::sessionComplete(const QString& result) {
 
     if (state->sessionState == SessionState::established) {

@@ -17,10 +17,65 @@
  */
 
 #include "EnclaveRequester.h"
+#include "EnclaveRequest.h"
+#include "EnclaveResponse.h"
+#include "EnclaveException.h"
+#include "SessionState.h"
+#include "RESTHandler.h"
+#include <QTimer>
 
 namespace Pippip {
 
-EnclaveRequester::EnclaveRequester() {
+EnclaveRequester::EnclaveRequester(SessionState *state, QObject *parent)
+: SessionTask(parent, state) {
+}
+
+EnclaveRequester::~EnclaveRequester() {
+}
+
+void EnclaveRequester::request(EnclaveRequest &request) {
+
+    if (state->sessionState != SessionState::authenticated) {
+        throw EnclaveException("Session not authenticated");
+    }
+
+    requestCompleted = false;
+
+    RESTHandler *handler = new RESTHandler;
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
+    handler->doPost(request);
+
+}
+
+void EnclaveRequester::requestComplete(RESTHandler *handler) {
+
+    if (!requestCompleted) {
+        requestCompleted = true;
+
+        EnclaveResponse response(handler->getResponse(), state);
+        if (!handler->successful()) {
+            emit requestFailed(handler->getError());
+        }
+        else if (response) {
+            emit requestComplete(response);
+        }
+        else {
+            emit requestFailed(response.getError());
+        }
+    }
+    handler->deleteLater();
+
+}
+
+void EnclaveRequester::requestTimedOut() {
+
+    if (!requestCompleted) {
+        requestCompleted = true;
+        emit requestFailed("Request timed out");
+    }
+
 }
 
 }

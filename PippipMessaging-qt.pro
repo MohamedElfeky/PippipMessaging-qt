@@ -83,7 +83,8 @@ HEADERS  += mainwindow.h \
     EditNicknameDialog.h \
     NicknameManager.h \
     SessionException.h \
-    EnclaveResponse.h
+    EnclaveResponse.h \
+    EnclaveException.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
@@ -103,4 +104,7 @@ RESOURCES += \
 LIBPATH += /Users/stevebrenneis/Development/git/pippip/lib
 INCLUDEPATH += /Users/stevebrenneis/Development/git/pippip/include
 LIBS += -lcoder -lcryptokitty
+
+DISTFILES += \
+    license-template
 
