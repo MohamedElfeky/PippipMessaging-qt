@@ -43,6 +43,8 @@ class Authenticator : public SessionTask {
     signals:
         void authenticationComplete(int);
         void updateInfo(QString info);
+        void updateStatus(QString);
+
 
     public slots:
         void authorizeComplete(RESTHandler*);

@@ -11,6 +11,8 @@ namespace Pippip {
     struct SessionState;
 }
 
+class QLabel;
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -27,10 +29,12 @@ class MainWindow : public QMainWindow {
         void logIn();
         void manageNicknames();
         void newAccount();
+        void updateStatus(QString);
 
     private:
         Ui::MainWindow *ui;
         Pippip::SessionState *session;
+        QLabel *statusLabel;
 
 };
 

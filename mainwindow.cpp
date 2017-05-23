@@ -8,6 +8,7 @@
 #include "EntropyStream.h"
 #include "UDPListener.h"
 #include <QThread>
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -18,6 +19,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
+
+    statusLabel = new QLabel(this);
+    statusBar()->addWidget(statusLabel);
 
     //session = new Pippip::SessionState; // Debugging only!
 }
@@ -43,8 +47,8 @@ void MainWindow::logIn() {
 
     Pippip::Vault *gen = new Pippip::Vault;
     session = gen;
-    LoginDialog dialog(gen);
-    dialog.exec();
+    LoginDialog *dialog = new LoginDialog(gen, this);
+    dialog->exec();
 
 }
 
@@ -81,5 +85,12 @@ void MainWindow::startFortuna() {
     connect(udpThread, SIGNAL(started()), udp, SLOT(runListener()));
     connect(udp, SIGNAL(finished()), udpThread, SLOT(quit()));
     udpThread->start();
+
+}
+
+void MainWindow::updateStatus(QString status) {
+
+    statusLabel->setText(status);
+    statusBar()->show();
 
 }

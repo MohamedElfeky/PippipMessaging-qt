@@ -6,7 +6,7 @@
 
 namespace Pippip {
 
-static const QString AUTHORIZED_URL = "https://pippip.io:2880/authorized/";
+static const QString AUTHORIZED_URL = "https://pippip.io:2880/io.pippip.rest/Authorized";
 
 ServerAuthorized::ServerAuthorized(SessionState *sess)
 : state(sess) {
@@ -16,8 +16,7 @@ QJsonObject *ServerAuthorized::getJson() const {
 
     QJsonObject *json  = new QJsonObject;
     std::ostringstream sstr;
-    sstr << std::hex << state->sessionId;
-    (*json)["sessionId"] = QString(sstr.str().c_str());
+    (*json)["sessionId"] = static_cast<int>(state->sessionId);
 
     CK::RSACodec codec;
     codec << state->enclaveKey;

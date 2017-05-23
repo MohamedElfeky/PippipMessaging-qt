@@ -1,5 +1,6 @@
 #include "LoginDialog.h"
 #include "Authenticator.h"
+#include "mainwindow.h"
 #include "ui_LoginDialog.h"
 #include <QPushButton>
 #include <QMessageBox>
@@ -13,6 +14,9 @@ LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
 
     ui->setupUi(this);
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(login()));
+    MainWindow *main = dynamic_cast<MainWindow*>(parent);
+    auth = new Pippip::Authenticator(this, vault);
+    connect(auth, SIGNAL(updateStatus(QString)), main, SLOT(updateStatus(QString)));
 
 }
 
@@ -41,7 +45,6 @@ void LoginDialog::login() {
         accountNameAlert();
     }
     else {
-        auth = new Pippip::Authenticator(this, vault);
         auth->authenticate(accountName, passphrase);
     }
 

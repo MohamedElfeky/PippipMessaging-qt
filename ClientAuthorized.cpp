@@ -29,14 +29,8 @@ ClientAuthorized::operator bool() {
     }
     else {
         try {
-            std::cout << "handlerKey = " << keyValue.toString().toStdString() << std::endl;
-            std::cout << "authToken = " << tokenValue.toString().toStdString() << std::endl;
-            coder::ByteArray handlerKey(keyValue.toString().toStdString(), true);
-            coder::Unsigned32 u32(handlerKey, coder::bigendian);
-            state->handlerKey = u32.getValue();
-            coder::ByteArray authToken(tokenValue.toString().toStdString(), true);
-            coder::Unsigned64 u64(authToken, coder::bigendian);
-            state->authToken = u64.getValue();
+            state->handlerKey = keyValue.toDouble();
+            state->authToken = tokenValue.toDouble();
             return true;
         }
         catch (coder::OutOfRangeException& e) {

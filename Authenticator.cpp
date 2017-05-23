@@ -87,6 +87,7 @@ void Authenticator::authorizeComplete(RESTHandler *handler) {
             authFailed(handler->getError());
         }
         else if (auth) {
+            emit updateStatus("Authentication Complete");
             emit authenticationComplete(1);
         }
         else {
