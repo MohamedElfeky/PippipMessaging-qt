@@ -1,5 +1,6 @@
 #include "EditNicknameDialog.h"
 #include "ui_EditNicknameDialog.h"
+#include <assert.h>
 
 const int EditNicknameDialog::PRIVATE = 0;
 const int EditNicknameDialog::PUBLIC = 1;
@@ -23,7 +24,7 @@ EditNicknameDialog::~EditNicknameDialog()
 void EditNicknameDialog::accept() {
 
     nickname = ui->nicknameEdit->text();
-    policy = ui->policyComboBox->currentIndex();
+    policy = ui->policyComboBox->currentText();
 
     QDialog::accept();
 
@@ -37,8 +38,10 @@ void EditNicknameDialog::setNickname(const QString &nick) {
 
 }
 
-void EditNicknameDialog::setPolicy(int policyValue) {
+void EditNicknameDialog::setPolicy(const QString& policy) {
 
-    ui->policyComboBox->setCurrentIndex(policyValue);
+    int index = ui->policyComboBox->findText(policy);
+    assert(index >= 0);
+    ui->policyComboBox->setCurrentIndex(index);
 
 }

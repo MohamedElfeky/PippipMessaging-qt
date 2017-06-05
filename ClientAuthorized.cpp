@@ -22,24 +22,15 @@ ClientAuthorized::operator bool() {
         return false;
     }
 
-    QJsonValue keyValue = json["handlerKey"];
-    QJsonValue tokenValue = json["authToken"];
-    if (keyValue == QJsonValue::Null || tokenValue == QJsonValue::Null) {
+    QJsonValue authValue = json["authToken"];
+    if (authValue == QJsonValue::Null || !authValue.isDouble()) {
         error = "Invalid server response";
+        return false;
     }
     else {
-        try {
-            state->handlerKey = keyValue.toDouble();
-            state->authToken = tokenValue.toDouble();
-            return true;
-        }
-        catch (coder::OutOfRangeException& e) {
-            std::ostringstream estr;
-            estr << "Invalid server response - " << e.what();
-            error = QString(estr.str().c_str());
-        }
+        state->authToken = authValue.toDouble();
+        return true;
     }
-    return false;
 
 }
 

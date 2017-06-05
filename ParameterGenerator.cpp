@@ -81,7 +81,8 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     bytecodec << millis;
     sha1.update(bytecodec.toArray());
     sha1.update(coder::ByteArray("@secomm.org"));
-    publicId = sha1.digest();
+    coder::ByteArray idBytes(sha1.digest());
+    publicId = QString(idBytes.toHexString().c_str());
 
 }
 

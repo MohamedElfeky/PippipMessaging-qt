@@ -3,10 +3,14 @@
 #include "ParameterGenerator.h"
 #include "Vault.h"
 #include "NewAccountDialog.h"
+#include "NicknamesDialog.h"
 #include "LoginDialog.h"
 #include "NicknameManager.h"
+#include "Authenticator.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
+#include <CryptoKitty-C/keys/RSAPrivateKey.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QThread>
 #include <QLabel>
 
@@ -18,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
+    connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
 
     statusLabel = new QLabel(this);
@@ -49,13 +54,44 @@ void MainWindow::logIn() {
     session = gen;
     LoginDialog *dialog = new LoginDialog(gen, this);
     dialog->exec();
+    if (session->sessionState == Pippip::SessionState::authenticated) {
+        ui->LoginAction->setEnabled(false);
+        ui->LogoutAction->setEnabled(true);
+        ui->NicknamesAction->setEnabled(true);
+    }
+
+}
+
+void MainWindow::logOut() {
+
+    Pippip::Authenticator *auth = new Pippip::Authenticator(session, this);
+    connect(auth, SIGNAL(loggedOut()), this, SLOT(loggedOut()));
+    auth->logOut();
+    //auth->deleteLater();
+
+}
+
+void MainWindow::loggedOut() {
+
+    delete session->serverPublicKey;
+    delete session->userPrivateKey;
+    delete session->userPublicKey;
+    delete session;
+    ui->LoginAction->setEnabled(true);
+    ui->LogoutAction->setEnabled(false);
 
 }
 
 void MainWindow::manageNicknames() {
 
+    NicknamesDialog *dialog = new NicknamesDialog(session, this);
     Pippip::NicknameManager *manager = new Pippip::NicknameManager(this, session);
-    manager->manageNicknames();
+    dialog->setManager(manager);
+    dialog->exec();
+    bool hasNicknames = manager->getNicknames().size() > 0;
+    ui->CancelAction->setEnabled(hasNicknames);
+    ui->DeleteAction->setEnabled(hasNicknames);
+    ui->RequestAction->setEnabled(hasNicknames);
 
 }
 
@@ -65,6 +101,10 @@ void MainWindow::newAccount() {
     session = gen;
     NewAccountDialog dialog(gen);
     dialog.exec();
+    if (session->sessionState == Pippip::SessionState::authenticated) {
+        ui->LoginAction->setEnabled(false);
+        ui->NicknamesAction->setEnabled(true);
+    }
 
 }
 

@@ -21,7 +21,6 @@
 
 #include <coder/ByteArray.h>
 #include <QString>
-#include <vector>
 
 namespace CK {
     class RSAPublicKey;
@@ -29,22 +28,12 @@ namespace CK {
 }
 namespace Pippip {
 
-struct Nickname {
-    QString nickname;
-    int policy;
-};
-
-typedef std::vector<Nickname> NicknameList;
-typedef NicknameList::iterator NickIter;
-typedef NicknameList::const_iterator NickConstIter;
-
 struct SessionState {
     enum StateValue { authenticated, established, failed, not_started, started };
     StateValue sessionState;
     uint32_t sessionId;
-    uint32_t handlerKey;
     uint64_t authToken;
-    coder::ByteArray publicId;
+    QString publicId;
     coder::ByteArray genpass;
     coder::ByteArray enclaveKey;
     coder::ByteArray authData;
@@ -54,7 +43,6 @@ struct SessionState {
     CK::RSAPrivateKey *userPrivateKey;
     CK::RSAPublicKey *userPublicKey;
     CK::RSAPublicKey *serverPublicKey;
-    NicknameList nicknames;
 };
 
 }

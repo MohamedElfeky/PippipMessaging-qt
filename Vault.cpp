@@ -57,8 +57,10 @@ void Vault::decodeVault(const coder::ByteArray &ciphertext, const std::string &p
         std::string serverkey;
         CK::GCMCodec codec(ciphertext);
         codec.decrypt(vaultKey, coder::ByteArray(passphrase, false));
-        codec >> publicId >> genpass >> enclaveKey >> accountRandom
+        coder::ByteArray idBytes;
+        codec >> idBytes >> genpass >> enclaveKey >> accountRandom
               >> userkey >> serverkey;
+        publicId = QString(idBytes.toHexString().c_str());
 
         CK::PEMCodec pem(true); // X.509 keys
         serverPublicKey = pem.decodePublicKey(serverkey);
@@ -86,7 +88,8 @@ void Vault::encodeVault(const std::string& passphrase) {
         pem.encode(ustr, *userPrivateKey, *userPublicKey);
 
         CK::GCMCodec codec;
-        codec << publicId << genpass << enclaveKey << accountRandom
+        coder::ByteArray idBytes(publicId.toStdString(), true);
+        codec << idBytes << genpass << enclaveKey << accountRandom
               << ustr.str() << sstr.str();
         codec.encrypt(vaultKey, coder::ByteArray(passphrase, false));
         encoded = codec.toArray();

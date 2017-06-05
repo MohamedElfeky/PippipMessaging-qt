@@ -36,6 +36,22 @@ void SessionTask::errorResponse(const QString &error) {
 
 }
 
+void SessionTask::sessionFailed(RESTHandler *handler) {
+
+    if (state->sessionState == SessionState::started) {
+        state->sessionState = SessionState::failed;
+        QMessageBox *message = new QMessageBox;
+        message->addButton(QMessageBox::Ok);
+        message->setWindowTitle("Session Error");
+        message->setText("An error occurred while establishing a session with the server.");
+        message->setInformativeText(handler->getError());
+        message->setIcon(QMessageBox::Critical);
+        message->exec();
+        sessionComplete("Unable to establish a session with the server");
+    }
+
+}
+
 void SessionTask::sessionResponse(RESTHandler *handler) {
 
     if (state->sessionState == SessionState::started) {
@@ -63,26 +79,9 @@ void SessionTask::sessionResponse(RESTHandler *handler) {
 
 }
 
-void SessionTask::sessionFailed(RESTHandler *handler) {
-
-    if (state->sessionState == SessionState::started) {
-        QMessageBox *message = new QMessageBox;
-        message->addButton(QMessageBox::Ok);
-        message->setWindowTitle("Session Error");
-        message->setText("An error occurred while establishing a session with the server.");
-        message->setInformativeText(handler->getError());
-        message->setIcon(QMessageBox::Critical);
-        message->exec();
-        state->sessionState = SessionState::failed;
-        sessionComplete("Unable to establish a session with the server");
-    }
-
-}
-
 void SessionTask::sessionTimedOut() {
 
-    if (state->sessionState != SessionState::established
-                            && state->sessionState != SessionState::failed) {
+    if (state->sessionState == SessionState::started) {
         QMessageBox *message = new QMessageBox;
         message->addButton(QMessageBox::Ok);
         message->setWindowTitle("Session Error");
@@ -98,11 +97,11 @@ void SessionTask::sessionTimedOut() {
 void SessionTask::startSession() {
 
     if (state->sessionState == SessionState::not_started) {
-        QTimer::singleShot(10000, this, SLOT(sessionTimedOut()));
         RESTHandler *handler = new RESTHandler(this);
         connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(sessionResponse(RESTHandler*)));
         connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(sessionFailed(RESTHandler*)));
         state->sessionState = SessionState::started;
+        QTimer::singleShot(10000, this, SLOT(sessionTimedOut()));
         handler->doGet(SESSION_URL);
     }
 

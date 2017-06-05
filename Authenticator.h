@@ -34,6 +34,7 @@ class Authenticator : public SessionTask {
 
     public:
         Authenticator(LoginDialog *parent, Vault *vault);
+        Authenticator(SessionState *state, QObject *parent = 0);
         ~Authenticator();
 
     private:
@@ -42,6 +43,7 @@ class Authenticator : public SessionTask {
 
     signals:
         void authenticationComplete(int);
+        void loggedOut();
         void updateInfo(QString info);
         void updateStatus(QString);
 
@@ -51,11 +53,14 @@ class Authenticator : public SessionTask {
         void authorizeTimedOut();
         void challengeComplete(RESTHandler*);
         void challengeTimedOut();
+        void logoutComplete(RESTHandler*);
+        void logoutTimedOut();
         void requestComplete(RESTHandler*);
         void requestTimedOut();
 
     public:
         void authenticate(const QString& accountName, const QString& passphrase);
+        void logOut();
         void reset();
 
     protected:
@@ -71,6 +76,7 @@ class Authenticator : public SessionTask {
         bool responseComplete;
         bool challengeCompleted;
         bool authComplete;
+        bool logoutCompleted;
         bool timedOut;
         LoginDialog *dialog;
         Vault *vault;

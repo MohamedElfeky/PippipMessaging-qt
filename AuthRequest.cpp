@@ -24,7 +24,7 @@ QJsonObject *AuthRequest::getJson() const {
     codec << state->accountRandom << state->clientAuthRandom;
     codec.encrypt(*state->serverPublicKey);
     (*json)["encrypted"] = QString(codec.toArray().toHexString().c_str());
-    (*json)["publicId"] = QString(state->publicId.toHexString().c_str());
+    (*json)["publicId"] = state->publicId;
 
     return json;
 

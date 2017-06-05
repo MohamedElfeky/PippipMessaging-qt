@@ -6,6 +6,7 @@
 #include <map>
 
 class QJsonObject;
+class QJsonArray;
 
 namespace Pippip {
 
@@ -21,6 +22,8 @@ class EnclaveRequest : public PostPacket {
         QString getValue(const QString& name) const;
         void setRequestType(const QString& type);
         void setValue(const QString& name, const QString& value);
+        void setValue(const QString& name, const QJsonObject& value);
+        void setValue(const QString& name, const QJsonArray& value);
 
     public:
         QJsonObject *getJson() const;

@@ -75,7 +75,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>27</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -89,6 +89,7 @@
      <string>Pippip Messaging</string>
     </property>
     <addaction name="LoginAction"/>
+    <addaction name="LogoutAction"/>
     <addaction name="NewAccountAction"/>
     <addaction name="separator"/>
     <addaction name="PippipQuitAction"/>
@@ -154,18 +155,38 @@
    </property>
   </action>
   <action name="RequestAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Request contact</string>
    </property>
   </action>
   <action name="CancelAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Cancel request</string>
    </property>
   </action>
   <action name="DeleteAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Delete contact</string>
+   </property>
+  </action>
+  <action name="LogoutAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Log out...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

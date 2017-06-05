@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     NicknamesDialog.cpp \
     EditNicknameDialog.cpp \
     NicknameManager.cpp \
-    EnclaveResponse.cpp
+    EnclaveResponse.cpp \
+    LogoutRequest.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -84,7 +85,8 @@ HEADERS  += mainwindow.h \
     NicknameManager.h \
     SessionException.h \
     EnclaveResponse.h \
-    EnclaveException.h
+    EnclaveException.h \
+    LogoutRequest.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

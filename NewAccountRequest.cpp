@@ -18,7 +18,8 @@ QJsonObject *NewAccountRequest::getJson() const {
 
     QJsonObject *json  = new QJsonObject;
     (*json)["sessionId"] = static_cast<int>(state->sessionId);
-    (*json)["publicId"] = QString(state->publicId.toHexString().c_str());
+
+    (*json)["publicId"] = state->publicId;
     CK::PEMCodec codec(true);   // X.509 keys
     std::ostringstream kstr;
     codec.encode(kstr, *state->userPublicKey);  // Handle exceptions here?

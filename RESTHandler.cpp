@@ -73,7 +73,8 @@ void RESTHandler::doPost(const PostPacket& packet) {
     postRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     std::unique_ptr<QJsonObject> json(packet.getJson());
     QJsonDocument doc(*json);
-    manager->post(postRequest, doc.toJson());
+    QByteArray jsonstr = doc.toJson();
+    manager->post(postRequest, jsonstr);
 
 }
 

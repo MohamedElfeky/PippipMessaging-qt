@@ -22,23 +22,19 @@ class NicknamesDialog : public QDialog {
         explicit NicknamesDialog(Pippip::SessionState * state, QWidget *parent = 0);
         ~NicknamesDialog();
 
+    public slots:
+        void nicknameAdded(QString name, QString policy);
+        void nicknameDeleted(QString name);
+        void policyUpdated(QString name, QString policy);
+        void setNicknames();
+
     private slots:
         void addNickname();
-        void editNickname(QModelIndex index);
-        void deleteNickname();
+        void editNickname(int row, int column);
+        void deleteNicknames();
 
     public:
-        static const int PUBLIC;
-        static const int PRIVATE;
-        static const int FRIENDSONLY;
-        static const int FRIENDSOFFRIENDS;
-
-    public:
-        void setManager(Pippip::NicknameManager *man) { manager = man; }
-
-    private:
-        void addNickname(const Pippip::Nickname& nickname, int row);
-        void setNicknames();
+        void setManager(Pippip::NicknameManager *man);
 
     private:
         Ui::NicknamesDialog *ui;

@@ -2,13 +2,14 @@
 #define PIPPIP_ENCLAVERESPONSE_H
 
 #include <QJsonObject>
+#include <QJsonValue>
 
 namespace Pippip {
 
 struct SessionState;
 
-class EnclaveResponse
-{
+class EnclaveResponse {
+
     public:
         EnclaveResponse(const QJsonObject& json, SessionState *state);
         ~EnclaveResponse() {}
@@ -23,11 +24,11 @@ class EnclaveResponse
     public:
         const QString& getError() const { return error; }
         const QString& getRequestName() const { return requestName; }
-        QString getValue(const QString& name) const;
+        QJsonValue getValue(const QString& name) const;
         const QJsonObject& getJson() const { return json; }
 
     private:
-        QJsonObject encrypted;
+        // QJsonObject encrypted;
         QJsonObject json;
         SessionState *state;
         QString requestName;

@@ -9,7 +9,7 @@
 namespace Pippip {
 
 EnclaveResponse::EnclaveResponse(const QJsonObject& j, SessionState *sess)
-: encrypted(j),
+: json(j),
   state(sess) {
 }
 
@@ -54,15 +54,9 @@ EnclaveResponse::operator bool() {
 
 }
 
-QString EnclaveResponse::getValue(const QString &name) const {
+QJsonValue EnclaveResponse::getValue(const QString &name) const {
 
-    QJsonValue value = json[name];
-    if (value.isNull() || !value.isString()) {
-        return "";
-    }
-    else {
-        return value.toString();
-    }
+    return json[name];
 
 }
 

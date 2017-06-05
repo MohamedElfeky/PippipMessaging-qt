@@ -1,6 +1,7 @@
 #include "EnclaveRequest.h"
 #include "SessionState.h"
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <coder/ByteArray.h>
@@ -43,17 +44,32 @@ void EnclaveRequest::setValue(const QString& name, const QString& value) {
 
 }
 
+void EnclaveRequest::setValue(const QString& name, const QJsonObject& value) {
+
+    (*request)[name] = value;
+
+}
+
+void EnclaveRequest::setValue(const QString& name, const QJsonArray& value) {
+
+    (*request)[name] = value;
+
+}
+
 QJsonObject *EnclaveRequest::getJson() const {
 
+    QJsonObject *json = new QJsonObject;
+    (*json)["sessionId"] = static_cast<int>(state->sessionId);
+
+    // The enclave data is an encrypted JSON string.
     QJsonDocument doc(*request);
     QString jstr(doc.toJson());
     coder::ByteArray enclaveData(jstr.toStdString(), false);    // Literal data
     CK::GCMCodec codec;
     codec << enclaveData;
     codec.encrypt(state->enclaveKey, state->authData);
-    QJsonObject *json = new QJsonObject;
-    (*json)["sessionId"] = state->sessionId;
-    (*json)["authToken"] = state->authToken;
+
+    (*json)["authToken"] = static_cast<qint64>(state->authToken);
     (*json)["enclaveData"] = QString(codec.toArray().toHexString().c_str());
     return json;
 

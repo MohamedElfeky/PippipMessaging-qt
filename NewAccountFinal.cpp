@@ -20,17 +20,13 @@ NewAccountFinal::operator bool() {
         return false;
     }
 
-    QJsonValue keyValue = json["handlerKey"];
     QJsonValue authValue = json["authToken"];
-    if (keyValue == QJsonValue::Null || authValue == QJsonValue::Null) {
+    if (authValue == QJsonValue::Null && !authValue.isDouble()) {
         error = "Invalid server response";
         return false;
     }
     else {
-        std::istringstream kstr(keyValue.toString().toStdString());
-        kstr >> std::hex >> state->handlerKey;
-        std::istringstream astr(authValue.toString().toStdString());
-        astr >> std::hex >> state->authToken;
+        state->authToken = authValue.toDouble();
         return true;
     }
 

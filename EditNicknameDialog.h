@@ -23,14 +23,14 @@ class EditNicknameDialog : public QDialog {
     public:
         void accept();
         const QString& getNickname() const { return nickname; }
-        int getPolicy() const { return policy; }
+        const QString& getPolicy() const { return policy; }
         void setNickname(const QString& nickname);  // Editing policy only.
-        void setPolicy(int policy);
+        void setPolicy(const QString& policy);
 
     private:
         Ui::EditNicknameDialog *ui;
         QString nickname;
-        int policy;
+        QString policy;
 
 };
 

@@ -22,6 +22,7 @@
 #include "AuthChallenge.h"
 #include "ClientAuthorized.h"
 #include "ServerAuthorized.h"
+#include "LogoutRequest.h"
 #include "Vault.h"
 #include "VaultException.h"
 #include "LoginDialog.h"
@@ -37,12 +38,24 @@ Authenticator::Authenticator(LoginDialog *parent, Vault *v)
 : SessionTask(parent, v),
   responseComplete(false),
   challengeCompleted(false),
+  logoutCompleted(false),
   timedOut(false),
   dialog(parent),
   vault(v) {
 
     connect(this, SIGNAL(authenticationComplete(int)), dialog, SLOT(done(int)));
     connect(this, SIGNAL(updateInfo(QString)), dialog, SLOT(updateInfo(QString)));
+
+}
+
+Authenticator::Authenticator(SessionState *state, QObject *parent)
+: SessionTask(parent, state),
+  responseComplete(false),
+  challengeCompleted(false),
+  logoutCompleted(false),
+  timedOut(false),
+  dialog(0),
+  vault(0) {
 
 }
 
@@ -84,13 +97,16 @@ void Authenticator::authorizeComplete(RESTHandler *handler) {
 
         ClientAuthorized auth(handler->getResponse(), state);
         if (!handler->successful()) {
+            state->sessionState = Pippip::SessionState::failed;
             authFailed(handler->getError());
         }
         else if (auth) {
+            state->sessionState = Pippip::SessionState::authenticated;
             emit updateStatus("Authentication Complete");
             emit authenticationComplete(1);
         }
         else {
+            state->sessionState = Pippip::SessionState::failed;
             authFailed(auth.getError());
         }
     }
@@ -147,6 +163,7 @@ void Authenticator::doAuthorized() {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(authorizeComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(authorizeComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(20000, this, SLOT(authorizeTimedOut()));
     handler->doPost(auth);
 
@@ -159,6 +176,7 @@ void Authenticator::doChallenge() {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(challengeComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(challengeComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(challengeTimedOut()));
     handler->doPost(challenge);
 
@@ -171,8 +189,40 @@ void Authenticator::doLogin() {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
+
+}
+
+void Authenticator::logOut() {
+
+    LogoutRequest req(state);
+    RESTHandler *handler = new RESTHandler(this);
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(logoutComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(logoutComplete(RESTHandler*)));
+    QTimer::singleShot(10000, this, SLOT(logoutTimedOut()));
+    handler->doPost(req);
+
+}
+
+void Authenticator::logoutComplete(RESTHandler*) {
+
+    // Nothing really to do here.
+    if (!timedOut) {
+        logoutCompleted = true;
+        emit loggedOut();
+    }
+
+}
+
+void Authenticator::logoutTimedOut() {
+
+    // Nothing really to do here.
+    if (!logoutCompleted) {
+        timedOut = true;
+        emit loggedOut();
+    }
 
 }
 
