@@ -28,7 +28,9 @@ class MainWindow : public QMainWindow {
         //void fortunaUDPError(QString error, bool fatal);
         void logIn();
         void logOut();
+        void loggedIn();
         void loggedOut();
+        void manageContacts();
         void manageNicknames();
         void newAccount();
         void updateStatus(QString);

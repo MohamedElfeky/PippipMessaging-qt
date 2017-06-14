@@ -24,7 +24,7 @@ typedef std::vector<Nickname> NicknameList;
 
 class EnclaveResponse;
 
-class NicknameManager : public QWidget {
+class NicknameManager : public QObject {
         Q_OBJECT
 
     public:
@@ -42,6 +42,7 @@ class NicknameManager : public QWidget {
         void delComplete(RESTHandler*);
         void loadComplete(RESTHandler*);
         void requestTimedOut();
+        void updateComplete(RESTHandler*);
 
     public:
         void addNickname(const Nickname& nick);
@@ -65,10 +66,6 @@ class NicknameManager : public QWidget {
         NicknamesDialog *dialog;
 
         NicknameList nicknames;
-
-        //typedef std::map<QString, int> PolicyMap;
-        //typedef PolicyMap::const_iterator PolicyConstIter;
-        //PolicyMap policyMap;
 
 };
 

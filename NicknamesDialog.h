@@ -26,12 +26,13 @@ class NicknamesDialog : public QDialog {
         void nicknameAdded(QString name, QString policy);
         void nicknameDeleted(QString name);
         void policyUpdated(QString name, QString policy);
-        void setNicknames();
+        void nicknamesLoaded();
 
     private slots:
         void addNickname();
         void editNickname(int row, int column);
         void deleteNicknames();
+        void nicknameSelected();
 
     public:
         void setManager(Pippip::NicknameManager *man);

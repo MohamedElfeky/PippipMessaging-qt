@@ -16,7 +16,7 @@ LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(login()));
     MainWindow *main = dynamic_cast<MainWindow*>(parent);
     auth = new Pippip::Authenticator(this, vault);
-    connect(auth, SIGNAL(updateStatus(QString)), main, SLOT(updateStatus(QString)));
+    connect(auth, SIGNAL(authenticationComplete(int)), main, SLOT(loggedIn()));
 
 }
 

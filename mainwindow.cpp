@@ -4,8 +4,10 @@
 #include "Vault.h"
 #include "NewAccountDialog.h"
 #include "NicknamesDialog.h"
+#include "ContactsDialog.h"
 #include "LoginDialog.h"
 #include "NicknameManager.h"
+#include "ContactManager.h"
 #include "Authenticator.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
@@ -24,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
+    connect(ui->ContactsAction, SIGNAL(triggered()), this, SLOT(manageContacts()));
 
     statusLabel = new QLabel(this);
     statusBar()->addWidget(statusLabel);
@@ -54,11 +57,17 @@ void MainWindow::logIn() {
     session = gen;
     LoginDialog *dialog = new LoginDialog(gen, this);
     dialog->exec();
-    if (session->sessionState == Pippip::SessionState::authenticated) {
-        ui->LoginAction->setEnabled(false);
-        ui->LogoutAction->setEnabled(true);
-        ui->NicknamesAction->setEnabled(true);
-    }
+
+}
+
+void MainWindow::loggedIn() {
+
+    ui->LoginAction->setEnabled(false);
+    ui->NewAccountAction->setEnabled(false);
+    ui->LogoutAction->setEnabled(true);
+    ui->NicknamesAction->setEnabled(true);
+    ui->ContactsAction->setEnabled(true);
+    updateStatus("Authentication Complete");
 
 }
 
@@ -78,20 +87,29 @@ void MainWindow::loggedOut() {
     delete session->userPublicKey;
     delete session;
     ui->LoginAction->setEnabled(true);
+    ui->NewAccountAction->setEnabled(true);
     ui->LogoutAction->setEnabled(false);
+    ui->NicknamesAction->setEnabled(false);
+    ui->ContactsAction->setEnabled(false);
+    updateStatus("Logged out");
+
+}
+
+void MainWindow::manageContacts() {
+
+    ContactsDialog *dialog = new ContactsDialog(session, this);
+    Pippip::ContactManager *manager = new Pippip::ContactManager(dialog, session);
+    dialog->setManager(manager);
+    dialog->exec();
 
 }
 
 void MainWindow::manageNicknames() {
 
     NicknamesDialog *dialog = new NicknamesDialog(session, this);
-    Pippip::NicknameManager *manager = new Pippip::NicknameManager(this, session);
+    Pippip::NicknameManager *manager = new Pippip::NicknameManager(dialog, session);
     dialog->setManager(manager);
     dialog->exec();
-    bool hasNicknames = manager->getNicknames().size() > 0;
-    ui->CancelAction->setEnabled(hasNicknames);
-    ui->DeleteAction->setEnabled(hasNicknames);
-    ui->RequestAction->setEnabled(hasNicknames);
 
 }
 
@@ -99,12 +117,8 @@ void MainWindow::newAccount() {
 
     Pippip::ParameterGenerator *gen = new Pippip::ParameterGenerator;
     session = gen;
-    NewAccountDialog dialog(gen);
-    dialog.exec();
-    if (session->sessionState == Pippip::SessionState::authenticated) {
-        ui->LoginAction->setEnabled(false);
-        ui->NicknamesAction->setEnabled(true);
-    }
+    NewAccountDialog *dialog = new NewAccountDialog(gen, this);
+    dialog->exec();
 
 }
 

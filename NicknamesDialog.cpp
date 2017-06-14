@@ -18,16 +18,10 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
 
     QStringList headers;
     headers << "Nickname" << "Policy";
-    // Turn off the grid.
-    //ui->nicknameTableWidget->setShowGrid(false);
-    // Always 2 columns
-    //ui->nicknameTableWidget->setColumnCount(2);
     // Set header labels
     ui->nicknameTableWidget->setHorizontalHeaderLabels(headers);
     // Set columns sizes to fill the table width.
     ui->nicknameTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    // No vertical headers
-    //ui->nicknameTableWidget->verticalHeader()->setVisible(false);
     // Always select the whole row.
     ui->nicknameTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Single selection only.
@@ -36,6 +30,7 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addNickname()));
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteNicknames()));
     connect(ui->nicknameTableWidget, SIGNAL(cellDoubleClicked(int,int)),this, SLOT(editNickname(int, int)));
+    connect(ui->nicknameTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(nicknameSelected()));
 
 }
 
@@ -90,6 +85,8 @@ void NicknamesDialog::nicknameAdded(QString name, QString policy) {
     policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     policyItem->setFlags(nicknameItem->flags() & ~Qt::ItemIsEditable);
     ui->nicknameTableWidget->setItem(rows, 1, policyItem);
+    ui->statusLabel->setText(name + " added");
+    qApp->processEvents();
 
 }
 
@@ -99,9 +96,29 @@ void NicknamesDialog::nicknameDeleted(QString name) {
     assert(items.count() > 0);
     int row = items.first()->row();
     ui->nicknameTableWidget->removeRow(row);
+    ui->statusLabel->setText(name + " deleted");
+    qApp->processEvents();
 
 }
 
+void NicknamesDialog::nicknameSelected() {
+
+    ui->deleteButton->setEnabled(true);
+
+}
+
+void NicknamesDialog::nicknamesLoaded() {
+
+    const Pippip::NicknameList& nicknames = manager->getNicknames();
+    //int rows = nicknames.size();
+    ui->nicknameTableWidget->setRowCount(0);
+    for (Pippip::Nickname nickname : nicknames) {
+        nicknameAdded(nickname.nickname, nickname.policy);
+    }
+    ui->statusLabel->setText("Nicknames loaded");
+    qApp->processEvents();
+
+}
 void NicknamesDialog::policyUpdated(QString name, QString policy) {
 
     QList<QTableWidgetItem*> items = ui->nicknameTableWidget->findItems(name, Qt::MatchExactly);
@@ -109,13 +126,15 @@ void NicknamesDialog::policyUpdated(QString name, QString policy) {
     QTableWidgetItem *item = items.first();
     int row = item->row();
     ui->nicknameTableWidget->item(row, 1)->setText(policy);
+    ui->statusLabel->setText("Policy updated");
+    qApp->processEvents();
 
 }
 
 void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
 
     manager = man;
-    connect(manager, SIGNAL(nicknamesLoaded()), this, SLOT(setNicknames()));
+    connect(manager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
     connect(manager, SIGNAL(nicknameDeleted(QString)), this, SLOT(nicknameDeleted(QString)));
     connect(manager, SIGNAL(policyUpdated(QString, QString)), this,
                                                 SLOT(policyUpdated(QString,QString)));
@@ -123,16 +142,5 @@ void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
                                                 SLOT(nicknameAdded(QString,QString)));
 
     manager->loadNicknames();
-
-}
-
-void NicknamesDialog::setNicknames() {
-
-    const Pippip::NicknameList& nicknames = manager->getNicknames();
-    int rows = nicknames.size();
-    ui->nicknameTableWidget->setRowCount(rows);
-    for (Pippip::Nickname nickname : nicknames) {
-        nicknameAdded(nickname.nickname, nickname.policy);
-    }
 
 }

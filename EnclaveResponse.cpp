@@ -42,7 +42,7 @@ EnclaveResponse::operator bool() {
         json = doc.object();
         // Get the request name
         QJsonValue name = json["requestName"];
-        if (name.isNull() || !name.isString()) {
+        if (!name.isString()) {
             error = "Invalid response from server";
             return false;
         }

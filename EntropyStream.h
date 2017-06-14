@@ -55,6 +55,9 @@ class EntropyStream : public QObject {
         void readStream(coder::ByteArray& bytes, unsigned count);      // This may block.
 
     private:
+        void fillBuckets();
+
+    private:
         bool run;
         typedef std::deque<coder::ByteStreamCodec> BucketQueue;
         BucketQueue buckets;

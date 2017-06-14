@@ -46,7 +46,10 @@ SOURCES += main.cpp\
     EditNicknameDialog.cpp \
     NicknameManager.cpp \
     EnclaveResponse.cpp \
-    LogoutRequest.cpp
+    LogoutRequest.cpp \
+    ContactsDialog.cpp \
+    ContactManager.cpp \
+    AddContactDialog.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -86,14 +89,20 @@ HEADERS  += mainwindow.h \
     SessionException.h \
     EnclaveResponse.h \
     EnclaveException.h \
-    LogoutRequest.h
+    LogoutRequest.h \
+    ContactsDialog.h \
+    ContactManager.h \
+    AddContactDialog.h \
+    Contact.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
     NewAccountHelpDialog.ui \
     LoginDialog.ui \
     NicknamesDialog.ui \
-    EditNicknameDialog.ui
+    EditNicknameDialog.ui \
+    ContactsDialog.ui \
+    AddContactDialog.ui
 
 QT += network
 

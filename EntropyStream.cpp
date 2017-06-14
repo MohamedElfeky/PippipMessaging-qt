@@ -44,6 +44,18 @@ EntropyStream::~EntropyStream() {
 
 }
 
+void EntropyStream::fillBuckets() {
+
+    coder::ByteArray data;
+    QWriteLocker locker(mutex);
+    while (buckets.size() < BUCKETCOUNT) {
+        data.clear();
+        generator->generateRandomData(data, BUCKETSIZE);
+        buckets.push_back(coder::ByteStreamCodec(data));
+    }
+
+}
+
 void EntropyStream::quit() {
 
     run = false;
@@ -78,14 +90,9 @@ void EntropyStream::threadFunction() {
     generator->start();
     run = true;
 
-    coder::ByteArray data;
     while (run) {
-        QWriteLocker locker(mutex);
-        while (buckets.size() < BUCKETCOUNT) {
-            data.clear();
-            generator->generateRandomData(data, BUCKETSIZE);
-            buckets.push_back(coder::ByteStreamCodec(data));
-        }
+        fillBuckets();
+        QThread::sleep(2);
     }
 
     emit finished();

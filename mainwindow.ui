@@ -99,10 +99,7 @@
      <string>Contacts</string>
     </property>
     <addaction name="NicknamesAction"/>
-    <addaction name="separator"/>
-    <addaction name="RequestAction"/>
-    <addaction name="CancelAction"/>
-    <addaction name="DeleteAction"/>
+    <addaction name="ContactsAction"/>
    </widget>
    <addaction name="menuPippip"/>
    <addaction name="menuContacts"/>
@@ -148,7 +145,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Nicknames...</string>
+    <string>Manage Nicknames...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -187,6 +184,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="ContactsAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Manage Contacts...</string>
    </property>
   </action>
  </widget>

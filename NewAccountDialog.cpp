@@ -21,7 +21,7 @@
 #include "ParameterGenerator.h"
 #include "NewAccountCreator.h"
 #include "NewAccountHelpDialog.h"
-//#include "mainwindow.h"
+#include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
 
@@ -33,6 +33,9 @@ NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *par
 
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
+    MainWindow *mainWindow = dynamic_cast<MainWindow*>(parent);
+    creator = new Pippip::NewAccountCreator(this, generator);
+    connect(creator, SIGNAL(accountComplete(int)), mainWindow, SLOT(loggedIn()));
 
 }
 
@@ -57,7 +60,6 @@ void NewAccountDialog::accept() {
     }
 
     if (proceed) {
-        Pippip::NewAccountCreator *creator = new Pippip::NewAccountCreator(this, generator);
         ui->progressBar->setValue(0);
         creator->createNewAccount(accountName, passphrase);
     }

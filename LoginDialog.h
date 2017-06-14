@@ -22,7 +22,7 @@ class LoginDialog : public QDialog
 
     public slots:
         void login();
-        void updateInfo(QString info);
+        void updateInfo(QString);
 
     protected:
         void showEvent(QShowEvent *);
