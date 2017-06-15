@@ -42,7 +42,7 @@ void NicknamesDialog::addNickname() {
 
     EditNicknameDialog editDialog;
     if (editDialog.exec() == QDialog::Accepted) {
-        Pippip::Nickname nickname = { editDialog.getNickname(), editDialog.getPolicy() };
+        Pippip::Nickname nickname = { editDialog.getNickname(), editDialog.getPolicy(), state->publicId };
         manager->addNickname(nickname);
     }
 
@@ -67,7 +67,7 @@ void NicknamesDialog::editNickname(int row, int column) {
     editDialog.setNickname(name);  // Disables nickname editing.
     editDialog.setPolicy(manager->getPolicy(name));
     if (editDialog.exec() == QDialog::Accepted) {
-        Pippip::Nickname nickname = { name, editDialog.getPolicy() };
+        Pippip::Nickname nickname = { name, editDialog.getPolicy(), state->publicId };
         manager->updatePolicy(nickname);
     }
 

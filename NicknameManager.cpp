@@ -22,11 +22,6 @@ NicknameManager::NicknameManager(QWidget *parent, SessionState *sess)
   timedOut(false),
   state(sess) {
 
-    //policyMap["private"] = NicknamesDialog::PRIVATE;
-    //policyMap["public"] = NicknamesDialog::PUBLIC;
-    //policyMap["acquaintance"] = NicknamesDialog::FRIENDSONLY;
-    //policyMap["acquaintance_cirle"] = NicknamesDialog::FRIENDSOFFRIENDS;
-
     dialog = dynamic_cast<NicknamesDialog*>(parent);
 
 }
@@ -67,6 +62,7 @@ void NicknameManager::addNickname(const Nickname &nick) {
     QJsonObject nickname;
     nickname["nickname"] = nick.nickname;
     nickname["policy"] = nick.policy;
+    nickname["publicId"] = state->publicId;
     QJsonArray array;
     array.append(nickname);
     req.setValue("nicknames", array);
@@ -114,6 +110,7 @@ void NicknameManager::deleteNickname(const QString& nick) {
     QJsonObject nickname;
     nickname["nickname"] = nick;
     nickname["policy"] = "";
+    nickname["publicId"] = state->publicId;
     QJsonArray array;
     array.append(nickname);
     req.setValue("nicknames", array);
@@ -138,9 +135,11 @@ bool NicknameManager::getNickname(const EnclaveResponse& resp, Nickname& nicknam
             QJsonObject nick = nickValue.toObject();
             QJsonValue name = nick["nickname"];
             QJsonValue policy = nick["policy"];
-            if (name.isString() && policy.isString()) {
+            QJsonValue publicId = nick["publicId"];
+            if (name.isString() && policy.isString() && publicId.isString()) {
                 nickname.nickname = name.toString();
                 nickname.policy = policy.toString();
+                nickname.publicId = publicId.toString();
                 return true;
             }
         }
@@ -215,12 +214,13 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
         QJsonObject nickObj = value.toObject();
         QJsonValue nameValue = nickObj["nickname"];
         QJsonValue policyValue = nickObj["policy"];
-        if (!nameValue.isString() || !policyValue.isString()) {
+        QJsonValue idValue = nickObj["publicId"];
+        if (!nameValue.isString() || !policyValue.isString() || !idValue.isString()) {
             CriticalAlert alert("Fetch Nicknames Error", "Invalid server response");
             alert.exec();
             return false;
         }
-        Pippip::Nickname nickname = { nameValue.toString(), policyValue.toString() };
+        Pippip::Nickname nickname = { nameValue.toString(), policyValue.toString(), idValue.toString() };
         nicknames.push_back(nickname);
     }
     return true;
@@ -245,6 +245,7 @@ void NicknameManager::updatePolicy(const Nickname& nick) {
     QJsonObject nickname;
     nickname["nickname"] = nick.nickname;
     nickname["policy"] = nick.policy;
+    nickname["publicId"] = nick.publicId;
     QJsonArray array;
     array.append(nickname);
     req.setValue("nicknames", array);

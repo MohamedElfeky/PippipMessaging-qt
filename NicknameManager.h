@@ -18,6 +18,7 @@ struct SessionState;
 struct Nickname {
     QString nickname;
     QString policy;
+    QString publicId;
 };
 
 typedef std::vector<Nickname> NicknameList;
