@@ -30,9 +30,19 @@
 namespace Pippip {
 
 ParameterGenerator::ParameterGenerator() {
+
+    serverPublicKey = 0;
+    userPrivateKey = 0;
+    userPublicKey = 0;
+
 }
 
 ParameterGenerator::~ParameterGenerator() {
+
+    delete serverPublicKey;
+    delete userPrivateKey;
+    delete userPublicKey;
+
 }
 
 void ParameterGenerator::generateParameters(const std::string& username) {

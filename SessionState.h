@@ -29,6 +29,7 @@ namespace CK {
 namespace Pippip {
 
 struct SessionState {
+    virtual ~SessionState() {}
     enum StateValue { authenticated, established, failed, not_started, started };
     StateValue sessionState;
     uint32_t sessionId;

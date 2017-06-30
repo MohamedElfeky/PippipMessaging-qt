@@ -35,10 +35,10 @@
   <widget class="QPushButton" name="addButton">
    <property name="geometry">
     <rect>
-     <x>340</x>
+     <x>350</x>
      <y>10</y>
-     <width>41</width>
-     <height>31</height>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
    <property name="text">
@@ -51,10 +51,10 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>40</y>
-     <width>41</width>
-     <height>31</height>
+     <x>350</x>
+     <y>41</y>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
    <property name="text">
@@ -66,7 +66,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>321</width>
+     <width>331</width>
      <height>192</height>
     </rect>
    </property>
@@ -76,9 +76,6 @@
    <property name="columnCount">
     <number>2</number>
    </property>
-   <attribute name="horizontalHeaderStretchLastSection">
-    <bool>false</bool>
-   </attribute>
    <attribute name="verticalHeaderVisible">
     <bool>false</bool>
    </attribute>
@@ -89,7 +86,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>220</y>
+     <y>223</y>
      <width>241</width>
      <height>20</height>
     </rect>

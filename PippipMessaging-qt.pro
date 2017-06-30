@@ -43,13 +43,13 @@ SOURCES += main.cpp\
     ClientAuthorized.cpp \
     EnclaveRequest.cpp \
     NicknamesDialog.cpp \
-    EditNicknameDialog.cpp \
     NicknameManager.cpp \
     EnclaveResponse.cpp \
     LogoutRequest.cpp \
     ContactsDialog.cpp \
     ContactManager.cpp \
-    AddContactDialog.cpp
+    AddContactDialog.cpp \
+    EditWhitelistDialog.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -84,7 +84,6 @@ HEADERS  += mainwindow.h \
     ClientAuthorized.h \
     EnclaveRequest.h \
     NicknamesDialog.h \
-    EditNicknameDialog.h \
     NicknameManager.h \
     SessionException.h \
     EnclaveResponse.h \
@@ -93,16 +92,20 @@ HEADERS  += mainwindow.h \
     ContactsDialog.h \
     ContactManager.h \
     AddContactDialog.h \
-    Contact.h
+    Contact.h \
+    Nickname.h \
+    Entity.h \
+    ContactRequest.h \
+    EditWhitelistDialog.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
     NewAccountHelpDialog.ui \
     LoginDialog.ui \
     NicknamesDialog.ui \
-    EditNicknameDialog.ui \
     ContactsDialog.ui \
-    AddContactDialog.ui
+    AddContactDialog.ui \
+    EditWhitelistDialog.ui
 
 QT += network
 

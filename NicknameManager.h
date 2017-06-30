@@ -1,12 +1,11 @@
 #ifndef PIPPIP_NICKNAMEMANAGER_H
 #define PIPPIP_NICKNAMEMANAGER_H
 
+#include "Nickname.h"
 #include <QWidget>
 #include <QString>
+#include <QJsonObject>
 #include <vector>
-//#include <map>
-
-class QJsonObject;
 
 class NicknamesDialog;
 
@@ -14,14 +13,6 @@ namespace Pippip {
 
 class RESTHandler;
 struct SessionState;
-
-struct Nickname {
-    QString nickname;
-    QString policy;
-    QString publicId;
-};
-
-typedef std::vector<Nickname> NicknameList;
 
 class EnclaveResponse;
 
@@ -36,7 +27,7 @@ class NicknameManager : public QObject {
         void nicknameAdded(QString name, QString policy);
         void nicknameDeleted(QString name);
         void nicknamesLoaded();
-        void policyUpdated(QString name, QString policy);
+        void nicknameUpdated(Pippip::Nickname nickname);
 
     protected slots:
         void addComplete(RESTHandler*);
@@ -49,13 +40,14 @@ class NicknameManager : public QObject {
         void addNickname(const Nickname& nick);
         void deleteNickname(const QString& nick);
         const Nickname& getNickname(const QString& nick) const;
-        QString getPolicy(const QString& nick) const;
         const NicknameList& getNicknames() const { return nicknames; }
+        bool isLoaded() const { return loaded; }
         void loadNicknames();
         void manageNicknames();
-        void updatePolicy(const Nickname& nickname);
+        void updateNickname(const Nickname& nickname);
 
     private:
+        QJsonObject encodeNickname(const Nickname& nickname);
         bool getNickname(const EnclaveResponse& resp, Nickname& nickname);
         bool loadNicknames(const QJsonObject& json);
 
@@ -64,7 +56,6 @@ class NicknameManager : public QObject {
         bool requestComplete;
         bool timedOut;
         SessionState *state;
-        NicknamesDialog *dialog;
 
         NicknameList nicknames;
 

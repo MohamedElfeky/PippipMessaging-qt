@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>114</height>
+    <height>278</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,32 +19,108 @@
      <x>10</x>
      <y>10</y>
      <width>381</width>
-     <height>89</height>
+     <height>255</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <widget class="QComboBox" name="idTypeComboBox">
-      <property name="currentText">
-       <string>Nickname</string>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <property name="text">
-        <string>Nickname</string>
-       </property>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Requested ID Type</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <property name="text">
-        <string>Public ID</string>
-       </property>
+       <widget class="QComboBox" name="idTypeComboBox">
+        <property name="currentText">
+         <string>Nickname</string>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Nickname</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Public ID</string>
+         </property>
+        </item>
+       </widget>
       </item>
-     </widget>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,1">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Requested ID</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pastePushButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>32</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Paste ID</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="pippip.qrc">
+              <normaloff>:/mainwindow/images/652762-clipboard-alt-480.png</normaloff>:/mainwindow/images/652762-clipboard-alt-480.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="requestedIdLineEdit"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QLineEdit" name="idLineEdit"/>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Requesting Nickname</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="nicknameComboBox"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="privateCheckBox">
+      <property name="text">
+       <string>Private Request</string>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">
@@ -58,8 +134,23 @@
     </item>
    </layout>
   </widget>
+  <zorder>label_2</zorder>
+  <zorder>pastePushButton</zorder>
+  <zorder>buttonBox</zorder>
+  <zorder>nicknameComboBox</zorder>
+  <zorder>label_3</zorder>
+  <zorder>label_2</zorder>
+  <zorder>pastePushButton</zorder>
+  <zorder>idTypeComboBox</zorder>
+  <zorder>label</zorder>
+  <zorder>privateCheckBox</zorder>
+  <zorder>requestedIdLineEdit</zorder>
+  <zorder>label_2</zorder>
+  <zorder>pastePushButton</zorder>
  </widget>
- <resources/>
+ <resources>
+  <include location="pippip.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

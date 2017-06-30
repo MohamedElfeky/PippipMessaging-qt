@@ -9,6 +9,8 @@ class MainWindow;
 
 namespace Pippip {
     struct SessionState;
+    class NicknameManager;
+    class ContactManager;
 }
 
 class QLabel;
@@ -39,6 +41,8 @@ class MainWindow : public QMainWindow {
         Ui::MainWindow *ui;
         Pippip::SessionState *session;
         QLabel *statusLabel;
+        Pippip::NicknameManager *nicknameManager;
+        Pippip::ContactManager *contactManager;
 
 };
 

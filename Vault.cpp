@@ -23,6 +23,8 @@
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
 #include <CryptoKitty-C/digest/SHA256.h>
 #include <CryptoKitty-C/exceptions/EncodingException.h>
+#include <CryptoKitty-C/keys/RSAPrivateKey.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QDir>
 #include <fstream>
 #include <sstream>
@@ -35,10 +37,18 @@ static const std::string CONFIG_PATH("/.config/PippipMessaging/");
 Vault::Vault() {
 
     vaultPath = QDir::homePath().toStdString() + CONFIG_PATH;
+    serverPublicKey = 0;
+    userPrivateKey = 0;
+    userPublicKey = 0;
 
 }
 
 Vault::~Vault() {
+
+    delete serverPublicKey;
+    delete userPrivateKey;
+    delete userPublicKey;
+
 }
 
 Vault::Vault(const SessionState &state)

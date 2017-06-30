@@ -1,8 +1,12 @@
 #include "ContactsDialog.h"
+#include "ContactManager.h"
+#include "NicknameManager.h"
+#include "ContactRequest.h"
 #include "ui_ContactsDialog.h"
 #include "SessionState.h"
 #include "ContactManager.h"
 #include "AddContactDialog.h"
+#include "CriticalAlert.h"
 #include <QStringList>
 #include <QTableWidgetItem>
 
@@ -29,7 +33,7 @@ ContactsDialog::ContactsDialog(Pippip::SessionState *st, QWidget *parent)
     ui->contactsTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->requestsTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addContact()));
+    connect(ui->addButton, SIGNAL(clicked()), this, SLOT(requestContact()));
 
 }
 
@@ -39,63 +43,54 @@ ContactsDialog::~ContactsDialog() {
 
 }
 
-void ContactsDialog::addContact() {
+void ContactsDialog::contactRequested(Pippip::Contact contact) {
 
-    AddContactDialog dialog;
-    if (dialog.exec() == QDialog::Accepted) {
-        QString id = dialog.getId();
-        QString idType = dialog.getIdType();
-        Pippip::Contact contact;
-        if (idType == "Nickname") {
-            contact.nickname = id;
-        }
-        else {
-            contact.publicId = id;
-        }
-        ui->contactsStatusLabel->setText("Adding " + id);
-        qApp->processEvents();
-        manager->addContact(contact);
+    if (contact.status == "rejected") {
+        Pippip::CriticalAlert alert("Contact Request Failed", "Contact request rejected");
+        alert.exec();
     }
 
-}
+    ui->contactsStatusLabel->setText("Contact request " + contact.status);
+    qApp->processEvents();
+    contactManager->loadContacts();
 
-void ContactsDialog::contactAdded(Pippip::Contact contact) {
-
+    /*
     int row = ui->contactsTableWidget->rowCount();
     ui->contactsTableWidget->setRowCount(row + 1);
     QTableWidgetItem *statusItem = new QTableWidgetItem(contact.status);
     statusItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->contactsTableWidget->setItem(row, 0, statusItem);
-    QTableWidgetItem *nicknameItem = new QTableWidgetItem(contact.nickname);
+    QTableWidgetItem *nicknameItem = new QTableWidgetItem(contact.entity.nickname);
     nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->contactsTableWidget->setItem(row, 1, nicknameItem);
-    QTableWidgetItem *idItem = new QTableWidgetItem(contact.publicId);
+    QTableWidgetItem *idItem = new QTableWidgetItem(contact.entity.publicId);
     idItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
-    if (contact.nickname.length() > 0) {
-        ui->contactsStatusLabel->setText("Added " + contact.nickname);
+    if (contact.entity.nickname.length() > 0) {
+        ui->contactsStatusLabel->setText("Added " + contact.entity.nickname);
         qApp->processEvents();
     }
     else {
-        ui->contactsStatusLabel->setText("Added " + contact.publicId);
+        ui->contactsStatusLabel->setText("Added " + contact.entity.publicId);
         qApp->processEvents();
     }
+    */
 
 }
 
 void ContactsDialog::contactsLoaded() {
 
-    const Pippip::ContactList& contacts = manager->getContacts();
+    const Pippip::ContactList& contacts = contactManager->getContacts();
     ui->contactsTableWidget->setRowCount(contacts.size());
     int row = 0;
     for (auto contact : contacts) {
         QTableWidgetItem *statusItem = new QTableWidgetItem(contact.status);
         statusItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         ui->contactsTableWidget->setItem(row, 0, statusItem);
-        QTableWidgetItem *nicknameItem = new QTableWidgetItem(contact.nickname);
+        QTableWidgetItem *nicknameItem = new QTableWidgetItem(contact.entity.nickname);
         nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         ui->contactsTableWidget->setItem(row, 1, nicknameItem);
-        QTableWidgetItem *idItem = new QTableWidgetItem(contact.publicId);
+        QTableWidgetItem *idItem = new QTableWidgetItem(contact.entity.publicId);
         idItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         ui->contactsTableWidget->setItem(row, 2, idItem);
         row++;
@@ -105,16 +100,51 @@ void ContactsDialog::contactsLoaded() {
 
 }
 
+void ContactsDialog::requestContact() {
+
+    AddContactDialog dialog(state);
+    dialog.setNicknameManager(nicknameManager);
+    if (dialog.exec() == QDialog::Accepted) {
+        QString requestedId = dialog.getRequestedId();
+        QString requestingNickname = dialog.getRequestingNickname();
+        QString idType = dialog.getIdType();
+        bool privateRequest = dialog.getPrivateRequest();
+        Pippip::ContactRequest request;
+        request.requesting.nickname = privateRequest ? "" : requestingNickname;
+        request.requesting.publicId = state->publicId;
+        if (idType == "Nickname") {
+            request.requested.nickname = requestedId;
+        }
+        else {
+            request.requested.publicId = requestedId;
+        }
+        request.privateRequest = privateRequest;
+        ui->contactsStatusLabel->setText("Requesting contact with " + requestedId);
+        qApp->processEvents();
+        contactManager->requestContact(request);
+    }
+
+}
+
 void ContactsDialog::requestsLoaded() {
 
 }
 
-void ContactsDialog::setManager(Pippip::ContactManager *man) {
+void ContactsDialog::setContactManager(Pippip::ContactManager *man) {
 
-    manager = man;
-    connect(manager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
-    connect(manager, SIGNAL(requestsLoaded()), this, SLOT(requestsLoaded()));
+    contactManager = man;
+    connect(contactManager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
+    connect(contactManager, SIGNAL(requestsLoaded()), this, SLOT(requestsLoaded()));
+    connect(contactManager, SIGNAL(requestedContact(Pippip::Contact)),
+                                        this, SLOT(contactRequested(Pippip::Contact)));
 
-    manager->loadContacts();
+    contactManager->loadContacts();
+
+}
+
+void ContactsDialog::setNicknameManager(Pippip::NicknameManager *manager) {
+
+    nicknameManager = manager;
+    //nicknameManager->loadNicknames();
 
 }

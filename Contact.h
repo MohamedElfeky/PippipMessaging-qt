@@ -1,18 +1,15 @@
 #ifndef CONTACT_H
 #define CONTACT_H
 
-#include <QString>
+#include "Entity.h"
 #include <QStringList>
 
 namespace Pippip {
 
 struct Contact {
     QString status;
-    QString nickname;
-    QString publicId;
-    QString encryptionRSA;
-    QString signingRSA;
-    QStringList keys;
+    Entity entity;
+    QStringList messageKeys;
 };
 
 typedef std::vector<Contact> ContactList;

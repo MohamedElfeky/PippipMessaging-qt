@@ -16,10 +16,12 @@
 #include <QThread>
 #include <QLabel>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    session(0) {
+MainWindow::MainWindow(QWidget *parent)
+: QMainWindow(parent),
+  ui(new Ui::MainWindow),
+  session(0),
+  nicknameManager(0),
+  contactManager(0) {
 
     ui->setupUi(this);
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
@@ -31,11 +33,12 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLabel = new QLabel(this);
     statusBar()->addWidget(statusLabel);
 
-    //session = new Pippip::SessionState; // Debugging only!
 }
 
 MainWindow::~MainWindow() {
 
+    delete contactManager;
+    delete nicknameManager;
     delete session;
     delete ui;
 
@@ -67,6 +70,8 @@ void MainWindow::loggedIn() {
     ui->LogoutAction->setEnabled(true);
     ui->NicknamesAction->setEnabled(true);
     ui->ContactsAction->setEnabled(true);
+    nicknameManager = new Pippip::NicknameManager(this, session);
+    contactManager = new Pippip::ContactManager(this, session);
     updateStatus("Authentication Complete");
 
 }
@@ -82,10 +87,12 @@ void MainWindow::logOut() {
 
 void MainWindow::loggedOut() {
 
-    delete session->serverPublicKey;
-    delete session->userPrivateKey;
-    delete session->userPublicKey;
     delete session;
+    session = 0;
+    delete nicknameManager;
+    nicknameManager = 0;
+    delete contactManager;
+    contactManager = 0;
     ui->LoginAction->setEnabled(true);
     ui->NewAccountAction->setEnabled(true);
     ui->LogoutAction->setEnabled(false);
@@ -98,8 +105,8 @@ void MainWindow::loggedOut() {
 void MainWindow::manageContacts() {
 
     ContactsDialog *dialog = new ContactsDialog(session, this);
-    Pippip::ContactManager *manager = new Pippip::ContactManager(dialog, session);
-    dialog->setManager(manager);
+    dialog->setContactManager(contactManager);
+    dialog->setNicknameManager(nicknameManager);
     dialog->exec();
 
 }
@@ -107,8 +114,7 @@ void MainWindow::manageContacts() {
 void MainWindow::manageNicknames() {
 
     NicknamesDialog *dialog = new NicknamesDialog(session, this);
-    Pippip::NicknameManager *manager = new Pippip::NicknameManager(dialog, session);
-    dialog->setManager(manager);
+    dialog->setManager(nicknameManager);
     dialog->exec();
 
 }

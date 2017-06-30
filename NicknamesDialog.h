@@ -1,6 +1,7 @@
 #ifndef NICKNAMESDIALOG_H
 #define NICKNAMESDIALOG_H
 
+#include "Nickname.h"
 #include <QDialog>
 #include <QModelIndex>
 #include <vector>
@@ -15,6 +16,9 @@ namespace Pippip {
     class NicknameManager;
 }
 
+class QLineEdit;
+class QComboBox;
+
 class NicknamesDialog : public QDialog {
         Q_OBJECT
 
@@ -25,22 +29,36 @@ class NicknamesDialog : public QDialog {
     public slots:
         void nicknameAdded(QString name, QString policy);
         void nicknameDeleted(QString name);
-        void policyUpdated(QString name, QString policy);
         void nicknamesLoaded();
+        void nicknameUpdated(Pippip::Nickname nickname);
 
     private slots:
         void addNickname();
-        void editNickname(int row, int column);
         void deleteNicknames();
+        void editPolicy(int row, int column);
+        void nicknameEditComplete();
         void nicknameSelected();
+        void policyEditComplete(int);
 
     public:
         void setManager(Pippip::NicknameManager *man);
 
     private:
+        QString getPolicyName(QString policy) const;
+        bool validateNickname(const QString& nickname) const;
+
+    private:
         Ui::NicknamesDialog *ui;
         Pippip::SessionState *state;
         Pippip::NicknameManager *manager;
+
+        bool newNickname;
+        QLineEdit *newNicknameLineEdit;
+        int editRow;
+        QString editedNickname;
+
+        QComboBox *newPolicyComboBox;
+        QString editedPolicy;
 
 };
 
