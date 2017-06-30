@@ -21,10 +21,10 @@ class EditWhitelistDialog : public QDialog {
     private slots:
         void addEntry();
         void itemChanged(QTableWidgetItem* item);
-        void editEntryComplete();
 
     public:
         const Pippip::EntityList& getWhitelist() const { return whitelist; }
+        void setWhitelist(const Pippip::EntityList& wl) { whitelist = wl; }
 
     private:
         void showAlert();
@@ -35,10 +35,7 @@ class EditWhitelistDialog : public QDialog {
         Ui::EditWhitelistDialog *ui;
         Pippip::EntityList whitelist;
 
-        QLineEdit *entryLineEdit;
-        bool newEntry;
-        int editRow;
-        int editColumn;
+        QTableWidgetItem *editItem;
 
 };
 

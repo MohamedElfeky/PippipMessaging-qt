@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QLabel>
 #include <assert.h>
+#include <iostream>
 
 static const QString POLICIES[] = { "Public", "FriendsOnly", "FriendsOfFriends" };
 static const QString POLICY_NAMES[] = { "Public", "Friends", "Friends of Friends" };
@@ -19,8 +20,8 @@ static const QString LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV
 NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
 : QDialog(parent),
   ui(new Ui::NicknamesDialog),
-  state(sess),
-  newNickname(false) {
+  state(sess) {
+  // newNickname(false) {
 
     ui->setupUi(this);
 
@@ -39,6 +40,8 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteNicknames()));
     connect(ui->nicknameTableWidget, SIGNAL(cellDoubleClicked(int,int)),this, SLOT(editPolicy(int, int)));
     connect(ui->nicknameTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(nicknameSelected()));
+    connect(ui->nicknameTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(itemChanged(QTableWidgetItem*)));
+
 
 }
 
@@ -48,15 +51,27 @@ NicknamesDialog::~NicknamesDialog() {
 
 void NicknamesDialog::addNickname() {
 
-    newNickname = true;
+    newItem = newRow = true;
     ui->addButton->setEnabled(false);
     int rows = ui->nicknameTableWidget->rowCount();
     ui->nicknameTableWidget->setRowCount(rows + 1);
-    newNicknameLineEdit = new QLineEdit(this);
-    editRow = rows;
-    ui->nicknameTableWidget->setCellWidget(editRow, 0, newNicknameLineEdit);
-    connect(newNicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEditComplete()));
-    newNicknameLineEdit->setFocus();
+    ui->nicknameTableWidget->setRowCount(rows + 1);
+    QTableWidgetItem *nicknameItem = new QTableWidgetItem;
+    nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->nicknameTableWidget->setItem(rows, 0, nicknameItem);
+    QTableWidgetItem *policyItem = new QTableWidgetItem(POLICIES[0]);
+    policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->nicknameTableWidget->setItem(rows, 1, policyItem);
+    policyComboBox = new QComboBox(this);
+    QStringList items;
+    items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
+    policyComboBox->addItems(items);
+    ui->nicknameTableWidget->setCellWidget(rows, 1, policyComboBox);
+
+    Pippip::Nickname newNick;
+    newNick.policy = POLICIES[0];
+    nicknames.push_back(newNick);
+    ui->nicknameTableWidget->editItem(nicknameItem);
 
 }
 
@@ -72,17 +87,17 @@ void NicknamesDialog::deleteNicknames() {
 
 }
 
-void NicknamesDialog::editPolicy(int row , int /* column */) {
+void NicknamesDialog::editPolicy(int /* row */, int /* column */) {
 
-    editRow = row;
+    //editRow = row;
     ui->addButton->setEnabled(false);
-    newPolicyComboBox = new QComboBox(this);
+    //newPolicyComboBox = new QComboBox(this);
     QStringList items;
     items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
-    newPolicyComboBox->addItems(items);
-    ui->nicknameTableWidget->setCellWidget(editRow, 1, newPolicyComboBox);
-    connect(newPolicyComboBox, SIGNAL(activated(int)), this, SLOT(policyEditComplete(int)));
-    newPolicyComboBox->setFocus();
+    //newPolicyComboBox->addItems(items);
+    //ui->nicknameTableWidget->setCellWidget(editRow, 1, newPolicyComboBox);
+    //connect(newPolicyComboBox, SIGNAL(activated(int)), this, SLOT(policyEditComplete(int)));
+    //newPolicyComboBox->setFocus();
 
 }
 
@@ -99,6 +114,30 @@ QString NicknamesDialog::getPolicyName(QString policy) const {
 
 }
 
+void NicknamesDialog::itemChanged(QTableWidgetItem *item) {
+
+    editItem = item;
+    QString value = editItem->text();
+
+    std::cout << "itemChanged called" << std::endl;
+
+    /*if (!newRow) {
+        if (validateNickname(value)) {
+            if (newItem) {
+                policyComboBox->setFocus();
+            }
+        }
+        else {
+            Pippip::CriticalAlert alert("Invalid Nickname",
+                                        "Invalid nickname, please choose another",
+                                        "Nicknames must be at least five characters long and must begin with an upper or lower case letter");
+            alert.exec();
+        }
+    }
+    newRow = false;*/
+
+}
+
 void NicknamesDialog::nicknameAdded(QString name, QString policy) {
 
     int rows = ui->nicknameTableWidget->rowCount();
@@ -111,7 +150,7 @@ void NicknamesDialog::nicknameAdded(QString name, QString policy) {
     policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     policyItem->setFlags(policyItem->flags() & ~Qt::ItemIsEditable);
     ui->nicknameTableWidget->setItem(rows, 1, policyItem);
-    ui->statusLabel->setText(editedNickname + " added");
+//    ui->statusLabel->setText(editedNickname + " added");
     qApp->processEvents();
 
 }
@@ -128,7 +167,7 @@ void NicknamesDialog::nicknameDeleted(QString name) {
 }
 
 void NicknamesDialog::nicknameEditComplete() {
-
+/*
     editedNickname = newNicknameLineEdit->text();
     if (validateNickname(editedNickname)) {
         QLabel *label = new QLabel(editedNickname, this);
@@ -149,7 +188,7 @@ void NicknamesDialog::nicknameEditComplete() {
                                     "Nicknames must be at least five characters long and must begin with an upper or lower case letter");
         alert.exec();
     }
-
+*/
 }
 
 void NicknamesDialog::nicknameSelected() {
@@ -158,14 +197,22 @@ void NicknamesDialog::nicknameSelected() {
 
 }
 
-void NicknamesDialog::nicknamesLoaded() {
+void NicknamesDialog::nicknamesLoaded(const Pippip::NicknameList& list) {
 
-    const Pippip::NicknameList& nicknames = manager->getNicknames();
-    //int rows = nicknames.size();
-    ui->nicknameTableWidget->setRowCount(0);
+    nicknames = list;
+    ui->nicknameTableWidget->clearContents();
+    int row = 0;
     for (auto nickname : nicknames) {
-        // nicknameAdded(nickname.entity.nickname, nickname.policy);
+        QTableWidgetItem *nicknameItem = new QTableWidgetItem(nickname.entity.nickname);
+        nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        nicknameItem->setFlags(nicknameItem->flags() & ~Qt::ItemIsEditable);
+        ui->nicknameTableWidget->setItem(row, 0, nicknameItem);
+        QTableWidgetItem *policyItem = new QTableWidgetItem(getPolicyName(nickname.policy));
+        policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        policyItem->setFlags(policyItem->flags() & ~Qt::ItemIsEditable);
+        ui->nicknameTableWidget->setItem(row++, 1, policyItem);
     }
+    ui->addButton->setEnabled(true);
     ui->statusLabel->setText("Nicknames loaded");
     qApp->processEvents();
 
@@ -184,8 +231,8 @@ void NicknamesDialog::nicknameUpdated(Pippip::Nickname nickname) {
 
 }
 
-void NicknamesDialog::policyEditComplete(int item) {
-
+void NicknamesDialog::policyEditComplete(int /* item */) {
+/*
     Pippip::Nickname nickname;
     editedPolicy = POLICIES[item];
 
@@ -213,26 +260,22 @@ void NicknamesDialog::policyEditComplete(int item) {
     }
 
     ui->addButton->setEnabled(true);
-
+*/
 }
 
 void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
 
     manager = man;
-    connect(manager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
+    connect(manager, SIGNAL(nicknamesLoaded(const Pippip::NicknameList&)),
+                                    this, SLOT(nicknamesLoaded(const Pippip::NicknameList&)));
     connect(manager, SIGNAL(nicknameDeleted(QString)), this, SLOT(nicknameDeleted(QString)));
-    connect(manager, SIGNAL(nicknameUpdated(Pippip::Nickname)), this,
-                                                SLOT(nicknameUpdated(Pippip::Nickname)));
-    connect(manager, SIGNAL(nicknameAdded(QString, QString)), this,
-                                                SLOT(nicknameAdded(QString,QString)));
-/*
-    if (!manager->isLoaded()) {
-        manager->loadNicknames();
-    }
-    else {
-        nicknamesLoaded();
-    }
-*/
+    connect(manager, SIGNAL(nicknameUpdated(Pippip::Nickname)),
+                                                this, SLOT(nicknameUpdated(Pippip::Nickname)));
+    connect(manager, SIGNAL(nicknameAdded(QString, QString)),
+                                                    this, SLOT(nicknameAdded(QString,QString)));
+
+    manager->loadNicknames();
+
 }
 
 bool NicknamesDialog::validateNickname(const QString &nickname) const {

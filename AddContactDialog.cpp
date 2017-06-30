@@ -94,13 +94,8 @@ void AddContactDialog::pasteId(bool) {
 void AddContactDialog::setNicknameManager(Pippip::NicknameManager *manager) {
 
     nicknameManager = manager;
-    if (!nicknameManager->isLoaded()) {
-        connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
-        nicknameManager->loadNicknames();
-    }
-    else {
-        nicknamesLoaded();
-    }
+    connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
+    nicknameManager->loadNicknames();
 
 }
 

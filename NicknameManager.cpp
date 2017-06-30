@@ -196,7 +196,7 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
         }
         else if (response && loadNicknames(response.getJson())) {
             loaded = true;
-            emit nicknamesLoaded();
+            emit nicknamesLoaded(nicknames);
         }
         else {
             CriticalAlert alert("Nickname Load Failed", "Unable to fetch nicknames", response.getError());
@@ -217,6 +217,9 @@ void NicknameManager::loadNicknames() {
         connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(loadComplete(RESTHandler*)));
         QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
         handler->doPost(req);
+    }
+    else {
+        emit nicknamesLoaded(nicknames);
     }
 
 }

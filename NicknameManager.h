@@ -26,8 +26,8 @@ class NicknameManager : public QObject {
     signals:
         void nicknameAdded(QString name, QString policy);
         void nicknameDeleted(QString name);
-        void nicknamesLoaded();
-        void nicknameUpdated(Pippip::Nickname nickname);
+        void nicknamesLoaded(const Pippip::NicknameList&);
+        void nicknameUpdated(const Pippip::Nickname&);
 
     protected slots:
         void addComplete(RESTHandler*);
@@ -41,7 +41,7 @@ class NicknameManager : public QObject {
         void deleteNickname(const QString& nick);
         const Nickname& getNickname(const QString& nick) const;
         const NicknameList& getNicknames() const { return nicknames; }
-        bool isLoaded() const { return loaded; }
+        //bool isLoaded() const { return loaded; }
         void loadNicknames();
         void manageNicknames();
         void updateNickname(const Nickname& nickname);
@@ -56,7 +56,6 @@ class NicknameManager : public QObject {
         bool requestComplete;
         bool timedOut;
         SessionState *state;
-
         NicknameList nicknames;
 
 };

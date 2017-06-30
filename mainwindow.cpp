@@ -15,6 +15,7 @@
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QThread>
 #include <QLabel>
+#include <QKeySequence>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
@@ -32,6 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     statusLabel = new QLabel(this);
     statusBar()->addWidget(statusLabel);
+
+#if defined (Q_OS_MACX)
+    ui->LoginAction->setShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_L));
+#endif
 
 }
 
