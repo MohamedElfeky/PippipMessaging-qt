@@ -25,6 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
   contactManager(0) {
 
     ui->setupUi(this);
+#if defined (Q_OS_MACX)
+    ui->LoginAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
+    ui->LoginAction->setShortcutContext(Qt::ApplicationShortcut);
+#endif
+
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
@@ -33,10 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     statusLabel = new QLabel(this);
     statusBar()->addWidget(statusLabel);
-
-#if defined (Q_OS_MACX)
-    ui->LoginAction->setShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_L));
-#endif
 
 }
 

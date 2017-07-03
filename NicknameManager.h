@@ -24,10 +24,11 @@ class NicknameManager : public QObject {
         ~NicknameManager() {}
 
     signals:
-        void nicknameAdded(QString name, QString policy);
-        void nicknameDeleted(QString name);
+        void nicknameAdded(const QString& name);
+        void nicknameDeleted(const QString& name);
         void nicknamesLoaded(const Pippip::NicknameList&);
         void nicknameUpdated(const Pippip::Nickname&);
+        void requestFailed(const QString& reqName, const QString& error);
 
     protected slots:
         void addComplete(RESTHandler*);

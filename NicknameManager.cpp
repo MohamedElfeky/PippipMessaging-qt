@@ -2,7 +2,6 @@
 #include "EnclaveRequest.h"
 #include "SessionState.h"
 #include "RESTHandler.h"
-#include "CriticalAlert.h"
 #include "EnclaveResponse.h"
 #include "EnclaveException.h"
 #include <QTimer>
@@ -10,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonValue>
 #include <assert.h>
+#include <iostream>
 
 namespace Pippip {
 
@@ -28,29 +28,27 @@ void NicknameManager::addComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Add Nickname Failed", "Unable to add nickname", handler->getError());
-            alert.exec();
+            emit requestFailed("Add Nickname", handler->getError());
         }
         else if (response) {
             Nickname nickname;
             if (getNickname(response, nickname)) {
                 nicknames.push_back(nickname);
-                emit nicknameAdded(nickname.entity.nickname, nickname.policy);
+                emit nicknameAdded(nickname.entity.nickname);
             }
             else {
-                CriticalAlert alert("Add Nickname Failed", "Unable to add nickname", "Invalid server response");
-                alert.exec();
+                emit requestFailed("Add Nickname", "Invalid server response");
             }
         }
         else {
-            CriticalAlert alert("Add Nickname Failed", "Unable to add nickname", response.getError());
-            alert.exec();
+            emit requestFailed("Add Nickname", response.getError());
         }
     }
 
 }
 
 void NicknameManager::addNickname(const Nickname &nick) {
+
 
     EnclaveRequest req(state);
     req.setRequestType("addNickname");
@@ -99,8 +97,7 @@ void NicknameManager::delComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Add Nickname Failed", "Unable to delete nickname", handler->getError());
-            alert.exec();
+            emit requestFailed("Delete Nickname", handler->getError());
         }
         else if (response) {
             Nickname nickname;
@@ -108,13 +105,11 @@ void NicknameManager::delComplete(RESTHandler *handler) {
                 emit nicknameDeleted(nickname.entity.nickname);
             }
             else {
-                CriticalAlert alert("Add Nickname Failed", "Unable to delete nickname", "Invalid server response");
-                alert.exec();
+                emit requestFailed("Delete Nickname", "Invalid server response");
             }
         }
         else {
-            CriticalAlert alert("Add Nickname Failed", "Unable to delete nickname", response.getError());
-            alert.exec();
+            emit requestFailed("Delete Nickname", response.getError());
         }
     }
 
@@ -122,6 +117,12 @@ void NicknameManager::delComplete(RESTHandler *handler) {
 
 void NicknameManager::deleteNickname(const QString& nick) {
 
+    std::cout << "deleteNickname called" << std::endl;
+    std::cout << "Nickname : " << nick.toUtf8().toStdString() << std::endl;
+
+    emit nicknameDeleted(nick);
+
+/*
     EnclaveRequest req(state);
     req.setRequestType("deleteNickname");
     req.setValue("publicId", state->publicId);
@@ -137,7 +138,7 @@ void NicknameManager::deleteNickname(const QString& nick) {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
-
+*/
 }
 
 /*
@@ -191,16 +192,19 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Nickname Load Failed", "Unable to fetch nicknames", handler->getError());
-            alert.exec();
+            emit requestFailed("Fetch Nicknames", handler->getError());
         }
-        else if (response && loadNicknames(response.getJson())) {
-            loaded = true;
-            emit nicknamesLoaded(nicknames);
+        else if (response) {
+            if (loadNicknames(response.getJson())) {
+                loaded = true;
+                emit nicknamesLoaded(nicknames);
+            }
+            else {
+                emit requestFailed("Fetch Nicknames", "Invalid server response");
+            }
         }
         else {
-            CriticalAlert alert("Nickname Load Failed", "Unable to fetch nicknames", response.getError());
-            alert.exec();
+            emit requestFailed("Fetch Nicknames", response.getError());
         }
     }
 
@@ -228,23 +232,17 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
 
     QJsonValue nickValue = json["nicknames"];
     if (!nickValue.isArray()) {
-        CriticalAlert alert("Fetch Nicknames Error", "Invalid server response");
-        alert.exec();
         return false;
     }
 
     QJsonArray nicknamesJson = nickValue.toArray();
     for (const QJsonValue& value : nicknamesJson) {
         if (!value.isObject()) {
-            CriticalAlert alert("Fetch Nicknames Error", "Invalid server response");
-            alert.exec();
             return false;
         }
         QJsonObject nickObj = value.toObject();
         QJsonValue entityValue = nickObj["entity"];
         if (!entityValue.isObject()) {
-            CriticalAlert alert("Fetch Nicknames Error", "Invalid server response");
-            alert.exec();
             return false;
         }
         QJsonObject entityObj = entityValue.toObject();
@@ -252,8 +250,6 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
         QJsonValue policyValue = nickObj["policy"];
         QJsonValue idValue = entityObj["publicId"];
         if (!nameValue.isString() || !policyValue.isString() || !idValue.isString()) {
-            CriticalAlert alert("Fetch Nicknames Error", "Invalid server response");
-            alert.exec();
             return false;
         }
         Entity entity = { nameValue.toString(), idValue.toString(), "", "" };
@@ -269,15 +265,18 @@ void NicknameManager::requestTimedOut() {
 
     if (!requestComplete) {
         timedOut = true;
-        CriticalAlert alert("Enclave Request Error", "Nickname request timed out");
-        alert.exec();
+        emit requestFailed("Request", "Request timed out");
     }
 
 }
 
 void NicknameManager::updateNickname(const Nickname& nick) {
 
-    EnclaveRequest req(state);
+    std::cout << "updateNickname called" << std::endl;
+    std::cout << "Nickname : " << nick.entity.nickname.toUtf8().toStdString() << std::endl;
+    std::cout << "Policy = : " << nick.policy.toUtf8().toStdString() << std::endl;
+
+/*    EnclaveRequest req(state);
     req.setRequestType("updateNickname");
     req.setValue("publicId", state->publicId);
     QJsonObject nickname = encodeNickname(nick);
@@ -289,7 +288,7 @@ void NicknameManager::updateNickname(const Nickname& nick) {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
-
+*/
 }
 
 void NicknameManager::updateComplete(RESTHandler *handler) {
@@ -299,8 +298,7 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Add Nickname Failed", "Unable to update policy", handler->getError());
-            alert.exec();
+            emit requestFailed("Update Nickname", handler->getError());
         }
         else if (response) {
             Nickname nickname;
@@ -308,13 +306,11 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
                 emit nicknameUpdated(nickname);
             }
             else {
-                CriticalAlert alert("Add Nickname Failed", "Unable to update policy", "Invalid server response");
-                alert.exec();
+                emit requestFailed("Update Nickname", "Invalid server response");
             }
         }
         else {
-            CriticalAlert alert("Add Nickname Failed", "Unable to update policy", response.getError());
-            alert.exec();
+            emit requestFailed("Update Nickname", response.getError());
         }
     }
 

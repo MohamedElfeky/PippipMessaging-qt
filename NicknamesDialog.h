@@ -27,25 +27,29 @@ class NicknamesDialog : public QDialog {
         ~NicknamesDialog();
 
     public slots:
-        void nicknameAdded(QString name, QString policy);
-        void nicknameDeleted(QString name);
+        void nicknameAdded(const QString& name);
+        void nicknameDeleted(const QString& name);
         void nicknamesLoaded(const Pippip::NicknameList& list);
         void nicknameUpdated(Pippip::Nickname nickname);
+        void requestFailed(const QString& reqName, const QString& error);
 
     private slots:
         void addNickname();
-        void deleteNicknames();
+        void deleteNickname();
         void editPolicy(int row, int column);
         void itemChanged(QTableWidgetItem*);
-        void nicknameEditComplete();
         void nicknameSelected();
-        void policyEditComplete(int);
+        void policyChanged(const QString&);
+        void policySelected();
 
     public:
         void setManager(Pippip::NicknameManager *man);
 
     private:
-        QString getPolicyName(QString policy) const;
+        const QString& getPolicy(const QString& name) const;
+        const QString& getPolicyName(const QString& policy) const;
+        void policyEdited(const QString& policy);
+        void loadTable();
         bool validateNickname(const QString& nickname) const;
 
     private:
@@ -56,7 +60,7 @@ class NicknamesDialog : public QDialog {
         QTableWidgetItem *editItem;
         QComboBox *policyComboBox;
         bool newItem;
-        bool newRow;
+        int newColumnCount;
 
         /*
         bool newNickname;
