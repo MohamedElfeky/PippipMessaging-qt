@@ -65,6 +65,71 @@ void NicknameManager::addNickname(const Nickname &nick) {
 
 }
 
+void NicknameManager::delComplete(RESTHandler *handler) {
+
+    if (!timedOut) {
+        requestComplete = true;
+
+        EnclaveResponse response(handler->getResponse(), state);
+        if (!handler->successful()) {
+            emit requestFailed("Delete Nickname", handler->getError());
+        }
+        else if (response) {
+            Nickname nickname;
+            if (getNickname(response, nickname)) {
+                deleteFromNicknames(nickname.entity.nickname);
+                emit nicknameDeleted(nickname.entity.nickname);
+            }
+            else {
+                emit requestFailed("Delete Nickname", "Invalid server response");
+            }
+        }
+        else {
+            emit requestFailed("Delete Nickname", response.getError());
+        }
+    }
+
+}
+
+void NicknameManager::deleteFromNicknames(const QString& nickname) {
+
+    NicknameList temp;
+
+    for (auto nick : nicknames) {
+        if (nick.entity.nickname != nickname) {
+            temp.push_back(nick);
+        }
+    }
+    nicknames.swap(temp);
+
+}
+
+void NicknameManager::deleteNickname(const QString& nick) {
+/*
+    std::cout << "deleteNickname called" << std::endl;
+    std::cout << "Nickname : " << nick.toUtf8().toStdString() << std::endl;
+
+    emit nicknameDeleted(nick);
+*/
+
+    EnclaveRequest req(state);
+    req.setRequestType("deleteNickname");
+    req.setValue("publicId", state->publicId);
+    Nickname nickname;
+    nickname.entity.nickname = nick;
+    nickname.entity.publicId = state->publicId;
+    QJsonObject nickObj = encodeNickname(nickname);
+    QJsonArray array;
+    array.append(nickObj);
+    req.setValue("nicknames", array);
+    RESTHandler *handler = new RESTHandler(this);
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
+    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
+    handler->doPost(req);
+
+}
+
 QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
 
     QJsonObject nickObj;
@@ -88,57 +153,6 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
 
     return nickObj;
 
-}
-
-void NicknameManager::delComplete(RESTHandler *handler) {
-
-    if (!timedOut) {
-        requestComplete = true;
-
-        EnclaveResponse response(handler->getResponse(), state);
-        if (!handler->successful()) {
-            emit requestFailed("Delete Nickname", handler->getError());
-        }
-        else if (response) {
-            Nickname nickname;
-            if (getNickname(response, nickname)) {
-                emit nicknameDeleted(nickname.entity.nickname);
-            }
-            else {
-                emit requestFailed("Delete Nickname", "Invalid server response");
-            }
-        }
-        else {
-            emit requestFailed("Delete Nickname", response.getError());
-        }
-    }
-
-}
-
-void NicknameManager::deleteNickname(const QString& nick) {
-
-    std::cout << "deleteNickname called" << std::endl;
-    std::cout << "Nickname : " << nick.toUtf8().toStdString() << std::endl;
-
-    emit nicknameDeleted(nick);
-
-/*
-    EnclaveRequest req(state);
-    req.setRequestType("deleteNickname");
-    req.setValue("publicId", state->publicId);
-    Nickname nickname;
-    nickname.entity.nickname = nick;
-    nickname.entity.publicId = state->publicId;
-    QJsonObject nickObj = encodeNickname(nickname);
-    QJsonArray array;
-    array.append(nickObj);
-    req.setValue("nicknames", array);
-    RESTHandler *handler = new RESTHandler(this);
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
-    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
-    handler->doPost(req);
-*/
 }
 
 /*
@@ -271,12 +285,12 @@ void NicknameManager::requestTimedOut() {
 }
 
 void NicknameManager::updateNickname(const Nickname& nick) {
-
+/*
     std::cout << "updateNickname called" << std::endl;
     std::cout << "Nickname : " << nick.entity.nickname.toUtf8().toStdString() << std::endl;
-    std::cout << "Policy = : " << nick.policy.toUtf8().toStdString() << std::endl;
-
-/*    EnclaveRequest req(state);
+    std::cout << "Policy :" << nick.policy.toUtf8().toStdString() << std::endl;
+*/
+    EnclaveRequest req(state);
     req.setRequestType("updateNickname");
     req.setValue("publicId", state->publicId);
     QJsonObject nickname = encodeNickname(nick);
@@ -288,7 +302,7 @@ void NicknameManager::updateNickname(const Nickname& nick) {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
-*/
+
 }
 
 void NicknameManager::updateComplete(RESTHandler *handler) {
@@ -303,6 +317,7 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
         else if (response) {
             Nickname nickname;
             if (getNickname(response, nickname)) {
+                updatePolicy(nickname);
                 emit nicknameUpdated(nickname);
             }
             else {
@@ -311,6 +326,16 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
         }
         else {
             emit requestFailed("Update Nickname", response.getError());
+        }
+    }
+
+}
+
+void NicknameManager::updatePolicy(const Nickname& nickname) {
+
+    for (Nickname& nick : nicknames) {
+        if (nick.entity.nickname == nickname.entity.nickname) {
+            nick.policy = nickname.policy;
         }
     }
 

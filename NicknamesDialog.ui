@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
-    <height>267</height>
+    <width>555</width>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>220</y>
+     <x>450</x>
+     <y>260</y>
      <width>81</width>
      <height>32</height>
     </rect>
@@ -32,64 +32,11 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QPushButton" name="addButton">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>10</y>
-     <width>32</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>+</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="deleteButton">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>41</y>
-     <width>32</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>-</string>
-   </property>
-  </widget>
-  <widget class="QTableWidget" name="nicknameTableWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>331</width>
-     <height>192</height>
-    </rect>
-   </property>
-   <property name="showGrid">
-    <bool>false</bool>
-   </property>
-   <property name="columnCount">
-    <number>2</number>
-   </property>
-   <attribute name="verticalHeaderVisible">
-    <bool>false</bool>
-   </attribute>
-   <column/>
-   <column/>
-  </widget>
   <widget class="QLabel" name="statusLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>223</y>
+     <y>263</y>
      <width>241</width>
      <height>20</height>
     </rect>
@@ -98,8 +45,177 @@
     <string>Fetching Nicknames</string>
    </property>
   </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>531</width>
+     <height>240</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="nicknamesTab">
+    <attribute name="title">
+     <string>Nicknames</string>
+    </attribute>
+    <widget class="QPushButton" name="deleteNicknameButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>480</x>
+       <y>41</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="addNicknameButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>480</x>
+       <y>10</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="nicknameTableWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>460</width>
+       <height>190</height>
+      </rect>
+     </property>
+     <property name="showGrid">
+      <bool>false</bool>
+     </property>
+     <property name="columnCount">
+      <number>2</number>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <column/>
+     <column/>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="whitelistTab">
+    <attribute name="title">
+     <string>Friends List</string>
+    </attribute>
+    <widget class="QPushButton" name="addFriendButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>480</x>
+       <y>10</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="whitelistTableWidget">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>460</width>
+       <height>190</height>
+      </rect>
+     </property>
+     <property name="columnCount">
+      <number>2</number>
+     </property>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <column/>
+     <column/>
+    </widget>
+    <widget class="QPushButton" name="deleteFriendButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>480</x>
+       <y>41</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pastePushButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>480</x>
+       <y>72</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>32</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Paste ID</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="pippip.qrc">
+       <normaloff>:/mainwindow/images/652762-clipboard-alt-480.png</normaloff>:/mainwindow/images/652762-clipboard-alt-480.png</iconset>
+     </property>
+    </widget>
+   </widget>
+  </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="pippip.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

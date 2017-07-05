@@ -49,8 +49,9 @@ SOURCES += main.cpp\
     ContactsDialog.cpp \
     ContactManager.cpp \
     AddContactDialog.cpp \
-    EditWhitelistDialog.cpp \
-    EnterKeyFilter.cpp
+    EnterKeyFilter.cpp \
+    NicknameHandler.cpp \
+    WhitelistHandler.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -97,8 +98,9 @@ HEADERS  += mainwindow.h \
     Nickname.h \
     Entity.h \
     ContactRequest.h \
-    EditWhitelistDialog.h \
-    EnterKeyFilter.h
+    EnterKeyFilter.h \
+    NicknameHandler.h \
+    WhitelistHandler.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
@@ -106,8 +108,7 @@ FORMS    += mainwindow.ui \
     LoginDialog.ui \
     NicknamesDialog.ui \
     ContactsDialog.ui \
-    AddContactDialog.ui \
-    EditWhitelistDialog.ui
+    AddContactDialog.ui
 
 QT += network
 

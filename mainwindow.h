@@ -36,6 +36,7 @@ class MainWindow : public QMainWindow {
         void manageNicknames();
         void newAccount();
         void updateStatus(QString);
+        void testShortcut();
 
     private:
         Ui::MainWindow *ui;

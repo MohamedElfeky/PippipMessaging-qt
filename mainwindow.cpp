@@ -16,6 +16,9 @@
 #include <QThread>
 #include <QLabel>
 #include <QKeySequence>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
@@ -26,10 +29,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 #if defined (Q_OS_MACX)
-    ui->LoginAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
+    ui->LoginAction->setShortcut(QKeySequence(Qt::Key_L));
     ui->LoginAction->setShortcutContext(Qt::ApplicationShortcut);
+    ui->NewAccountAction->setShortcut(QKeySequence::New);
 #endif
 
+    /*
+    QMenu *testMenu = new QMenu("Test");
+    ui->menuBar->addMenu(testMenu);
+    QAction *testAction = new QAction("Shortcut Test");
+    testAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_T));
+    testMenu->addAction(testAction);
+    connect(testAction, SIGNAL(triggered()), this, SLOT(testShortcut()));
+*/
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
@@ -49,6 +61,13 @@ MainWindow::~MainWindow() {
     delete ui;
 
 }
+
+void MainWindow::testShortcut() {
+
+    std::cout << "Test selected" << std::endl;
+
+}
+
 /*
 void MainWindow::fortunaStreamError(QString error) {
 
@@ -119,7 +138,7 @@ void MainWindow::manageContacts() {
 
 void MainWindow::manageNicknames() {
 
-    NicknamesDialog *dialog = new NicknamesDialog(session, this);
+    NicknamesDialog *dialog = new NicknamesDialog(this);
     dialog->setManager(nicknameManager);
     dialog->exec();
 
