@@ -3,7 +3,7 @@
 
 #include "Nickname.h"
 #include <QDialog>
-#include <QModelIndex>
+#include <QRegularExpression>
 #include <vector>
 
 namespace Ui {
@@ -16,8 +16,9 @@ namespace Pippip {
     class NicknameManager;
 }
 
-class QTableWidgetItem;
 class QComboBox;
+class QLineEdit;
+class QRegularExpressionValidator;
 
 class NicknamesDialog : public QDialog {
         Q_OBJECT
@@ -37,8 +38,9 @@ class NicknamesDialog : public QDialog {
         void addNickname();
         void deleteNickname();
         void editPolicy(int row, int column);
-        void itemChanged(QTableWidgetItem*);
-        void nicknameSelected();
+        //void itemChanged(QTableWidgetItem*);
+        void nicknameEdited();
+        void nicknameSelected();    // Enables delete button
         void policyChanged(const QString&);
         void policySelected();
 
@@ -50,22 +52,24 @@ class NicknamesDialog : public QDialog {
         const QString& getPolicyName(const QString& policy) const;
         void policyEdited(const QString& policy);
         void loadTable();
-        bool validateNickname(const QString& nickname) const;
+        //bool validateNickname(const QString& nickname) const;
 
     private:
         Ui::NicknamesDialog *ui;
         Pippip::SessionState *state;
         Pippip::NicknameManager *manager;
         Pippip::NicknameList nicknames;
-        QTableWidgetItem *editItem;
+        //QTableWidgetItem *editItem;
         QComboBox *policyComboBox;
+        QLineEdit *nicknameLineEdit;
+        QRegularExpression nicknameRE;
+        QRegularExpressionValidator *nicknameValidator;
         bool newItem;
-        int newColumnCount;
 
         /*
+        int newColumnCount;
         bool newNickname;
         QLineEdit *newNicknameLineEdit;
-        int editRow;
         QString editedNickname;
 
         QComboBox *newPolicyComboBox;

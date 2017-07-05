@@ -5,12 +5,13 @@
 #include "CriticalAlert.h"
 #include "EditWhitelistDialog.h"
 #include "EnterKeyFilter.h"
-#include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QStringList>
 #include <QLabel>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <assert.h>
 #include <iostream>
 
@@ -22,8 +23,8 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
 : QDialog(parent),
   ui(new Ui::NicknamesDialog),
   state(sess),
-  newItem(false),
-  newColumnCount(0) {
+  newItem(false) {
+  //newColumnCount(0) {
 
     ui->setupUi(this);
 
@@ -44,6 +45,9 @@ NicknamesDialog::NicknamesDialog(Pippip::SessionState *sess, QWidget *parent)
     connect(ui->nicknameTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(nicknameSelected()));
     connect(ui->nicknameTableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(itemChanged(QTableWidgetItem*)));
 
+    nicknameRE.setPattern("[A-z]+[A-z0-9_\\-]{5,}");
+    nicknameRE.setPatternOptions(QRegularExpression::OptimizeOnFirstUsageOption);
+    nicknameValidator = new QRegularExpressionValidator(nicknameRE, this);
 
 }
 
@@ -54,16 +58,20 @@ NicknamesDialog::~NicknamesDialog() {
 void NicknamesDialog::addNickname() {
 
     newItem = true;
-    newColumnCount = 2;
     ui->addButton->setEnabled(false);
-    int rows = ui->nicknameTableWidget->rowCount();
-    ui->nicknameTableWidget->setRowCount(rows + 1);
+    int editRow = ui->nicknameTableWidget->rowCount();
+    ui->nicknameTableWidget->setRowCount(editRow + 1);
+    nicknameLineEdit = new QLineEdit;
+    nicknameLineEdit->setValidator(nicknameValidator);
+    connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
+    ui->nicknameTableWidget->setCellWidget(editRow, 0, nicknameLineEdit);
+/*    newColumnCount = 2;
     QTableWidgetItem *nicknameItem = new QTableWidgetItem;
     nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->nicknameTableWidget->setItem(rows, 0, nicknameItem);
     QTableWidgetItem *policyItem = new QTableWidgetItem(POLICIES[0]);
     policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    ui->nicknameTableWidget->setItem(rows, 1, policyItem);
+    ui->nicknameTableWidget->setItem(rows, 1, policyItem);*/
     policyComboBox = new QComboBox(this);
     QStringList items;
     items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
@@ -72,12 +80,13 @@ void NicknamesDialog::addNickname() {
     EnterKeyFilter *keyFilter = new EnterKeyFilter(this);
     policyComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(policySelected()));
-    ui->nicknameTableWidget->setCellWidget(rows, 1, policyComboBox);
+    ui->nicknameTableWidget->setCellWidget(editRow, 1, policyComboBox);
 
     Pippip::Nickname newNick;
-    newNick.policy = POLICIES[0];
+    //newNick.policy = POLICIES[0];
     nicknames.push_back(newNick);
-    ui->nicknameTableWidget->editItem(nicknameItem);
+    nicknameLineEdit->setFocus();
+    //ui->nicknameTableWidget->editItem(nicknameItem);
 
 }
 
@@ -127,7 +136,7 @@ const QString& NicknamesDialog::getPolicyName(const QString& policy) const {
     assert(false);
 
 }
-
+/*
 void NicknamesDialog::itemChanged(QTableWidgetItem *item) {
 
     editItem = item;
@@ -153,21 +162,27 @@ void NicknamesDialog::itemChanged(QTableWidgetItem *item) {
     }
 
 }
-
+*/
 void NicknamesDialog::loadTable() {
 
     ui->nicknameTableWidget->clearContents();
     ui->nicknameTableWidget->setRowCount(nicknames.size());
     int row = 0;
     for (auto nickname : nicknames) {
-        QTableWidgetItem *nicknameItem = new QTableWidgetItem(nickname.entity.nickname);
+        QLabel *nameLabel = new QLabel(nickname.entity.nickname);
+        nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
+        QLabel *policyLabel = new QLabel(nickname.policy);
+        policyLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        ui->nicknameTableWidget->setCellWidget(row, 1, policyLabel);
+/*        QTableWidgetItem *nicknameItem = new QTableWidgetItem(nickname.entity.nickname);
         nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         nicknameItem->setFlags(nicknameItem->flags() & ~Qt::ItemIsEditable);
         ui->nicknameTableWidget->setItem(row, 0, nicknameItem);
         QTableWidgetItem *policyItem = new QTableWidgetItem(getPolicyName(nickname.policy));
         policyItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         policyItem->setFlags(policyItem->flags() & ~Qt::ItemIsEditable);
-        ui->nicknameTableWidget->setItem(row++, 1, policyItem);
+        ui->nicknameTableWidget->setItem(row++, 1, policyItem);*/
     }
     ui->addButton->setEnabled(true);
 }
@@ -176,12 +191,10 @@ void NicknamesDialog::nicknameAdded(const QString& name) {
 
     nicknames = manager->getNicknames();
     loadTable();
-    int row = 0;
-    for (auto nickname : nicknames) {
-        if (nickname.entity.nickname == name) {
+    for (int row = 0; row < nicknames.size(); ++row) {
+        if (nicknames[row].entity.nickname == name) {
             ui->nicknameTableWidget->selectRow(row);
         }
-        row++;
     }
     ui->statusLabel->setText(name + " added");
     qApp->processEvents();
@@ -194,6 +207,18 @@ void NicknamesDialog::nicknameDeleted(const QString& name) {
     loadTable();
     ui->statusLabel->setText(name + " deleted");
     qApp->processEvents();
+
+}
+
+void NicknamesDialog::nicknameEdited() {
+
+    int row = ui->nicknameTableWidget->currentRow();
+    QString nickname = nicknameLineEdit->text();
+    nicknames[row].entity.nickname = nickname;
+    QLabel *nameLabel = new QLabel(nickname);
+    nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
+    policyComboBox->setFocus();
 
 }
 
@@ -228,6 +253,9 @@ void NicknamesDialog::nicknameUpdated(Pippip::Nickname nickname) {
 
 }
 
+/*
+ * Signaled when policy combo box selection changes.
+ */
 void NicknamesDialog::policyChanged(const QString& value) {
 
     QString policy = getPolicy(value);
@@ -246,7 +274,6 @@ void NicknamesDialog::policyEdited(const QString &policy) {
     }
 
     nicknames[row].policy = policy;
-    ui->nicknameTableWidget->item(row, 1)->setText(getPolicyName(policy));
     ui->nicknameTableWidget->removeCellWidget(row, 1);
 
     if (newItem) {
@@ -263,7 +290,7 @@ void NicknamesDialog::policyEdited(const QString &policy) {
 }
 
 /*
- * Invoked from key filter signal.
+ * Invoked from key filter signal on enter or return pressed.
  */
 void NicknamesDialog::policySelected() {
 
@@ -296,7 +323,7 @@ void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
     manager->loadNicknames();
 
 }
-
+/*
 bool NicknamesDialog::validateNickname(const QString &nickname) const {
 
     if (nickname.length() < 5) {
@@ -310,3 +337,4 @@ bool NicknamesDialog::validateNickname(const QString &nickname) const {
     return true;
 
 }
+*/
