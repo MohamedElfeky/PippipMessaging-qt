@@ -65,6 +65,69 @@ void NicknameManager::addNickname(const Nickname &nick) {
 
 }
 
+bool NicknameManager::decodeEntity(const QJsonObject &obj, Entity &entity) {
+
+    QJsonValue nicknameValue = obj["nickname"];
+    if (!nicknameValue.isString()) {
+        return false;
+    }
+    entity.nickname = nicknameValue.toString();
+
+    QJsonValue publicIdValue = obj["publicId"];
+    if (!publicIdValue.isString()) {
+        return false;
+    }
+    entity.publicId = publicIdValue.toString();
+
+    QJsonValue encryptionRSAValue = obj["encryptionRSA"];
+    if (!encryptionRSAValue.isString()) {
+        return false;
+    }
+    entity.encryptionRSA = encryptionRSAValue.toString();
+
+    QJsonValue signingRSAValue = obj["signingRSA"];
+    if (!signingRSAValue.isString()) {
+        return false;
+    }
+    entity.signingRSA = signingRSAValue.toString();
+
+    return true;
+
+}
+
+bool NicknameManager::decodeNickname(const QJsonObject &obj, Nickname &nickname) {
+
+    QJsonValue entityValue = obj["entity"];
+    if (!entityValue.isObject()) {
+        return false;
+    }
+    if (!decodeEntity(entityValue.toObject(), nickname.entity)) {
+        return false;
+    }
+
+    QJsonValue policyValue = obj["policy"];
+    if (!policyValue.isString()) {
+        return false;
+    }
+    nickname.policy = policyValue.toString();
+
+    QJsonValue whitelistValue = obj["whitelist"];
+    if (!whitelistValue.isArray()) {
+        return false;
+    }
+    QJsonArray whitelist = whitelistValue.toArray();
+    for (const QJsonValue& wlEntityValue : whitelist) {
+        Entity wlEntity;
+        if (!wlEntityValue.isObject() || !decodeEntity(wlEntityValue.toObject(), wlEntity)) {
+            return false;
+        }
+        nickname.whitelist.push_back(wlEntity);
+    }
+
+    return true;
+
+}
+
 void NicknameManager::delComplete(RESTHandler *handler) {
 
     if (!timedOut) {
@@ -161,30 +224,16 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
 bool NicknameManager::getNickname(const EnclaveResponse& resp, Nickname& nickname) {
 
     QJsonValue nicksValue = resp.getValue("nicknames");
-    if (nicksValue.isArray()) {
-        QJsonArray nicknames  = nicksValue.toArray();
-        QJsonValue nickValue = nicknames[0];
-        if (!nickValue.isObject()) {
-            return false;
-        }
-        QJsonObject nick = nickValue.toObject();
-        QJsonValue entityValue = nick["entity"];
-        if (!entityValue.isObject()) {
-            return false;
-        }
-        QJsonObject entity = entityValue.toObject();
-        QJsonValue name = entity["nickname"];
-        QJsonValue policy = nick["policy"];
-        QJsonValue publicId = entity["publicId"];
-        if (!name.isString() || !policy.isString() || !publicId.isString()) {
-            return false;
-        }
-        nickname.entity.nickname = name.toString();
-        nickname.policy = policy.toString();
-        nickname.entity.publicId = publicId.toString();
-        return true;
+    if (!nicksValue.isArray()) {
+        return false;
     }
-    return false;
+    QJsonArray nicknames  = nicksValue.toArray();
+    QJsonValue nickValue = nicknames[0];
+    if (!nickValue.isObject() || !decodeNickname(nickValue.toObject(), nickname)) {
+        return false;
+    }
+
+    return true;
 
 }
 
@@ -251,24 +300,10 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
 
     QJsonArray nicknamesJson = nickValue.toArray();
     for (const QJsonValue& value : nicknamesJson) {
-        if (!value.isObject()) {
+        Nickname nickname;
+        if (!value.isObject() || !decodeNickname(value.toObject(), nickname)) {
             return false;
         }
-        QJsonObject nickObj = value.toObject();
-        QJsonValue entityValue = nickObj["entity"];
-        if (!entityValue.isObject()) {
-            return false;
-        }
-        QJsonObject entityObj = entityValue.toObject();
-        QJsonValue nameValue = entityObj["nickname"];
-        QJsonValue policyValue = nickObj["policy"];
-        QJsonValue idValue = entityObj["publicId"];
-        if (!nameValue.isString() || !policyValue.isString() || !idValue.isString()) {
-            return false;
-        }
-        Entity entity = { nameValue.toString(), idValue.toString(), "", "" };
-        EntityList whitelist;
-        Nickname nickname = { entity, policyValue.toString(), whitelist };
         nicknames.push_back(nickname);
     }
     return true;

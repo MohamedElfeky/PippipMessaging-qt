@@ -84,7 +84,7 @@ void NicknameHandler::editPolicy(int row, int /* column */) {
     QStringList items;
     items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
     policyComboBox->addItems(items);
-    EnterKeyFilter *keyFilter = new EnterKeyFilter(this);
+    EnterKeyFilter *keyFilter = new EnterKeyFilter(policyComboBox);
     policyComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(policySelected()));
     ui->nicknameTableWidget->setCellWidget(row, 1, policyComboBox);

@@ -52,7 +52,8 @@ SOURCES += main.cpp\
     EnterKeyFilter.cpp \
     NicknameHandler.cpp \
     WhitelistHandler.cpp \
-    EmptyStringValidator.cpp
+    EmptyStringValidator.cpp \
+    ContactHandler.cpp
 
 HEADERS  += mainwindow.h \
     User.h \
@@ -102,7 +103,8 @@ HEADERS  += mainwindow.h \
     EnterKeyFilter.h \
     NicknameHandler.h \
     WhitelistHandler.h \
-    EmptyStringValidator.h
+    EmptyStringValidator.h \
+    ContactHandler.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

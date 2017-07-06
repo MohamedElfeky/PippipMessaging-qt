@@ -49,6 +49,8 @@ class NicknameManager : public QObject {
 
     private:
         void deleteFromNicknames(const QString& nickname);
+        bool decodeEntity(const QJsonObject& obj, Entity& entity);
+        bool decodeNickname(const QJsonObject& obj, Nickname& nickname);
         QJsonObject encodeNickname(const Nickname& nickname);
         bool getNickname(const EnclaveResponse& resp, Nickname& nickname);
         bool loadNicknames(const QJsonObject& json);

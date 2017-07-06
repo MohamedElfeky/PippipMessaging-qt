@@ -2,6 +2,7 @@
 #include "ContactManager.h"
 #include "NicknameManager.h"
 #include "ContactRequest.h"
+#include "ContactHandler.h"
 #include "ui_ContactsDialog.h"
 #include "SessionState.h"
 #include "ContactManager.h"
@@ -16,10 +17,11 @@ ContactsDialog::ContactsDialog(Pippip::SessionState *st, QWidget *parent)
   state(st) {
 
     ui->setupUi(this);
+    contactHandler = new ContactHandler(ui, this);
 
     // Set up column headings.
     QStringList headings;
-    headings << "Status" << "Nickname" << "Public ID";
+    headings << "Status" << "Requested By" << "Nickname" << "Public ID";
     ui->contactsTableWidget->setHorizontalHeaderLabels(headings);
     ui->requestsTableWidget->setHorizontalHeaderLabels(headings);
     // Initially, the column headings will be equal. After loading, the contacts, the resize
@@ -32,8 +34,6 @@ ContactsDialog::ContactsDialog(Pippip::SessionState *st, QWidget *parent)
     // Single selection only.
     ui->contactsTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->requestsTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    connect(ui->addButton, SIGNAL(clicked()), this, SLOT(requestContact()));
 
 }
 
@@ -99,7 +99,7 @@ void ContactsDialog::contactsLoaded() {
     qApp->processEvents();
 
 }
-
+/*
 void ContactsDialog::requestContact() {
 
     AddContactDialog dialog(state);
@@ -125,7 +125,7 @@ void ContactsDialog::requestContact() {
     }
 
 }
-
+*/
 void ContactsDialog::requestsLoaded() {
 
 }
@@ -133,6 +133,8 @@ void ContactsDialog::requestsLoaded() {
 void ContactsDialog::setContactManager(Pippip::ContactManager *man) {
 
     contactManager = man;
+    contactHandler->setContactManager(contactManager);
+
     connect(contactManager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
     connect(contactManager, SIGNAL(requestsLoaded()), this, SLOT(requestsLoaded()));
     connect(contactManager, SIGNAL(requestedContact(Pippip::Contact)),
@@ -144,7 +146,6 @@ void ContactsDialog::setContactManager(Pippip::ContactManager *man) {
 
 void ContactsDialog::setNicknameManager(Pippip::NicknameManager *manager) {
 
-    nicknameManager = manager;
-    //nicknameManager->loadNicknames();
+    contactHandler->setNicknames(manager->getNicknames());
 
 }

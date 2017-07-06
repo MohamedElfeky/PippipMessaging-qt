@@ -14,6 +14,8 @@ namespace Pippip {
     struct SessionState;
 }
 
+class ContactHandler;
+
 class ContactsDialog : public QDialog {
         Q_OBJECT
 
@@ -26,9 +28,6 @@ class ContactsDialog : public QDialog {
         void contactsLoaded();
         void requestsLoaded();
 
-    private slots:
-        void requestContact();
-
     public:
         void setContactManager(Pippip::ContactManager *manager);
         void setNicknameManager(Pippip::NicknameManager *manager);
@@ -38,6 +37,7 @@ class ContactsDialog : public QDialog {
         Pippip::SessionState *state;
         Pippip::ContactManager *contactManager;
         Pippip::NicknameManager *nicknameManager;
+        ContactHandler *contactHandler;
 
 };
 

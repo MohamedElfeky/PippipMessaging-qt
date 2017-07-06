@@ -46,7 +46,10 @@ class WhitelistHandler : public QObject
 
     private slots:
         void addEntry();
+        void deleteEntry();
+        void editEntry(int row, int column);
         void nicknameEdited();
+        void pasteValue();
         void puidEdited();
 
     public:
@@ -54,7 +57,7 @@ class WhitelistHandler : public QObject
 
     private:
         void loadTable();
-        void removeEntry(int index);
+        void removeEntry(unsigned index);
 
     private:
         bool newItem;

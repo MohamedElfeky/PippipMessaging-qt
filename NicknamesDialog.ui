@@ -22,6 +22,9 @@
      <height>32</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::TabFocus</enum>
+   </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
@@ -53,6 +56,9 @@
      <width>531</width>
      <height>240</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
    </property>
    <property name="currentIndex">
     <number>0</number>
@@ -147,6 +153,9 @@
        <height>190</height>
       </rect>
      </property>
+     <property name="showGrid">
+      <bool>false</bool>
+     </property>
      <property name="columnCount">
       <number>2</number>
      </property>
@@ -213,6 +222,17 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>nicknameTableWidget</tabstop>
+  <tabstop>addNicknameButton</tabstop>
+  <tabstop>deleteNicknameButton</tabstop>
+  <tabstop>whitelistTableWidget</tabstop>
+  <tabstop>addFriendButton</tabstop>
+  <tabstop>deleteFriendButton</tabstop>
+  <tabstop>pastePushButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources>
   <include location="pippip.qrc"/>
  </resources>
