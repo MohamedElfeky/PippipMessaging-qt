@@ -18,10 +18,40 @@
 
 #include "WhitelistHandler.h"
 #include "ui_NicknamesDialog.h"
+#include "EmptyStringValidator.h"
+#include <QLineEdit>
+#include <QLabel>
 
 WhitelistHandler::WhitelistHandler(Ui::NicknamesDialog *u, QObject *parent)
 : QObject(parent),
   ui(u) {
+
+    connect(ui->addFriendButton, SIGNAL(clicked()), this, SLOT(addEntry()));
+
+    nicknameRE.setPattern("[A-z]+[A-z0-9_\\-]{5,}");
+    nicknameRE.setPatternOptions(QRegularExpression::OptimizeOnFirstUsageOption);
+    nicknameValidator = new EmptyStringValidator(nicknameRE, this);
+
+    puidRE.setPattern("[1-9a-f]+[0-9a-f]{63,}");
+    puidRE.setPatternOptions(QRegularExpression::OptimizeOnFirstUsageOption);
+    puidValidator = new EmptyStringValidator(puidRE, this);
+
+}
+
+void WhitelistHandler::addEntry() {
+
+    newItem = true;
+    ui->addNicknameButton->setEnabled(false);
+    int editRow = ui->nicknameTableWidget->rowCount();
+    ui->nicknameTableWidget->setRowCount(editRow + 1);
+    nicknameLineEdit = new QLineEdit;
+    nicknameLineEdit->setValidator(nicknameValidator);
+    connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
+    ui->whitelistTableWidget->setCellWidget(editRow, 0, nicknameLineEdit);
+
+    Pippip::Entity entity;
+    whitelist.push_back(entity);
+    nicknameLineEdit->setFocus();
 
 }
 
@@ -42,6 +72,32 @@ void WhitelistHandler::loadTable() {
         ui->nicknameTableWidget->setCellWidget(row++, 1, puidLabel);
     }
     ui->addFriendButton->setEnabled(true);
+}
+
+void WhitelistHandler::nicknameEdited() {
+
+    int row = ui->whitelistTableWidget->currentRow();
+    QString nickname = nicknameLineEdit->text();
+    QLabel *nameLabel = new QLabel(nickname);
+    nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->whitelistTableWidget->setCellWidget(row, 0, nameLabel);
+    whitelist[row].nickname = nickname;
+
+    if (newItem) {
+        puidLineEdit = new QLineEdit;
+        puidLineEdit->setValidator(puidValidator);
+        connect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
+        ui->whitelistTableWidget->setCellWidget(row, 1, puidLineEdit);
+        newItem = false;
+    }
+    else {
+        emit whitelistChanged(whitelist);
+    }
+
+}
+
+void WhitelistHandler::puidEdited() {
+
 }
 
 void WhitelistHandler::setWhitelist(const Pippip::EntityList &list) {

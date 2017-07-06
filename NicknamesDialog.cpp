@@ -19,16 +19,21 @@ NicknamesDialog::NicknamesDialog(QWidget *parent)
 
     ui->tabWidget->setTabEnabled(1, false);
 
-    QStringList headers;
-    headers << "Nickname" << "Policy";
+    QStringList nicknameHeaders;
+    nicknameHeaders << "Nickname" << "Policy";
+    QStringList whitelistHeaders;
+    whitelistHeaders << "Nickname" << "Public ID";
     // Set header labels
-    ui->nicknameTableWidget->setHorizontalHeaderLabels(headers);
+    ui->nicknameTableWidget->setHorizontalHeaderLabels(nicknameHeaders);
+    ui->whitelistTableWidget->setHorizontalHeaderLabels(whitelistHeaders);
     // Set columns sizes to fill the table width.
     ui->nicknameTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     // Always select the whole row.
     ui->nicknameTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->whitelistTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     // Single selection only.
     ui->nicknameTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->whitelistTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
     connect(ui->nicknameTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(nicknameSelected()));
     connect(ui->whitelistTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(wlEntrySelected()));

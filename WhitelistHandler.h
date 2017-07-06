@@ -32,7 +32,7 @@ namespace Pippip {
 }
 
 class QLineEdit;
-class QRegularExpressionValidator;
+class EmptyStringValidator;
 
 class WhitelistHandler : public QObject
 {
@@ -44,7 +44,10 @@ class WhitelistHandler : public QObject
     signals:
         void whitelistChanged(const Pippip::EntityList& list);
 
-    public slots:
+    private slots:
+        void addEntry();
+        void nicknameEdited();
+        void puidEdited();
 
     public:
         void setWhitelist(const Pippip::EntityList& whitelist);
@@ -53,12 +56,13 @@ class WhitelistHandler : public QObject
         void loadTable();
 
     private:
+        bool newItem;
         Ui::NicknamesDialog *ui;
         Pippip::EntityList whitelist;
         QLineEdit *nicknameLineEdit;
         QLineEdit *puidLineEdit;
-        QRegularExpressionValidator *nicknameValidator;
-        QRegularExpressionValidator *puidValidator;
+        EmptyStringValidator *nicknameValidator;
+        EmptyStringValidator *puidValidator;
         QRegularExpression nicknameRE;
         QRegularExpression puidRE;
 
