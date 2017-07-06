@@ -90,13 +90,27 @@ void WhitelistHandler::nicknameEdited() {
         ui->whitelistTableWidget->setCellWidget(row, 1, puidLineEdit);
         newItem = false;
     }
-    else {
+    else if (whitelist[row].nickname.length() > 0 || whitelist[row].publicId.length() > 0) {
         emit whitelistChanged(whitelist);
+    }
+    else {
+        removeEntry(row);
     }
 
 }
 
 void WhitelistHandler::puidEdited() {
+
+    int row = ui->whitelistTableWidget->currentRow();
+    QString publicId = puidLineEdit->text();
+    QLabel *puidLabel = new QLabel(publicId);
+    puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->whitelistTableWidget->setCellWidget(row, 1, puidLabel);
+    whitelist[row].publicId = publicId;
+
+    if (whitelist[row].nickname.length() == 0 && whitelist[row].publicId.length() == 0) {
+        removeEntry(row);
+    }
 
 }
 

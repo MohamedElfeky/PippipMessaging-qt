@@ -54,6 +54,7 @@ class WhitelistHandler : public QObject
 
     private:
         void loadTable();
+        void removeEntry(int index);
 
     private:
         bool newItem;
