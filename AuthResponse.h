@@ -5,7 +5,7 @@
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 
 class AuthResponse {
     public:

@@ -26,9 +26,14 @@
 #include "NewAccountFinal.h"
 #include "Vault.h"
 #include "VaultException.h"
+#include "MessageDatabase.h"
 #include <QMessageBox>
 #include <QApplication>
 #include <QTimer>
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <sstream>
 #include <memory>
 
@@ -52,14 +57,31 @@ NewAccountCreator::NewAccountCreator(NewAccountDialog *parent, ParameterGenerato
 NewAccountCreator::~NewAccountCreator() {
 }
 
+void NewAccountCreator::addAccount(const QString& newUser) {
+
+    QSettings settings;
+    QByteArray json = settings.value("User/accounts").value<QByteArray>();
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonObject accountsObj = doc.object();
+    QJsonArray accounts = accountsObj["users"].toArray();
+    accounts.append(newUser);
+    QJsonObject newAccounts;
+    newAccounts["users"] = accounts;
+    QJsonDocument newDoc(newAccounts);
+    QString newjson = QString(newDoc.toJson());
+    settings.setValue("User/accounts", newDoc.toJson());
+
+}
+
+
 void NewAccountCreator::createNewAccount(const QString &name, const QString &pass) {
 
-    accountName = name.toStdString();
-    passphrase = pass.toStdString();
+    accountName = name;
+    passphrase = pass;
 
     emit updateInfo("Generating account parameters");
 
-    generator->generateParameters(accountName);
+    generator->generateParameters(accountName.toUtf8().toStdString());
 
     emit incrementProgress(20);
     emit updateInfo("Contacting the server");
@@ -104,19 +126,25 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
             requestFailed(handler->getError());
         }
         else if (final) {
-            try {
-                std::unique_ptr<Vault> vault(new Vault(*state));
-                vault->storeVault(accountName, passphrase);
-                QMessageBox *message = new QMessageBox;
-                message->addButton(QMessageBox::Ok);
-                message->setWindowTitle("Account Complete");
-                message->setText("New account created");
-                message->setIcon(QMessageBox::Information);
-                message->exec();
-                emit accountComplete(1);
+            if (MessageDatabase::create(accountName)) {
+                try {
+                    std::unique_ptr<Vault> vault(new Vault(*state));
+                    vault->storeVault(accountName.toUtf8().toStdString(), passphrase.toUtf8().toStdString());
+                    QMessageBox *message = new QMessageBox;
+                    message->addButton(QMessageBox::Ok);
+                    message->setWindowTitle("Account Complete");
+                    message->setText("New account created");
+                    message->setIcon(QMessageBox::Information);
+                    message->exec();
+                    addAccount(accountName);
+                    emit accountComplete(accountName);
+                }
+                catch (VaultException& e) {
+                    requestFailed(QString(e.what()));
+                }
             }
-            catch (VaultException& e) {
-                requestFailed(QString(e.what()));
+            else {
+                requestFailed("Failed to create message database");
             }
         }
         else {

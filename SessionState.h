@@ -20,6 +20,8 @@
 #define SESSIONSTATE_H
 
 #include <coder/ByteArray.h>
+#include <CryptoKitty-C/keys/RSAPrivateKey.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QString>
 
 namespace CK {
@@ -28,22 +30,30 @@ namespace CK {
 }
 namespace Pippip {
 
-struct SessionState {
-    virtual ~SessionState() {}
-    enum StateValue { authenticated, established, failed, not_started, started };
-    StateValue sessionState;
-    uint32_t sessionId;
-    uint64_t authToken;
-    QString publicId;
-    coder::ByteArray genpass;
-    coder::ByteArray enclaveKey;
-    coder::ByteArray authData;
-    coder::ByteArray accountRandom;
-    coder::ByteArray serverAuthRandom;
-    coder::ByteArray clientAuthRandom;
-    CK::RSAPrivateKey *userPrivateKey;
-    CK::RSAPublicKey *userPublicKey;
-    CK::RSAPublicKey *serverPublicKey;
+class SessionState {
+
+    public:
+        SessionState() : serverPublicKey(0), userPrivateKey(0), userPublicKey(0) {}
+        ~SessionState() { delete serverPublicKey;
+                          delete userPrivateKey;
+                          delete userPublicKey; }
+
+    public:
+        enum StateValue { authenticated, established, failed, not_started, started };
+        StateValue sessionState;
+        uint32_t sessionId;
+        uint64_t authToken;
+        QString publicId;
+        coder::ByteArray genpass;
+        coder::ByteArray enclaveKey;
+        coder::ByteArray authData;
+        coder::ByteArray accountRandom;
+        coder::ByteArray serverAuthRandom;
+        coder::ByteArray clientAuthRandom;
+        CK::RSAPublicKey *serverPublicKey;
+        CK::RSAPrivateKey *userPrivateKey;
+        CK::RSAPublicKey *userPublicKey;
+
 };
 
 }

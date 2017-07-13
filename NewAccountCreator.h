@@ -44,7 +44,7 @@ class NewAccountCreator : public SessionTask {
         NewAccountCreator& operator =(const NewAccountCreator& other);
 
     signals:
-        void accountComplete(int response);
+        void accountComplete(const QString& account);
         void incrementProgress(int incr);
         void resetProgress();
         void updateInfo(QString info);
@@ -62,6 +62,7 @@ class NewAccountCreator : public SessionTask {
         void sessionComplete(const QString& result);
 
     private:
+        void addAccount(const QString& newUser);
         void doRequest();
         void doFinish();
         void requestFailed(const QString& error);
@@ -70,8 +71,8 @@ class NewAccountCreator : public SessionTask {
         bool timedOut;
         bool responseComplete;
         bool finalComplete;
-        std::string accountName;
-        std::string passphrase;
+        QString accountName;
+        QString passphrase;
         NewAccountDialog *dialog;
         ParameterGenerator *generator;
 

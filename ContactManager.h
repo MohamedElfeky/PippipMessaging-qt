@@ -2,6 +2,7 @@
 #define CONTACTMANAGER_H
 
 #include "Contact.h"
+#include "ContactRequest.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -11,7 +12,7 @@ class QJsonObject;
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 struct ContactRequest;
 class RESTHandler;
 
@@ -23,8 +24,9 @@ class ContactManager : public QObject {
         ~ContactManager() {}
 
     signals:
-        void requestedContact(Pippip::Contact);
+        void requestedContact(const QString&);
         void contactsLoaded();
+        void requestFailed(const QString& reqName, const QString& error);
         void requestsLoaded();
 
     protected slots:
@@ -34,10 +36,12 @@ class ContactManager : public QObject {
         void requestTimedOut();
 
     public:
-        void requestContact(const ContactRequest& request);
+        const Contact& getContact(const QString& nickname) const;
         const ContactList& getContacts() const { return contacts; }
+        const RequestList& getRequests() const { return requests; }
         void loadContacts();
         void loadRequests();
+        void requestContact(const ContactRequest& request);
 
     private:
         bool loadContacts(const QJsonObject& json);
@@ -48,6 +52,7 @@ class ContactManager : public QObject {
         bool timedOut;
 
         ContactList contacts;
+        RequestList requests;
 
 };
 

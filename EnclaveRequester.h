@@ -23,7 +23,7 @@
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 class EnclaveRequest;
 class EnclaveResponse;
 class RESTHandler;

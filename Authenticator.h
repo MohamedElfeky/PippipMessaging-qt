@@ -42,7 +42,8 @@ class Authenticator : public SessionTask {
         Authenticator& operator =(const Authenticator& other);
 
     signals:
-        void authenticationComplete(int);
+        void authenticationComplete(const QString& account);
+        void loginComplete(int);
         void loggedOut();
         void updateInfo(QString info);
         void updateStatus(QString);
@@ -80,6 +81,7 @@ class Authenticator : public SessionTask {
         bool timedOut;
         LoginDialog *dialog;
         Vault *vault;
+        QString account;
 
 };
 

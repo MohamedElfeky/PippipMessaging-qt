@@ -138,6 +138,7 @@ void NicknameHandler::loadTable() {
         ui->nicknameTableWidget->setCellWidget(row++, 1, policyLabel);
     }
     ui->addNicknameButton->setEnabled(true);
+
 }
 
 void NicknameHandler::nicknameAdded(const QString& name) {
@@ -171,13 +172,29 @@ void NicknameHandler::nicknameEdited() {
     QLabel *nameLabel = new QLabel(nickname);
     nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
+
+    policyComboBox = new QComboBox;
+    QStringList items;
+    items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
+    policyComboBox->addItems(items);
+    EnterKeyFilter *keyFilter = new EnterKeyFilter(policyComboBox);
+    policyComboBox->installEventFilter(keyFilter);
+    connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(policySelected()));
+    ui->nicknameTableWidget->setCellWidget(row, 1, policyComboBox);
+    for (int index = 0; index < 3; ++index) {
+        if (nicknames[row].policy == POLICIES[index]) {
+            policyComboBox->setCurrentIndex(index);
+        }
+    }
+    // Do this here so the event doesn't fire when the value is changed above.
+    connect(policyComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(policyChanged(QString)));
     policyComboBox->setFocus();
 
 }
 
-void NicknameHandler::nicknamesLoaded(const Pippip::NicknameList& list) {
+void NicknameHandler::nicknamesLoaded() {
 
-    nicknames = list;
+    nicknames = manager->getNicknames();
     loadTable();
     if (nicknames.size() > 0) {
         ui->nicknameTableWidget->selectRow(0);

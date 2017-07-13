@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,10 +14,8 @@ CONFIG += debug declarative_debug
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    User.cpp \
     AccountParameters.cpp \
     MessageDatabase.cpp \
-    Contacts.cpp \
     Vault.cpp \
     NewAccountCreator.cpp \
     Authenticator.cpp \
@@ -53,13 +51,14 @@ SOURCES += main.cpp\
     NicknameHandler.cpp \
     WhitelistHandler.cpp \
     EmptyStringValidator.cpp \
-    ContactHandler.cpp
+    ContactHandler.cpp \
+    RequestHandler.cpp \
+    MessageManager.cpp \
+    ByteCodec.cpp
 
 HEADERS  += mainwindow.h \
-    User.h \
     AccountParameters.h \
     MessageDatabase.h \
-    Contacts.h \
     Vault.h \
     NewAccountCreator.h \
     Authenticator.h \
@@ -104,7 +103,12 @@ HEADERS  += mainwindow.h \
     NicknameHandler.h \
     WhitelistHandler.h \
     EmptyStringValidator.h \
-    ContactHandler.h
+    ContactHandler.h \
+    RequestHandler.h \
+    MessageManager.h \
+    ByteCodec.h \
+    Message.h \
+    MessageException.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

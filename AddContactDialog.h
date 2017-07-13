@@ -8,7 +8,7 @@ namespace Ui {
 }
 
 namespace Pippip {
-    struct SessionState;
+    class SessionState;
     class NicknameManager;
 }
 

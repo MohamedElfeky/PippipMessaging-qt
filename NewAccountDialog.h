@@ -44,7 +44,6 @@ class NewAccountDialog : public QDialog {
         void accept();
 
     public slots:
-        void accountComplete();
         void incrementProgress(int incr);
         void doHelp();
         void resetProgress();
@@ -55,6 +54,7 @@ class NewAccountDialog : public QDialog {
 
     private:
         void accountNameAlert();
+        bool duplicateAccountAlert();
         bool passphraseAlert();
 
     private:

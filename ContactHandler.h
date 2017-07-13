@@ -20,6 +20,8 @@
 #define CONTACTHANDLER_H
 
 #include "Nickname.h"
+#include "Contact.h"
+#include "ContactRequest.h"
 #include <QObject>
 #include <QRegularExpression>
 
@@ -30,6 +32,7 @@ namespace Ui {
 namespace Pippip {
     class ContactManager;
     class NicknameManager;
+    class SessionState;
 }
 
 class QLineEdit;
@@ -39,36 +42,43 @@ class EmptyStringValidator;
 class ContactHandler : public QObject {
         Q_OBJECT
     public:
-        explicit ContactHandler(Ui::ContactsDialog *ui, QObject *parent = 0);
+        explicit ContactHandler(Ui::ContactsDialog *ui, Pippip::SessionState *state, QObject *parent = 0);
         ~ContactHandler() {}
 
     signals:
 
+    public slots:
+        void contactsLoaded();
+        void contactRequested(const QString& name);
+
     private slots:
         void nicknameEdited();
-        void nicknameSet(const QString& nick);
-        void nicknameSelected();
         void puidEdited();
         void requestContact();
+        void requestingSelected();
+        void requestingSet(const QString& nick);
 
     public:
         void setContactManager(Pippip::ContactManager *manager) { contactManager = manager; }
-        void setNicknames(const Pippip::NicknameList& nicks) { nicknames = nicks; }
+        void setNicknames(const Pippip::NicknameList& nicks);
 
     private:
         void loadTable();
 
     private:
         Ui::ContactsDialog *ui;
+        Pippip::SessionState *state;
         Pippip::ContactManager *contactManager;
         Pippip::NicknameList nicknames;
-        QComboBox *nicknameComboBox;
+        Pippip::ContactList contacts;
+        QComboBox *requestingComboBox;
         QLineEdit *nicknameLineEdit;
         QLineEdit *puidLineEdit;
         QRegularExpression nicknameRE;
         EmptyStringValidator *nicknameValidator;
         QRegularExpression puidRE;
         EmptyStringValidator *puidValidator;
+        Pippip::ContactRequest working;
 
 };
 

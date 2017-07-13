@@ -5,6 +5,10 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QShowEvent>
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
 : QDialog(parent),
@@ -13,10 +17,21 @@ LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
   auth(0) {
 
     ui->setupUi(this);
+    QSettings settings;
+    QByteArray json = settings.value("User/accounts").value<QByteArray>();
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonObject user = doc.object();
+    QJsonArray users = user["users"].toArray();
+    QStringList items;
+    for (auto username : users) {
+        items << username.toString();
+    }
+    ui->accountNameComboBox->addItems(items);
+
     connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(login()));
     MainWindow *main = dynamic_cast<MainWindow*>(parent);
     auth = new Pippip::Authenticator(this, vault);
-    connect(auth, SIGNAL(authenticationComplete(int)), main, SLOT(loggedIn()));
+    connect(auth, SIGNAL(authenticationComplete(QString)), main, SLOT(loggedIn(QString)));
 
 }
 
@@ -39,7 +54,7 @@ void LoginDialog::accountNameAlert() {
 
 void LoginDialog::login() {
 
-    QString accountName = ui->AccountNameText->text();
+    QString accountName = ui->accountNameComboBox->currentText();
     QString passphrase = ui->PassphraseText->text();
     if (accountName.length() == 0) {
         accountNameAlert();
@@ -56,7 +71,7 @@ void LoginDialog::showEvent(QShowEvent *event) {
     // Have to do this to give account name the focus.
     QDialog::showEvent(event);
     if (!event->spontaneous()) {
-        ui->AccountNameText->setFocus();
+        ui->accountNameComboBox->setFocus();
     }
 
 }

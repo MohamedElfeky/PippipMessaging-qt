@@ -60,6 +60,7 @@ void NicknameManager::addNickname(const Nickname &nick) {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
@@ -188,6 +189,7 @@ void NicknameManager::deleteNickname(const QString& nick) {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
@@ -260,7 +262,7 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
         else if (response) {
             if (loadNicknames(response.getJson())) {
                 loaded = true;
-                emit nicknamesLoaded(nicknames);
+                emit nicknamesLoaded();
             }
             else {
                 emit requestFailed("Fetch Nicknames", "Invalid server response");
@@ -282,11 +284,12 @@ void NicknameManager::loadNicknames() {
         RESTHandler *handler = new RESTHandler(this);
         connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(loadComplete(RESTHandler*)));
         connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(loadComplete(RESTHandler*)));
+        timedOut = false;
         QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
         handler->doPost(req);
     }
     else {
-        emit nicknamesLoaded(nicknames);
+        emit nicknamesLoaded();
     }
 
 }
@@ -314,7 +317,7 @@ void NicknameManager::requestTimedOut() {
 
     if (!requestComplete) {
         timedOut = true;
-        emit requestFailed("Request", "Request timed out");
+        emit requestFailed("Nickname Request", "Request timed out");
     }
 
 }
@@ -335,6 +338,7 @@ void NicknameManager::updateNickname(const Nickname& nick) {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 

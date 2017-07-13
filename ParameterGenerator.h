@@ -28,7 +28,7 @@ class ParameterGenerator : public SessionState {
 
     public:
         ParameterGenerator();
-        ~ParameterGenerator();
+        ~ParameterGenerator() {}
 
     private:
         ParameterGenerator(const ParameterGenerator& other);

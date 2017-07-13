@@ -20,14 +20,17 @@
 #include "ui_ContactsDialog.h"
 #include "EnterKeyFilter.h"
 #include "EmptyStringValidator.h"
+#include "ContactManager.h"
+#include "SessionState.h"
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QStringList>
 
-ContactHandler::ContactHandler(Ui::ContactsDialog *u, QObject *parent)
+ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, QObject *parent)
 : QObject(parent),
-  ui(u) {
+  ui(u),
+  state(s) {
 
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(requestContact()));
 
@@ -41,61 +44,112 @@ ContactHandler::ContactHandler(Ui::ContactsDialog *u, QObject *parent)
 
 }
 
-void ContactHandler::nicknameEdited() {
+void ContactHandler::contactRequested(const QString &name) {
 
-    int row = ui->contactsTableWidget->currentRow();
-    QLabel *nicknameLabel = new QLabel(nicknameLineEdit->text());
-    nicknameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLabel);
-
-    puidLineEdit = new QLineEdit;
-    puidLineEdit->setValidator(puidValidator);
-    connect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
-    ui->contactsTableWidget->setCellWidget(row, 2, puidLineEdit);
-    puidLineEdit->setFocus();
+    contacts = contactManager->getContacts();
+    loadTable();
+    if (contacts.size() > 0) {
+        ui->contactsTableWidget->selectRow(0);
+    }
+    ui->contactsStatusLabel->setText("Contact with " + name + " requested");
+    qApp->processEvents();
 
 }
 
-void ContactHandler::nicknameSet(const QString &nick) {
+void ContactHandler::contactsLoaded() {
 
-    int row = ui->contactsTableWidget->currentRow();
-    QLabel *nicknameLabel = new QLabel(nick);
-    nicknameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    ui->contactsTableWidget->setCellWidget(row, 1, nicknameLabel);
+    contacts = contactManager->getContacts();
+    loadTable();
+    if (contacts.size() > 0) {
+        ui->contactsTableWidget->selectRow(0);
+    }
+    ui->contactsStatusLabel->setText("Contacts loaded");
+    qApp->processEvents();
 
-    nicknameLineEdit = new QLineEdit;
-    nicknameLineEdit->setValidator(nicknameValidator);
-    connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
-    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLineEdit);
-    nicknameLineEdit->setFocus();
-    ui->pastePushButton->setEnabled(true);
+}
+
+void ContactHandler::loadTable() {
+
+    ui->contactsTableWidget->clearContents();
+    ui->contactsTableWidget->setRowCount(contacts.size());
+
+    for (unsigned row = 0; row < contacts.size(); row++) {
+        const Pippip::Contact& contact = contacts[row];
+        QLabel *statusLabel = new QLabel(contact.status);
+        statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        statusLabel->setMargin(5);
+        ui->contactsTableWidget->setCellWidget(row, 0, statusLabel);
+
+        QLabel *requestingLabel = new QLabel(contact.contactOf);
+        requestingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        requestingLabel->setMargin(5);
+        ui->contactsTableWidget->setCellWidget(row, 1, requestingLabel);
+
+        QLabel *nicknameLabel = new QLabel(contact.entity.nickname);
+        nicknameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        nicknameLabel->setMargin(5);
+        ui->contactsTableWidget->setCellWidget(row, 2, nicknameLabel);
+
+        QLabel *puidLabel = new QLabel(contact.entity.publicId);
+        puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        puidLabel->setMargin(5);
+        ui->contactsTableWidget->setCellWidget(row, 3, puidLabel);
+    }
 
 }
 
 /*
- * Invoked from key filter signal on enter or return pressed.
+ * Invoked by the nickname line edit editing finished signal.
  */
-void ContactHandler::nicknameSelected() {
+void ContactHandler::nicknameEdited() {
 
-    QString nickname = nicknameComboBox->currentText();
-    nicknameSet(nickname);
+    disconnect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
+    int row = ui->contactsTableWidget->currentRow();
+    nicknameLineEdit->setEnabled(false);
+    QLabel *nicknameLabel = new QLabel(nicknameLineEdit->text());
+    nicknameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    nicknameLabel->setMargin(5);
+    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLabel);
+    working.requested.nickname = nicknameLineEdit->text();
+
+    puidLineEdit = new QLineEdit;
+    puidLineEdit->setValidator(puidValidator);
+    ui->contactsTableWidget->setCellWidget(row, 3, puidLineEdit);
+    puidLineEdit->setFocus();
+    connect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
+    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
 
 }
 
+/*
+ * Invoked by the public ID line edit editing finished signal.
+ */
 void ContactHandler::puidEdited() {
 
+    disconnect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
     int row = ui->contactsTableWidget->currentRow();
+    puidLineEdit->setEnabled(false);
     QString publicId = puidLineEdit->text();
     QLabel *puidLabel = new QLabel(publicId);
     puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    puidLabel->setMargin(5);
     ui->contactsTableWidget->setCellWidget(row, 3, puidLabel);
+    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
 
     ui->addButton->setEnabled(true);
     ui->pastePushButton->setEnabled(false);
 
+    working.requested.publicId = puidLineEdit->text();
+    contactManager->requestContact(working);
+
 }
 
 void ContactHandler::requestContact() {
+
+    working.requesting.publicId = state->publicId;
+    working.privateRequest = false;
 
     ui->addButton->setEnabled(false);
     int row = ui->contactsTableWidget->rowCount();
@@ -103,20 +157,64 @@ void ContactHandler::requestContact() {
 
     QLabel *statusLabel = new QLabel("pending");
     statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    statusLabel->setMargin(5);
     ui->contactsTableWidget->setCellWidget(row, 0, statusLabel);
 
-    nicknameComboBox = new QComboBox;
+    requestingComboBox = new QComboBox;
     QStringList items;
     for (auto nickname : nicknames) {
         items << nickname.entity.nickname;
     }
-    nicknameComboBox->addItems(items);
-    EnterKeyFilter *keyFilter = new EnterKeyFilter(nicknameComboBox);
-    nicknameComboBox->installEventFilter(keyFilter);
-    connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(nicknameSelected()));
-    ui->contactsTableWidget->setCellWidget(row, 1, nicknameComboBox);
+    requestingComboBox->addItems(items);
+    EnterKeyFilter *keyFilter = new EnterKeyFilter(requestingComboBox);
+    requestingComboBox->installEventFilter(keyFilter);
+    connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(requestingSelected()));
+    ui->contactsTableWidget->setCellWidget(row, 1, requestingComboBox);
     // Do this here so the event doesn't fire when the value is changed above.
-    connect(nicknameComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(nicknameSet(QString)));
-    nicknameComboBox->setFocus();
+    connect(requestingComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestingSet(QString)));
+    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
+    requestingComboBox->setFocus();
+
+}
+
+/*
+ * Invoked by key filter signal on enter or return pressed.
+ */
+void ContactHandler::requestingSelected() {
+
+    QString nickname = requestingComboBox->currentText();
+    requestingSet(nickname);
+
+}
+
+/*
+ * Invoked by the combo box selection change signal or directly from
+ * nicknameSelected.
+ */
+void ContactHandler::requestingSet(const QString &nick) {
+
+    int row = ui->contactsTableWidget->currentRow();
+    QLabel *requestingLabel = new QLabel(nick);
+    requestingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    requestingLabel->setMargin(5);
+    ui->contactsTableWidget->setCellWidget(row, 1, requestingLabel);
+    working.requesting.nickname = nick;
+
+    nicknameLineEdit = new QLineEdit;
+    nicknameLineEdit->setValidator(nicknameValidator);
+    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLineEdit);
+    nicknameLineEdit->setFocus();
+    connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
+    ui->pastePushButton->setEnabled(true);
+    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
+
+}
+
+void ContactHandler::setNicknames(const Pippip::NicknameList &nicks) {
+
+    nicknames = nicks;
+    ui->addButton->setEnabled(true);
 
 }

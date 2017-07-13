@@ -18,6 +18,7 @@
 
 #include "Vault.h"
 #include "VaultException.h"
+#include "ByteCodec.h"
 #include <CryptoKitty-C/encoding/GCMCodec.h>
 #include <CryptoKitty-C/encoding/PEMCodec.h>
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
@@ -25,36 +26,37 @@
 #include <CryptoKitty-C/exceptions/EncodingException.h>
 #include <CryptoKitty-C/keys/RSAPrivateKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
-#include <QDir>
+#include <CryptoKitty-C/keys/RSAPrivateCrtKey.h>
+#include <QSettings>
+#include <QByteArray>
+#include <QFile>
 #include <fstream>
 #include <sstream>
 #include <memory>
 
 namespace Pippip {
 
-static const std::string CONFIG_PATH("/.config/PippipMessaging/");
-
 Vault::Vault() {
 
-    vaultPath = QDir::homePath().toStdString() + CONFIG_PATH;
-    serverPublicKey = 0;
-    userPrivateKey = 0;
-    userPublicKey = 0;
-
-}
-
-Vault::~Vault() {
-
-    delete serverPublicKey;
-    delete userPrivateKey;
-    delete userPublicKey;
+    QSettings settings;
+    QString path = settings.value("Defaults/vaultPath").toString();
+    vaultPath = path.toUtf8().toStdString();
 
 }
 
 Vault::Vault(const SessionState &state)
 : SessionState(state) {
 
-    vaultPath = QDir::homePath().toStdString() + CONFIG_PATH;
+    // We do this so that Vault doesn't steal the key pointers.
+    // It would cause a double delete in MainWindow::loggedOut.
+    serverPublicKey = new CK::RSAPublicKey(*state.serverPublicKey);
+    CK::RSAPrivateCrtKey *crtKey = dynamic_cast<CK::RSAPrivateCrtKey*>(state.userPrivateKey);
+    userPrivateKey = new CK::RSAPrivateCrtKey(*crtKey);
+    userPublicKey = new CK::RSAPublicKey(*state.userPublicKey);
+
+    QSettings settings;
+    QString path = settings.value("Defaults/vaultPath").toString();
+    vaultPath = path.toUtf8().toStdString();
 
 }
 
@@ -112,7 +114,17 @@ void Vault::encodeVault(const std::string& passphrase) {
 
 void Vault::loadVault(const std::string& accountName, const std::string& passphrase) {
 
-    std::ifstream in(vaultPath + accountName, std::ios::binary);
+    QFile vault((vaultPath + accountName).c_str());
+    if (vault.open(QIODevice::ReadOnly)) {
+        QByteArray bytes = vault.readAll();
+        vault.close();
+        decodeVault(ByteCodec(bytes), passphrase);
+    }
+    else {
+        throw VaultException("Vault file read error");
+    }
+
+/*    std::ifstream in(vaultPath + accountName, std::ios::binary);
     if (in) {
         // Find the file size
         std::streampos vsize = in.tellg();
@@ -127,7 +139,7 @@ void Vault::loadVault(const std::string& accountName, const std::string& passphr
     }
     else {
         throw VaultException("Vault file read error");
-    }
+    }*/
 
 }
 
@@ -158,7 +170,18 @@ void Vault::s2k(const std::string& passphrase) {
 void Vault::storeVault(const std::string& accountName, const std::string& passphrase) {
 
     encodeVault(passphrase);
-    std::ofstream out(vaultPath + accountName, std::ios::binary);
+    QFile vault((vaultPath + accountName).c_str());
+    if (vault.open(QIODevice::WriteOnly)) {
+        ByteCodec codec(encoded);
+        vault.write(codec, codec.size());
+
+        vault.close();
+    }
+    else {
+        throw VaultException("Vault file write error");
+    }
+
+/*    std::ofstream out(vaultPath + accountName, std::ios::binary);
     if (out) {
         std::unique_ptr<uint8_t[]> buffer(encoded.asArray());
         out.write(reinterpret_cast<const char*>(buffer.get()), encoded.getLength());
@@ -166,7 +189,7 @@ void Vault::storeVault(const std::string& accountName, const std::string& passph
     }
     else {
         throw VaultException("Vault file write error");
-    }
+    }*/
 
 }
 

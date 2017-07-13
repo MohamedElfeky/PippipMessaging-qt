@@ -19,6 +19,9 @@
 #ifndef MESSAGEDATABASE_H
 #define MESSAGEDATABASE_H
 
+#include "Message.h"
+#include <QSqlDatabase>
+
 namespace Pippip {
 
 class MessageDatabase {
@@ -30,6 +33,17 @@ class MessageDatabase {
     private:
         MessageDatabase(const MessageDatabase& other);
         MessageDatabase& operator =(const MessageDatabase& other);
+
+    public:
+        bool addMessage(const Message& message);
+        void close();
+        static bool create(const QString& account);
+        const QString& getLastError() const { return lastError; }
+        bool open(const QString& account);
+
+    private:
+        QSqlDatabase database;
+        QString lastError;
 
 };
 

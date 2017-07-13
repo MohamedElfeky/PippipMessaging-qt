@@ -11,6 +11,8 @@ struct ContactRequest {
     bool privateRequest;
 };
 
+typedef std::vector<ContactRequest> RequestList;
+
 }
 
 #endif // CONTACTREQUEST_H

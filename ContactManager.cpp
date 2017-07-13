@@ -4,9 +4,9 @@
 #include "ContactRequest.h"
 #include "RESTHandler.h"
 #include "SessionState.h"
-#include "CriticalAlert.h"
 #include <QTimer>
 #include <QJsonArray>
+#include <iostream>
 
 namespace Pippip {
 
@@ -23,15 +23,18 @@ void ContactManager::contactLoadComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Contact Load Failed", "Unable to fetch contacts", handler->getError());
-            alert.exec();
+            emit requestFailed("Fetch Contacts", handler->getError());
         }
-        else if (response && loadContacts(response.getJson())) {
-            emit contactsLoaded();
+        else if (response) {
+            if (!loadContacts(response.getJson())) {
+                emit requestFailed("Fetch Contacts", "Invalid server response");
+            }
+            else {
+                emit contactsLoaded();
+            }
         }
         else {
-            CriticalAlert alert("Contact Load Failed", "Unable to fetch contacts", response.getError());
-            alert.exec();
+            emit requestFailed("Fetch Contacts", response.getError());
         }
     }
 
@@ -44,8 +47,7 @@ void ContactManager::contactRequestComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            CriticalAlert alert("Contact Request Failed", "Unable to request contact", handler->getError());
-            alert.exec();
+            emit requestFailed("Contact Request", handler->getError());
         }
         else if (response) {
             QJsonObject contactObj = response.getJson();
@@ -53,16 +55,32 @@ void ContactManager::contactRequestComplete(RESTHandler *handler) {
             QJsonArray requests = contactObj["requests"].toArray();
             QJsonObject request = requests[0].toObject();
             contact.status = request["status"].toString();
+            QJsonObject requesting = request["requesting"].toObject();
+            contact.contactOf = requesting["nickname"].toString();
             QJsonObject requested = request["requested"].toObject();
             contact.entity.nickname = requested["nickname"].toString();
             contact.entity.publicId = requested["publicId"].toString();
-            emit requestedContact(contact);
+            contact.currentKey = 0;
+            contacts.push_back(contact);
+            QString name;
+            if (contact.entity.nickname.length() > 0) {
+                name = contact.entity.nickname;
+            }
+            else {
+                name = contact.entity.publicId;
+            }
+            emit requestedContact(name);
         }
         else {
-            CriticalAlert alert("Contact Request Failed", "Unable to request contact", response.getError());
-            alert.exec();
+            emit requestFailed("Contact Request", response.getError());
         }
     }
+
+}
+
+const Contact& ContactManager::getContact(const QString &nickname) const {
+
+    return contacts[0];
 
 }
 
@@ -74,6 +92,7 @@ void ContactManager::loadContacts() {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(contactLoadComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(contactLoadComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
@@ -85,21 +104,18 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
 
     QJsonValue contactValue = json["contacts"];
     if (!contactValue.isArray()) {
-        CriticalAlert alert("Fetch Contacts Error", "Invalid server response");
-        alert.exec();
         return false;
     }
 
     QJsonArray contactsJson = contactValue.toArray();
     for (const QJsonValue& value : contactsJson) {
         if (!value.isObject()) {
-            CriticalAlert alert("Fetch Contacts Error", "Invalid server response");
-            alert.exec();
             return false;
         }
         Pippip::Contact contact;
         QJsonObject contactObj = value.toObject();
         contact.status = contactObj["status"].toString();
+        contact.contactOf = contactObj["contactOf"].toString();
         QJsonObject entity = contactObj["entity"].toObject();
         contact.entity.nickname = entity["nickname"].toString();
         contact.entity.publicId = entity["publicId"].toString();
@@ -117,6 +133,9 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
 
 void ContactManager::loadRequests() {
 
+    std::cout << "loadRequests called" << std::endl;
+
+/*
     EnclaveRequest req(state);
     req.setRequestType("getRequests");
     req.setValue("publicId", state->publicId);
@@ -125,7 +144,7 @@ void ContactManager::loadRequests() {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
-
+*/
 }
 
 void ContactManager::requestContact(const ContactRequest &request) {
@@ -149,6 +168,7 @@ void ContactManager::requestContact(const ContactRequest &request) {
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));
+    timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
@@ -162,8 +182,7 @@ void ContactManager::requestTimedOut() {
 
     if (!requestComplete) {
         timedOut = true;
-        CriticalAlert alert("Enclave Request Error", "Contact request timed out");
-        alert.exec();
+        emit requestFailed("Enclave Request", "Contact request timed out");
     }
 
 }

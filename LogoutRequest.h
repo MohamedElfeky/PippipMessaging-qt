@@ -5,7 +5,7 @@
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 
 class LogoutRequest : public Pippip::PostPacket {
 

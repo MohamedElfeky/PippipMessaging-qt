@@ -17,13 +17,83 @@
  */
 
 #include "MessageDatabase.h"
+#include <QSettings>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <iostream>
 
 namespace Pippip {
 
 MessageDatabase::MessageDatabase() {
+
+    database = QSqlDatabase::addDatabase("QSQLITE");
+
 }
 
 MessageDatabase::~MessageDatabase() {
+}
+
+bool MessageDatabase::addMessage(const Message &message) {
+
+    QSqlQuery query;
+    query.prepare("INSERT INTO messages(id, version, timestamp, sender, recipient, recipientId, keyIndex, message) "
+                  "VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+    query.addBindValue(message.messageId);
+    query.addBindValue(message.version);
+    query.addBindValue(message.timestamp);
+    query.addBindValue(message.sender);
+    query.addBindValue(message.recipient);
+    query.addBindValue(message.recipientId);
+    query.addBindValue(message.keyIndex);
+    query.addBindValue(message.message);
+    if (!query.exec()) {
+        lastError = query.lastError().text();
+        return false;
+    }
+    return true;
+
+}
+
+void MessageDatabase::close() {
+
+    database.close();
+
+}
+
+bool MessageDatabase::create(const QString &account) {
+
+    bool success = false;
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+
+    QSettings settings;
+    QString dbPath = settings.value("Defaults/dbPath").toString();
+    db.setDatabaseName(dbPath + account + ".mdb");
+    if (db.open()) {
+        QSqlQuery query("CREATE TABLE messages (id INTEGER PRIMARY KEY, version TEXT, "
+                        "timestamp INTEGER, sender TEXT, recipient TEXT, recipientId TEXT, "
+                        "keyIndex INTEGER, message BLOB)");
+        success = query.isActive();
+        if (!success) {
+            std::cout << "Failed to create message database for "
+                      << account.toUtf8().toStdString()
+                      << ", reason: "
+                      << query.lastError().text().toUtf8().toStdString() << std::endl;
+        }
+        db.close();
+    }
+    return success;
+
+}
+
+bool MessageDatabase::open(const QString &account) {
+
+    QSettings settings;
+    QString dbPath = settings.value("Defaults/dbPath").toString();
+    database.setDatabaseName(dbPath + account + ".mdb");
+
+    return database.open();
+
 }
 
 }

@@ -48,8 +48,10 @@ NicknamesDialog::~NicknamesDialog() {
 void NicknamesDialog::nicknameSelected() {
 
     ui->deleteNicknameButton->setEnabled(true);
-    QString policy = nicknameHandler->currentNickname().policy;
-    ui->tabWidget->setTabEnabled(1, policy != "Public");
+    if (nicknameHandler->nicknameCount() > 0) {
+        QString policy = nicknameHandler->currentNickname().policy;
+        ui->tabWidget->setTabEnabled(1, policy != "Public");
+    }
 
 }
 
@@ -72,8 +74,7 @@ void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
     manager = man;
     nicknameHandler->setManager(manager);
 
-    connect(manager, SIGNAL(nicknamesLoaded(const Pippip::NicknameList&)),
-                                    nicknameHandler, SLOT(nicknamesLoaded(const Pippip::NicknameList&)));
+    connect(manager, SIGNAL(nicknamesLoaded()), nicknameHandler, SLOT(nicknamesLoaded()));
     connect(manager, SIGNAL(nicknameDeleted(QString)), nicknameHandler, SLOT(nicknameDeleted(QString)));
     connect(manager, SIGNAL(nicknameUpdated(Pippip::Nickname)),
                                                 nicknameHandler, SLOT(nicknameUpdated(Pippip::Nickname)));

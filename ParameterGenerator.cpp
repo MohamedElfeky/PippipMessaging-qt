@@ -22,27 +22,12 @@
 #include <CryptoKitty-C/digest/SHA1.h>
 #include <coder/ByteStreamCodec.h>
 #include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
-#include <CryptoKitty-C/keys/RSAPrivateKey.h>
-#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <CryptoKitty-C/keys/KeyPair.h>
 #include <ctime>
 
 namespace Pippip {
 
 ParameterGenerator::ParameterGenerator() {
-
-    serverPublicKey = 0;
-    userPrivateKey = 0;
-    userPublicKey = 0;
-
-}
-
-ParameterGenerator::~ParameterGenerator() {
-
-    delete serverPublicKey;
-    delete userPrivateKey;
-    delete userPublicKey;
-
 }
 
 void ParameterGenerator::generateParameters(const std::string& username) {

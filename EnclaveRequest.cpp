@@ -38,6 +38,13 @@ void EnclaveRequest::setRequestType(const QString &type) {
 
 }
 
+void EnclaveRequest::setValue(const QString &name, quint64 value) {
+
+    // Derp
+    (*request)[name] = static_cast<qint64>(value);
+
+}
+
 void EnclaveRequest::setValue(const QString& name, const QString& value) {
 
     (*request)[name] = value;
@@ -53,6 +60,12 @@ void EnclaveRequest::setValue(const QString& name, const QJsonObject& value) {
 void EnclaveRequest::setValue(const QString& name, const QJsonArray& value) {
 
     (*request)[name] = value;
+
+}
+
+void EnclaveRequest::setValue(const QString &name, const QByteArray &value) {
+
+    (*request)[name] = QString(value.toHex());
 
 }
 

@@ -48,24 +48,25 @@ class NicknameHandler : public QObject {
     public slots:
         void nicknameAdded(const QString& name);
         void nicknameDeleted(const QString& name);
-        void nicknamesLoaded(const Pippip::NicknameList& list);
+        void nicknamesLoaded();
         void nicknameUpdated(Pippip::Nickname nickname);
         void whitelistChanged(const Pippip::EntityList& list);
 
     private slots:
         void addNickname();
         void deleteNickname();
+        void editPolicy(int row, int column);
         void nicknameEdited();
         void policyChanged(const QString&);
         void policySelected();
 
     public:
         const Pippip::Nickname& currentNickname() const;
+        size_t nicknameCount() const { return nicknames.size(); }
         void setNicknames(const Pippip::NicknameList& nicknames);
         void setManager(Pippip::NicknameManager *mgr) { manager = mgr; }
 
     private:
-        void editPolicy(int row, int column);
         const QString& getPolicy(const QString& name) const;
         const QString& getPolicyName(const QString& policy) const;
         void loadTable();

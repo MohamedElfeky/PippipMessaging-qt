@@ -12,7 +12,7 @@ class NicknamesDialog;
 namespace Pippip {
 
 class RESTHandler;
-struct SessionState;
+class SessionState;
 
 class EnclaveResponse;
 
@@ -26,7 +26,7 @@ class NicknameManager : public QObject {
     signals:
         void nicknameAdded(const QString& name);
         void nicknameDeleted(const QString& name);
-        void nicknamesLoaded(const Pippip::NicknameList&);
+        void nicknamesLoaded();
         void nicknameUpdated(const Pippip::Nickname&);
         void requestFailed(const QString& reqName, const QString& error);
 

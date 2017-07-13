@@ -7,7 +7,7 @@ class QString;
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 class RESTHandler;
 
 class SessionTask : public QObject {

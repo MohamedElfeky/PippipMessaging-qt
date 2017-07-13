@@ -7,10 +7,11 @@
 
 class QJsonObject;
 class QJsonArray;
+class QByteArray;
 
 namespace Pippip {
 
-struct SessionState;
+class SessionState;
 
 class EnclaveRequest : public PostPacket {
 
@@ -21,9 +22,11 @@ class EnclaveRequest : public PostPacket {
     public:
         QString getValue(const QString& name) const;
         void setRequestType(const QString& type);
+        void setValue(const QString& name, quint64 value);
         void setValue(const QString& name, const QString& value);
         void setValue(const QString& name, const QJsonObject& value);
         void setValue(const QString& name, const QJsonArray& value);
+        void setValue(const QString& name, const QByteArray& value);
 
     public:
         QJsonObject *getJson() const;

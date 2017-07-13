@@ -29,7 +29,7 @@ class Vault : public SessionState {
 
     public:
         Vault();
-        ~Vault();
+        ~Vault() {}
         Vault(const SessionState& state);
 
     private:

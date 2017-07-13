@@ -43,7 +43,7 @@ Authenticator::Authenticator(LoginDialog *parent, Vault *v)
   dialog(parent),
   vault(v) {
 
-    connect(this, SIGNAL(authenticationComplete(int)), dialog, SLOT(done(int)));
+    connect(this, SIGNAL(loginComplete(int)), dialog, SLOT(done(int)));
     connect(this, SIGNAL(updateInfo(QString)), dialog, SLOT(updateInfo(QString)));
 
 }
@@ -64,6 +64,7 @@ Authenticator::~Authenticator() {
 
 void Authenticator::authenticate(const QString &name, const QString &pass) {
 
+    account = name;
     std::string accountName = name.toStdString();
     std::string passphrase = pass.toStdString();
 
@@ -103,7 +104,8 @@ void Authenticator::authorizeComplete(RESTHandler *handler) {
         else if (auth) {
             state->sessionState = Pippip::SessionState::authenticated;
             emit updateStatus("Authentication Complete");
-            emit authenticationComplete(1);
+            emit loginComplete(1);
+            emit authenticationComplete(account);
         }
         else {
             state->sessionState = Pippip::SessionState::failed;

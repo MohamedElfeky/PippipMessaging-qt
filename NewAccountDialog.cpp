@@ -24,6 +24,10 @@
 #include "mainwindow.h"
 #include <QShowEvent>
 #include <QMessageBox>
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *parent)
 : QDialog(parent),
@@ -59,22 +63,21 @@ void NewAccountDialog::accept() {
         proceed = passphraseAlert();
     }
 
+    QSettings settings;
+    QByteArray json = settings.value("User/accounts").value<QByteArray>();
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonObject accountsObj = doc.object();
+    QJsonArray accounts = accountsObj["users"].toArray();
+    for (auto account : accounts) {
+        if (account.toString() == accountName) {
+            proceed = duplicateAccountAlert();
+        }
+    }
+
     if (proceed) {
         ui->progressBar->setValue(0);
         creator->createNewAccount(accountName, passphrase);
     }
-
-}
-
-void NewAccountDialog::accountComplete() {
-
-    QMessageBox *message = new QMessageBox;
-    message->addButton(QMessageBox::Ok);
-    message->setWindowTitle("New Account Complete");
-    message->setText("Successfully created new account");
-    message->setIcon(QMessageBox::Information);
-    message->exec();
-    QDialog::accept();
 
 }
 
@@ -96,6 +99,19 @@ void NewAccountDialog::doHelp() {
 
 }
 
+bool NewAccountDialog::duplicateAccountAlert() {
+
+    QMessageBox *message = new QMessageBox;
+    message->addButton(QMessageBox::Cancel);
+    message->addButton(QMessageBox::Ok);
+    message->setWindowTitle("New Account Warning");
+    message->setText("You are about to overwrite an existing account. This will make that account unusable.");
+    message->setInformativeText("Click OK to proceed, Cancel to go back.");
+    message->setIcon(QMessageBox::Warning);
+    return message->exec() == QMessageBox::Ok;
+
+}
+
 void NewAccountDialog::incrementProgress(int incr) {
 
     int value = ui->progressBar->value() + incr;
@@ -109,7 +125,7 @@ bool NewAccountDialog::passphraseAlert() {
     QMessageBox *message = new QMessageBox;
     message->addButton(QMessageBox::Cancel);
     message->addButton(QMessageBox::Ok);
-    message->setWindowTitle("New Account Error");
+    message->setWindowTitle("New Account Warning");
     message->setText("You are about to create an account with no passphrase. This is not recommended");
     message->setInformativeText("Click OK to proceed, Cancel to go back.");
     message->setIcon(QMessageBox::Warning);
