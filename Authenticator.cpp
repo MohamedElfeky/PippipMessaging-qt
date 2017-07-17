@@ -62,11 +62,9 @@ Authenticator::Authenticator(SessionState *state, QObject *parent)
 Authenticator::~Authenticator() {
 }
 
-void Authenticator::authenticate(const QString &name, const QString &pass) {
+void Authenticator::authenticate(const QString &accountName, const QString &passphrase) {
 
-    account = name;
-    std::string accountName = name.toStdString();
-    std::string passphrase = pass.toStdString();
+    account = accountName;
 
     emit updateInfo("Opening user vault");
 

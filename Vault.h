@@ -37,8 +37,8 @@ class Vault : public SessionState {
         Vault& operator&(const Vault& other);
 
     public:
-        void loadVault(const std::string& accountName, const std::string& passphrase);
-        void storeVault(const std::string& accountName, const std::string& passphrase);
+        void loadVault(const QString& accountName, const QString& passphrase);
+        void storeVault(const QString& accountName, const QString& passphrase);
 
     private:
         void encodeVault(const std::string& passphrase);
@@ -48,7 +48,7 @@ class Vault : public SessionState {
     private:
         coder::ByteArray vaultKey;
         coder::ByteArray encoded;
-        std::string vaultPath;
+        QString vaultPath;
 
 };
 

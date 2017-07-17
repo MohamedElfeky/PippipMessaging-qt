@@ -68,7 +68,7 @@ bool MessageDatabase::create(const QString &account) {
 
     QSettings settings;
     QString dbPath = settings.value("Defaults/dbPath").toString();
-    db.setDatabaseName(dbPath + account + ".mdb");
+    db.setDatabaseName(dbPath + "/" + account + ".mdb");
     if (db.open()) {
         QSqlQuery query("CREATE TABLE messages (id INTEGER PRIMARY KEY, version TEXT, "
                         "timestamp INTEGER, sender TEXT, recipient TEXT, recipientId TEXT, "

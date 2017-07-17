@@ -19,6 +19,7 @@
 #include "Vault.h"
 #include "VaultException.h"
 #include "ByteCodec.h"
+#include "StringCodec.h"
 #include <CryptoKitty-C/encoding/GCMCodec.h>
 #include <CryptoKitty-C/encoding/PEMCodec.h>
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
@@ -39,8 +40,7 @@ namespace Pippip {
 Vault::Vault() {
 
     QSettings settings;
-    QString path = settings.value("Defaults/vaultPath").toString();
-    vaultPath = path.toUtf8().toStdString();
+    vaultPath = settings.value("Defaults/vaultPath").toString();
 
 }
 
@@ -55,8 +55,7 @@ Vault::Vault(const SessionState &state)
     userPublicKey = new CK::RSAPublicKey(*state.userPublicKey);
 
     QSettings settings;
-    QString path = settings.value("Defaults/vaultPath").toString();
-    vaultPath = path.toUtf8().toStdString();
+    vaultPath = settings.value("Defaults/vaultPath").toString();
 
 }
 
@@ -112,13 +111,13 @@ void Vault::encodeVault(const std::string& passphrase) {
     }
 }
 
-void Vault::loadVault(const std::string& accountName, const std::string& passphrase) {
+void Vault::loadVault(const QString& accountName, const QString& passphrase) {
 
-    QFile vault((vaultPath + accountName).c_str());
+    QFile vault(vaultPath + "/" + accountName);
     if (vault.open(QIODevice::ReadOnly)) {
         QByteArray bytes = vault.readAll();
         vault.close();
-        decodeVault(ByteCodec(bytes), passphrase);
+        decodeVault(ByteCodec(bytes), StringCodec(passphrase));
     }
     else {
         throw VaultException("Vault file read error");
@@ -167,10 +166,10 @@ void Vault::s2k(const std::string& passphrase) {
 
 }
 
-void Vault::storeVault(const std::string& accountName, const std::string& passphrase) {
+void Vault::storeVault(const QString& accountName, const QString& passphrase) {
 
-    encodeVault(passphrase);
-    QFile vault((vaultPath + accountName).c_str());
+    encodeVault(StringCodec(passphrase));
+    QFile vault(vaultPath + "/" + accountName);
     if (vault.open(QIODevice::WriteOnly)) {
         ByteCodec codec(encoded);
         vault.write(codec, codec.size());

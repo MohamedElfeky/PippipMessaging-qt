@@ -102,17 +102,15 @@
     <bool>false</bool>
    </property>
    <property name="nativeMenuBar">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
-   <widget class="QMenu" name="menuPippip">
+   <widget class="QMenu" name="menuAccount">
     <property name="title">
-     <string>Pippip Messaging</string>
+     <string>Account</string>
     </property>
     <addaction name="LoginAction"/>
     <addaction name="LogoutAction"/>
     <addaction name="NewAccountAction"/>
-    <addaction name="separator"/>
-    <addaction name="PippipQuitAction"/>
    </widget>
    <widget class="QMenu" name="menuContacts">
     <property name="title">
@@ -127,7 +125,7 @@
     </property>
     <addaction name="NewMessageAction"/>
    </widget>
-   <addaction name="menuPippip"/>
+   <addaction name="menuAccount"/>
    <addaction name="menuContacts"/>
    <addaction name="menuMessages"/>
   </widget>
@@ -156,7 +154,10 @@
     <string>Create a new account</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+A</string>
+    <string>Ctrl+Shift+N</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="LoginAction">
@@ -164,7 +165,10 @@
     <string>Log in...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+L</string>
+    <string>Ctrl+L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="NicknamesAction">
@@ -175,7 +179,10 @@
     <string>Manage Nicknames...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+R</string>
+    <string>Ctrl+P</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="RequestAction">
@@ -212,6 +219,9 @@
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="ContactsAction">
    <property name="enabled">
@@ -219,6 +229,12 @@
    </property>
    <property name="text">
     <string>Manage Contacts...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="NewMessageAction">

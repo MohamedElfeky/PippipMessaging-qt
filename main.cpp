@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     QCoreApplication::setOrganizationName("seComm");
     QCoreApplication::setOrganizationDomain("pippip.io");
-    QCoreApplication::setApplicationName("Pippip Messaging");
+    QCoreApplication::setApplicationName("PippipMessaging");
 
     MainWindow w;
     w.show();

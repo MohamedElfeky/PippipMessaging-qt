@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QKeySequence>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
@@ -42,23 +43,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setDefaults();
     restoreSettings();
-
-/*
-#if defined (Q_OS_MACX)
-    ui->LoginAction->setShortcut(QKeySequence(Qt::Key_L));
-    ui->LoginAction->setShortcutContext(Qt::ApplicationShortcut);
-    ui->NewAccountAction->setShortcut(QKeySequence::New);
-#endif
-
-    QMenu *testMenu = new QMenu("Test");
-    ui->menuBar->addMenu(testMenu);
-    QAction *testAction = new QAction("Shortcut Test");
-    testAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_T));
-    testMenu->addAction(testAction);
-    connect(testAction, SIGNAL(triggered()), this, SLOT(testShortcut()));
-*/
+    /*ui->menuBar->setNativeMenuBar(true);
+    QMenu *accountMenu = new QMenu("Account", this);
+    QAction *loginAction = new QAction("Log in...", this);
+    loginAction->setShortcut(QKeySequence("CTRL+L"));
+    loginAction->setShortcutContext(Qt::ApplicationShortcut);
+    accountMenu->addAction(loginAction);*/
 
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
+    //connect(loginAction, SIGNAL(toggled()), this, SLOT(logIn()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
@@ -310,9 +303,13 @@ void MainWindow::setDefaults() {
     QSettings settings;
     if (!settings.contains("FirstRun")) {
         settings.setValue("FirstRun", true);
-        QString vaultPath = QDir::homePath() + "/.config/PippipMessaging/";
+        QString supportPath = QDir::homePath() + "/Library/Application Support/PippipMessaging";
+        QDir().mkdir(supportPath);
+        QString vaultPath = supportPath + "/Vaults";
+        QDir().mkdir(vaultPath);
         settings.setValue("Defaults/vaultPath", vaultPath);
-        QString dbPath = QDir::homePath() + "/.config/PippipMessaging/";
+        QString dbPath = supportPath + "/Database";
+        QDir().mkdir(dbPath);
         settings.setValue("Defaults/dbPath", dbPath);
     }
 

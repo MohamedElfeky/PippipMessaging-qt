@@ -53,10 +53,7 @@ void NicknameManager::addNickname(const Nickname &nick) {
     EnclaveRequest req(state);
     req.setRequestType("addNickname");
     req.setValue("publicId", state->publicId);
-    QJsonObject nickname = encodeNickname(nick);
-    QJsonArray array;
-    array.append(nickname);
-    req.setValue("nicknames", array);
+    req.setValue("nickname", encodeNickname(nick));
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
@@ -182,10 +179,7 @@ void NicknameManager::deleteNickname(const QString& nick) {
     Nickname nickname;
     nickname.entity.nickname = nick;
     nickname.entity.publicId = state->publicId;
-    QJsonObject nickObj = encodeNickname(nickname);
-    QJsonArray array;
-    array.append(nickObj);
-    req.setValue("nicknames", array);
+    req.setValue("nickname", encodeNickname(nickname));
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
@@ -331,10 +325,7 @@ void NicknameManager::updateNickname(const Nickname& nick) {
     EnclaveRequest req(state);
     req.setRequestType("updateNickname");
     req.setValue("publicId", state->publicId);
-    QJsonObject nickname = encodeNickname(nick);
-    QJsonArray array;
-    array.append(nickname);
-    req.setValue("nicknames", array);
+    req.setValue("nickname", encodeNickname(nick));
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));

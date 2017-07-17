@@ -129,13 +129,7 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
             if (MessageDatabase::create(accountName)) {
                 try {
                     std::unique_ptr<Vault> vault(new Vault(*state));
-                    vault->storeVault(accountName.toUtf8().toStdString(), passphrase.toUtf8().toStdString());
-                    QMessageBox *message = new QMessageBox;
-                    message->addButton(QMessageBox::Ok);
-                    message->setWindowTitle("Account Complete");
-                    message->setText("New account created");
-                    message->setIcon(QMessageBox::Information);
-                    message->exec();
+                    vault->storeVault(accountName, passphrase);
                     addAccount(accountName);
                     emit accountComplete(accountName);
                 }

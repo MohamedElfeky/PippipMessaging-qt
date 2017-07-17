@@ -49,6 +49,9 @@ class NewAccountDialog : public QDialog {
         void resetProgress();
         void updateInfo(QString info);
 
+    private slots:
+        void accountComplete(const QString& account);
+
     protected:
         void showEvent(QShowEvent *);
 
