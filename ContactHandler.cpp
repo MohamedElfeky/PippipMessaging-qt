@@ -46,11 +46,7 @@ ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, Q
 
 void ContactHandler::contactRequested(const QString &name) {
 
-    contacts = contactManager->getContacts();
-    loadTable();
-    if (contacts.size() > 0) {
-        ui->contactsTableWidget->selectRow(0);
-    }
+    contactManager->loadContacts();
     ui->contactsStatusLabel->setText("Contact with " + name + " requested");
     qApp->processEvents();
 

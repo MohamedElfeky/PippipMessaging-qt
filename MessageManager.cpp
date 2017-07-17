@@ -7,6 +7,7 @@
 #include "SessionState.h"
 #include "ContactManager.h"
 #include "ByteCodec.h"
+#include <CryptoKitty-C/encoding/GCMCodec.h>
 #include <QTimer>
 
 namespace Pippip {
@@ -30,6 +31,19 @@ MessageManager::~MessageManager() {
 
 void MessageManager::encryptMessage(const Contact& contact, Message &message, const QByteArray &msg) {
 
+    CK::GCMCodec codec;
+    codec << ByteCodec(msg);
+    QByteArray sequence = QByteArray::number(contact.currentSequence + 1, 16);
+    QByteArray iv = contact.nonce.toUtf8();
+    iv.append(sequence.right(4));
+    codec.setIV(ByteCodec(iv));
+    int currentKey = contact.currentKey + 1;
+    if (currentKey > 9) {
+        currentKey = 0;
+    }
+    codec.encrypt(ByteCodec(contact.messageKeys[currentKey].toUtf8()), ByteCodec(contact.authData.toUtf8()));
+    message.message = ByteCodec(codec.toArray()).getQtBytes();
+
 }
 
 void MessageManager::sendComplete(RESTHandler *handler) {
@@ -49,6 +63,7 @@ void MessageManager::sendComplete(RESTHandler *handler) {
             if (idValue.isDouble() && tsValue.isDouble()) {
                 message.timestamp = tsValue.toDouble();
                 message.messageId = idValue.toDouble();
+                contactManager->incrementSequences(message);
                 if (database->addMessage(message)) {
                     emit messageSent();
                 }
@@ -74,7 +89,7 @@ void MessageManager::sendMessage(const Message &message) {
     EnclaveRequest request(state);
     request.setRequestType("sendMessage");
     request.setValue("sender", message.sender);
-    request.setValue("senderId", state->publicId);
+    request.setValue("senderId", message.senderId);
     request.setValue("recipient", message.recipient);
     request.setValue("recipientId", message.recipientId);
     request.setValue("keyIndex", message.keyIndex);
@@ -92,14 +107,19 @@ void MessageManager::sendMessage(const Message &message) {
 void MessageManager::sendMessage(const QString &sender, const QString &recipient, const QString &message) {
 
     Message msg;
+    msg.version = MESSAGE_VERSION;
     msg.sender = sender;
     msg.recipient = recipient;
 
-    Contact contact = contactManager->getContact(recipient);
-    msg.recipientId = contact.entity.publicId;
-
-    encryptMessage(contact, msg, message.toUtf8());
-    sendMessage(msg);
+    Contact contact;
+    if (contactManager->getContactByNickname(recipient, contact)) {
+        msg.recipientId = contact.entity.publicId;
+        encryptMessage(contact, msg, message.toUtf8());
+        sendMessage(msg);
+    }
+    else {
+        emit requestFailed("SendMessage", "Recipient not found");
+    }
 
 }
 

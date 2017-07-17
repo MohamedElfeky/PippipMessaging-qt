@@ -8,11 +8,15 @@
 
 namespace Pippip {
 
+static const QString MESSAGE_VERSION = "1.0";
+
 struct Message {
     QString version;
     qint64 messageId;
     qint64 timestamp;
+    int sequence;
     QString sender;         // Nickname
+    QString senderId;
     QString recipient;      // Nickname
     QString recipientId;    // Public ID
     int keyIndex;

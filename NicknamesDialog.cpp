@@ -79,7 +79,6 @@ void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
     connect(manager, SIGNAL(nicknameUpdated(Pippip::Nickname)),
                                                 nicknameHandler, SLOT(nicknameUpdated(Pippip::Nickname)));
     connect(manager, SIGNAL(nicknameAdded(QString)), nicknameHandler, SLOT(nicknameAdded(QString)));
-    connect(manager, SIGNAL(requestFailed(QString, QString)), this, SLOT(requestFailed(QString, QString)));
 
     manager->loadNicknames();
 

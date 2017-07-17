@@ -15,6 +15,7 @@ namespace Pippip {
 class SessionState;
 struct ContactRequest;
 class RESTHandler;
+struct Message;
 
 class ContactManager : public QObject {
         Q_OBJECT
@@ -24,7 +25,7 @@ class ContactManager : public QObject {
         ~ContactManager() {}
 
     signals:
-        void requestedContact(const QString&);
+        void contactRequested(const QString&);
         void contactsLoaded();
         void requestFailed(const QString& reqName, const QString& error);
         void requestsLoaded();
@@ -36,9 +37,12 @@ class ContactManager : public QObject {
         void requestTimedOut();
 
     public:
-        const Contact& getContact(const QString& nickname) const;
+        bool getContactByNickname(const QString& nickname, Contact& contact) const;
+        bool getContactById(const QString& id, Contact& contact) const;
+        const Contact& getContactById(const QString& id) const;
         const ContactList& getContacts() const { return contacts; }
         const RequestList& getRequests() const { return requests; }
+        void incrementSequences(const Message& message);
         void loadContacts();
         void loadRequests();
         void requestContact(const ContactRequest& request);

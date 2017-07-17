@@ -44,66 +44,6 @@ ContactsDialog::~ContactsDialog() {
     delete ui;
 
 }
-/*
-void ContactsDialog::contactRequested(Pippip::Contact contact) {
-
-    if (contact.status == "rejected") {
-        Pippip::CriticalAlert alert("Contact Request Failed", "Contact request rejected");
-        alert.exec();
-    }
-
-    ui->contactsStatusLabel->setText("Contact request " + contact.status);
-    qApp->processEvents();
-    contactManager->loadContacts();
-
-    int row = ui->contactsTableWidget->rowCount();
-    ui->contactsTableWidget->setRowCount(row + 1);
-    QTableWidgetItem *statusItem = new QTableWidgetItem(contact.status);
-    statusItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    ui->contactsTableWidget->setItem(row, 0, statusItem);
-    QTableWidgetItem *nicknameItem = new QTableWidgetItem(contact.entity.nickname);
-    nicknameItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    ui->contactsTableWidget->setItem(row, 1, nicknameItem);
-    QTableWidgetItem *idItem = new QTableWidgetItem(contact.entity.publicId);
-    idItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-
-    if (contact.entity.nickname.length() > 0) {
-        ui->contactsStatusLabel->setText("Added " + contact.entity.nickname);
-        qApp->processEvents();
-    }
-    else {
-        ui->contactsStatusLabel->setText("Added " + contact.entity.publicId);
-        qApp->processEvents();
-    }
-
-}
-
-void ContactsDialog::requestContact() {
-
-    AddContactDialog dialog(state);
-    dialog.setNicknameManager(nicknameManager);
-    if (dialog.exec() == QDialog::Accepted) {
-        QString requestedId = dialog.getRequestedId();
-        QString requestingNickname = dialog.getRequestingNickname();
-        QString idType = dialog.getIdType();
-        bool privateRequest = dialog.getPrivateRequest();
-        Pippip::ContactRequest request;
-        request.requesting.nickname = privateRequest ? "" : requestingNickname;
-        request.requesting.publicId = state->publicId;
-        if (idType == "Nickname") {
-            request.requested.nickname = requestedId;
-        }
-        else {
-            request.requested.publicId = requestedId;
-        }
-        request.privateRequest = privateRequest;
-        ui->contactsStatusLabel->setText("Requesting contact with " + requestedId);
-        qApp->processEvents();
-        contactManager->requestContact(request);
-    }
-
-}
-*/
 
 void ContactsDialog::contactsLoaded() {
 
@@ -136,7 +76,7 @@ void ContactsDialog::setContactManager(Pippip::ContactManager *man) {
     connect(contactManager, SIGNAL(contactsLoaded()), contactHandler, SLOT(contactsLoaded()));
     connect(contactManager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
     //connect(contactManager, SIGNAL(requestsLoaded()), this, SLOT(requestsLoaded()));
-    connect(contactManager, SIGNAL(requestedContact(QString)),
+    connect(contactManager, SIGNAL(contactRequested(QString)),
                                         contactHandler, SLOT(contactRequested(QString)));
 
     contactManager->loadContacts();

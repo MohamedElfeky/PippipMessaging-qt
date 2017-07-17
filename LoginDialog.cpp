@@ -56,6 +56,7 @@ void LoginDialog::login() {
 
     QString accountName = ui->accountNameComboBox->currentText();
     QString passphrase = ui->PassphraseText->text();
+    ui->loginButton->setEnabled(false);
     if (accountName.length() == 0) {
         accountNameAlert();
     }

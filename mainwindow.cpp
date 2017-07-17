@@ -179,18 +179,31 @@ void MainWindow::loggedOut() {
 
 void MainWindow::manageContacts() {
 
+    statusLabel->clear();
     ContactsDialog *dialog = new ContactsDialog(session, this);
+    disconnect(contactManager, SIGNAL(requestFailed(QString,QString)),
+                                        this, SLOT(requestFailed(QString,QString)));
+    connect(contactManager, SIGNAL(requestFailed(QString,QString)),
+                                                dialog, SLOT(requestFailed(QString,QString)));
     dialog->setContactManager(contactManager);
     dialog->setNicknameManager(nicknameManager);
     dialog->exec();
+    connect(contactManager, SIGNAL(requestFailed(QString,QString)),
+                                                this, SLOT(requestFailed(QString,QString)));
 
 }
 
 void MainWindow::manageNicknames() {
 
     NicknamesDialog *dialog = new NicknamesDialog(this);
+    disconnect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
+                                        this, SLOT(requestFailed(QString,QString)));
+    connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
+                                        dialog, SLOT(requestFailed(QString,QString)));
     dialog->setManager(nicknameManager);
     dialog->exec();
+    connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
+                                        dialog, SLOT(requestFailed(QString,QString)));
 
 }
 

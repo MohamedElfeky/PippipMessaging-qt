@@ -19,6 +19,8 @@ class ByteCodec {
         operator const coder::ByteArray& () const { return coderBytes; }
 
     public:
+        const coder::ByteArray& getCoderBytes() const { return coderBytes; }
+        const QByteArray& getQtBytes() const { return qtBytes; }
         size_t size() const { return byteSize; }
 
     private:

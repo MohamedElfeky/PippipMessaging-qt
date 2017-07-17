@@ -10,8 +10,11 @@ struct Contact {
     QString status;
     QString contactOf;
     Entity entity;
+    QString nonce;
+    QString authData;
     QStringList messageKeys;
     int currentKey;
+    int currentSequence;
 };
 
 typedef std::vector<Contact> ContactList;

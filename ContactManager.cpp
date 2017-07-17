@@ -4,6 +4,7 @@
 #include "ContactRequest.h"
 #include "RESTHandler.h"
 #include "SessionState.h"
+#include "Message.h"
 #include <QTimer>
 #include <QJsonArray>
 #include <iostream>
@@ -69,7 +70,7 @@ void ContactManager::contactRequestComplete(RESTHandler *handler) {
             else {
                 name = contact.entity.publicId;
             }
-            emit requestedContact(name);
+            emit contactRequested(name);
         }
         else {
             emit requestFailed("Contact Request", response.getError());
@@ -78,9 +79,43 @@ void ContactManager::contactRequestComplete(RESTHandler *handler) {
 
 }
 
-const Contact& ContactManager::getContact(const QString &nickname) const {
+bool ContactManager::getContactByNickname(const QString &nickname, Contact& aContact) const {
 
-    return contacts[0];
+    for(auto contact : contacts) {
+        if (contact.entity.nickname == nickname) {
+            aContact = contact;
+            return true;
+        }
+    }
+    return false;
+
+}
+
+bool ContactManager::getContactById(const QString &id, Contact& aContact) const {
+
+    for(auto contact : contacts) {
+        if (contact.entity.publicId == id) {
+            aContact = contact;
+            return true;
+        }
+    }
+    return false;
+
+}
+
+void ContactManager::incrementSequences(const Message &message) {
+
+    for (auto contact : contacts) {
+        if ((message.sender == contact.contactOf || message.senderId == state->publicId)
+                && message.recipient == contact.entity.nickname
+                && message.recipientId == contact.entity.publicId) {
+            contact.currentKey = message.keyIndex + 1;
+            if (contact.currentKey > 9) {
+                contact.currentKey = 0;
+            }
+            contact.currentSequence = message.sequence + 1;
+        }
+    }
 
 }
 
@@ -121,6 +156,8 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
         contact.entity.publicId = entity["publicId"].toString();
         contact.entity.encryptionRSA = entity["encryptionRSA"].toString();
         contact.entity.signingRSA = entity["signingRSA"].toString();
+        contact.nonce = contactObj["nonce"].toString();
+        contact.authData = contactObj["authData"].toString();
         QJsonArray messageKeys = contactObj["messageKeys"].toArray();
         for (QJsonValue key : messageKeys) {
             contact.messageKeys.append(key.toString());
