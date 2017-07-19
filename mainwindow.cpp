@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QKeySequence>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -43,12 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setDefaults();
     restoreSettings();
-    /*ui->menuBar->setNativeMenuBar(true);
-    QMenu *accountMenu = new QMenu("Account", this);
-    QAction *loginAction = new QAction("Log in...", this);
-    loginAction->setShortcut(QKeySequence("CTRL+L"));
-    loginAction->setShortcutContext(Qt::ApplicationShortcut);
-    accountMenu->addAction(loginAction);*/
 
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
     //connect(loginAction, SIGNAL(toggled()), this, SLOT(logIn()));
@@ -67,10 +62,6 @@ MainWindow::MainWindow(QWidget *parent)
     EnterKeyFilter *keyFilter = new EnterKeyFilter(ui->messageTextEdit);
     ui->messageTextEdit->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(sendMessage()));
-
-    //Pippip::MessageDatabase::create("Fred");
-    //Pippip::MessageDatabase::create("Sally");
-    //Pippip::MessageDatabase::create("Sarah");
 
 }
 
