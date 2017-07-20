@@ -18,7 +18,7 @@
 
 #include "ContactHandler.h"
 #include "ui_ContactsDialog.h"
-#include "EnterKeyFilter.h"
+#include "ContactAddKeyFilter.h"
 #include "EmptyStringValidator.h"
 #include "ContactManager.h"
 #include "SessionState.h"
@@ -26,6 +26,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QStringList>
+#include <QDebug>
 
 ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, QObject *parent)
 : QObject(parent),
@@ -96,7 +97,6 @@ void ContactHandler::loadTable() {
 
 /*
  * Invoked by the nickname line edit editing finished signal.
- */
 void ContactHandler::nicknameEdited() {
 
     disconnect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
@@ -117,10 +117,10 @@ void ContactHandler::nicknameEdited() {
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
 
 }
+ */
 
 /*
  * Invoked by the public ID line edit editing finished signal.
- */
 void ContactHandler::puidEdited() {
 
     disconnect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
@@ -141,11 +141,9 @@ void ContactHandler::puidEdited() {
     contactManager->requestContact(working);
 
 }
+ */
 
 void ContactHandler::requestContact() {
-
-    working.requesting.publicId = state->publicId;
-    working.privateRequest = false;
 
     ui->addButton->setEnabled(false);
     int row = ui->contactsTableWidget->rowCount();
@@ -161,16 +159,95 @@ void ContactHandler::requestContact() {
     for (auto nickname : nicknames) {
         items << nickname.entity.nickname;
     }
+    items << "Public ID";
     requestingComboBox->addItems(items);
-    EnterKeyFilter *keyFilter = new EnterKeyFilter(requestingComboBox);
+    ContactAddKeyFilter *keyFilter = new ContactAddKeyFilter(requestingComboBox);
     requestingComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(requestingSelected()));
+    connect(keyFilter, SIGNAL(tabPressed()), this, SLOT(requestingSelected()));
     ui->contactsTableWidget->setCellWidget(row, 1, requestingComboBox);
     // Do this here so the event doesn't fire when the value is changed above.
-    connect(requestingComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestingSet(QString)));
+    //connect(requestingComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestingSet(QString)));
     ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
     requestingComboBox->setFocus();
+
+}
+
+/*
+ * Invoked by the requested ID line edit editing finished signal.
+ */
+void ContactHandler::requestedEdited() {
+
+    disconnect(requestedLineEdit, SIGNAL(editingFinished()), this, SLOT(requestedEdited()));
+    int row = ui->contactsTableWidget->currentRow();
+    requestedLineEdit->setEnabled(false);
+    QLabel *requestedLabel = new QLabel(requestedLineEdit->text());
+    requestedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    requestedLabel->setMargin(5);
+    ui->contactsTableWidget->setCellWidget(row, 3, requestedLabel);
+    working.requestedId = requestedLineEdit->text();
+    working.requestType = requestingType + requestedType;
+
+    qDebug() << "Calling contactmanager";
+    qDebug() << "requestType : " << working.requestType;
+    qDebug() << "requestingId : " << working.requestingId;
+    qDebug() << "requestedId : " << working.requestedId;
+
+    // contactManager->requestContact(working);
+
+}
+
+/*
+ * Invoked by key filter signal on enter or return pressed.
+void ContactHandler::requestedSelected() {
+
+    QString type = requestedComboBox->currentText();
+    requestedSet(type);
+
+}
+ */
+
+/*
+ * Invoked by key filter signal on enter or return pressed.
+void ContactHandler::requestingSelected() {
+
+    QString id = requestingComboBox->currentText();
+    requestingSet(id);
+
+}
+ */
+
+/*
+ * Invoked by key filter signal on enter or return pressed.
+ */
+void ContactHandler::requestedSelected() {
+
+    int row = ui->contactsTableWidget->currentRow();
+    QString type = requestedComboBox->currentText();
+    QLabel *requestedLabel = new QLabel(type);
+    requestedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    requestedLabel->setMargin(5);
+    ui->contactsTableWidget->setCellWidget(row, 2, requestedLabel);
+    if (type == "Public ID") {
+        requestedType = "P";
+    }
+    else {
+        requestedType = "N";
+    }
+
+    requestedLineEdit = new QLineEdit;
+    if (requestedType == "N") {
+        requestedLineEdit->setValidator(nicknameValidator);
+    }
+    else {
+        requestedLineEdit->setValidator(puidValidator);
+    }
+    ui->contactsTableWidget->setCellWidget(row, 3, requestedLineEdit);
+    connect(requestedLineEdit, SIGNAL(editingFinished()), this, SLOT(requestedEdited()));
+    ui->pastePushButton->setEnabled(true);
+    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
+    requestedLineEdit->setFocus();
 
 }
 
@@ -179,32 +256,36 @@ void ContactHandler::requestContact() {
  */
 void ContactHandler::requestingSelected() {
 
-    QString nickname = requestingComboBox->currentText();
-    requestingSet(nickname);
-
-}
-
-/*
- * Invoked by the combo box selection change signal or directly from
- * nicknameSelected.
- */
-void ContactHandler::requestingSet(const QString &nick) {
-
     int row = ui->contactsTableWidget->currentRow();
-    QLabel *requestingLabel = new QLabel(nick);
+    QString id = requestingComboBox->currentText();
+    QLabel *requestingLabel = new QLabel(id);
     requestingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     requestingLabel->setMargin(5);
     ui->contactsTableWidget->setCellWidget(row, 1, requestingLabel);
-    working.requesting.nickname = nick;
+    if (id == "Public ID") {
+        working.requestingId = state->publicId;
+        requestingType = "P";
+    }
+    else {
+        working.requestingId = id;
+        requestingType = "N";
+    }
 
-    nicknameLineEdit = new QLineEdit;
-    nicknameLineEdit->setValidator(nicknameValidator);
-    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLineEdit);
-    nicknameLineEdit->setFocus();
-    connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
-    ui->pastePushButton->setEnabled(true);
+
+    requestedComboBox = new QComboBox;
+    QStringList items;
+    items << "Nickname" << "Public ID";
+    requestedComboBox->addItems(items);
+    ContactAddKeyFilter *keyFilter = new ContactAddKeyFilter(requestedComboBox);
+    requestedComboBox->installEventFilter(keyFilter);
+    connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(requestedSelected()));
+    connect(keyFilter, SIGNAL(tabPressed()), this, SLOT(requestedSelected()));
+    ui->contactsTableWidget->setCellWidget(row, 3, requestedComboBox);
+    // Do this here so the event doesn't fire when the value is changed above.
+    //connect(requestedComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestedSet(QString)));
     ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
+    requestedComboBox->setFocus();
 
 }
 

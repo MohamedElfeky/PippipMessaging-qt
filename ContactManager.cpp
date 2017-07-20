@@ -188,20 +188,9 @@ void ContactManager::requestContact(const ContactRequest &request) {
 
     EnclaveRequest req(state);
     req.setRequestType("requestContact");
-    req.setValue("publicId", state->publicId);
-    QJsonObject requestObj;
-    QJsonObject requestingObj;
-    requestingObj["nickname"] = request.requesting.nickname;
-    requestingObj["publicId"] = request.requesting.publicId;
-    requestObj["requesting"] = requestingObj;
-    QJsonObject requestedObj;
-    requestedObj["nickname"] = request.requested.nickname;
-    requestedObj["publicId"] = request.requested.publicId;
-    requestObj["requested"] = requestedObj;
-    requestObj["privateRequest"] = request.privateRequest;
-    QJsonArray requests;
-    requests.append(requestObj);
-    req.setValue("requests", requests);
+    req.setValue("requestType", request.requestType);
+    req.setValue("requestingId", request.requestingId);
+    req.setValue("requestedId", request.requestedId);
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));

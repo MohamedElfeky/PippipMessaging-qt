@@ -52,11 +52,10 @@ class ContactHandler : public QObject {
         void contactRequested(const QString& name);
 
     private slots:
-        void nicknameEdited();
-        void puidEdited();
+        void requestedEdited();
         void requestContact();
+        void requestedSelected();
         void requestingSelected();
-        void requestingSet(const QString& nick);
 
     public:
         void setContactManager(Pippip::ContactManager *manager) { contactManager = manager; }
@@ -71,14 +70,18 @@ class ContactHandler : public QObject {
         Pippip::ContactManager *contactManager;
         Pippip::NicknameList nicknames;
         Pippip::ContactList contacts;
+        // Editing widgets
         QComboBox *requestingComboBox;
-        QLineEdit *nicknameLineEdit;
-        QLineEdit *puidLineEdit;
+        QComboBox *requestedComboBox;
+        QLineEdit *requestedLineEdit;
         QRegularExpression nicknameRE;
         EmptyStringValidator *nicknameValidator;
         QRegularExpression puidRE;
         EmptyStringValidator *puidValidator;
+        // Contact request variables
         Pippip::ContactRequest working;
+        QString requestingType;     // P or N
+        QString requestedType;      // P or N
 
 };
 

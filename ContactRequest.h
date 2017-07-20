@@ -5,10 +5,15 @@
 
 namespace Pippip {
 
+static const QString NICKNAME_NICKNAME = "NN";
+static const QString NICKNAME_PUBLICID = "NP";
+static const QString PUBLICID_NICKNAME = "PN";
+static const QString PUBLICID_PUBLICID = "PP";
+
 struct ContactRequest {
-    Entity requesting;
-    Entity requested;
-    bool privateRequest;
+    QString requestType;
+    QString requestingId;
+    QString requestedId;
 };
 
 typedef std::vector<ContactRequest> RequestList;

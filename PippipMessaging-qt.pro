@@ -55,7 +55,8 @@ SOURCES += main.cpp\
     RequestHandler.cpp \
     MessageManager.cpp \
     ByteCodec.cpp \
-    StringCodec.cpp
+    StringCodec.cpp \
+    ContactAddKeyFilter.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -110,7 +111,8 @@ HEADERS  += mainwindow.h \
     ByteCodec.h \
     Message.h \
     MessageException.h \
-    StringCodec.h
+    StringCodec.h \
+    ContactAddKeyFilter.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
