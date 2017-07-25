@@ -31,10 +31,19 @@ void NicknameManager::addComplete(RESTHandler *handler) {
             emit requestFailed("Add Nickname", handler->getError());
         }
         else if (response) {
-            Nickname nickname;
-            if (getNickname(response, nickname)) {
-                nicknames.push_back(nickname);
-                emit nicknameAdded(nickname.entity.nickname);
+            QJsonObject responseObj = handler->getResponse();
+            QJsonValue statusValue = responseObj["status"];
+            if (statusValue.isString()) {
+                QString status = statusValue.toString();
+                if (status == "added") {
+                    emit nicknameAdded();
+                }
+                else if (status == "exists") {
+                    emit nicknameExists();
+                }
+                else {
+                    emit requestFailed("Add Nickname", "Invalid server response");
+                }
             }
             else {
                 emit requestFailed("Add Nickname", "Invalid server response");
@@ -63,7 +72,7 @@ void NicknameManager::addNickname(const Nickname &nick) {
 
 }
 
-bool NicknameManager::decodeEntity(const QJsonObject &obj, Entity &entity) {
+bool NicknameManager::decodeEntity(const QJsonObject &obj, Entity &entity) const {
 
     QJsonValue nicknameValue = obj["nickname"];
     if (!nicknameValue.isString()) {
@@ -77,29 +86,25 @@ bool NicknameManager::decodeEntity(const QJsonObject &obj, Entity &entity) {
     }
     entity.publicId = publicIdValue.toString();
 
-    QJsonValue encryptionRSAValue = obj["encryptionRSA"];
-    if (!encryptionRSAValue.isString()) {
-        return false;
-    }
-    entity.encryptionRSA = encryptionRSAValue.toString();
-
-    QJsonValue signingRSAValue = obj["signingRSA"];
-    if (!signingRSAValue.isString()) {
-        return false;
-    }
-    entity.signingRSA = signingRSAValue.toString();
-
     return true;
 
 }
 
-bool NicknameManager::decodeNickname(const QJsonObject &obj, Nickname &nickname) {
+bool NicknameManager::decodeNickname(const QJsonObject &obj, Nickname &nickname) const {
 
     QJsonValue entityValue = obj["entity"];
     if (!entityValue.isObject()) {
         return false;
     }
     if (!decodeEntity(entityValue.toObject(), nickname.entity)) {
+        return false;
+    }
+
+    QJsonValue rsaKeysValue = obj["rsaKeys"];
+    if (!rsaKeysValue.isObject()) {
+        return false;
+    }
+    if (!decodeRSAKeys(rsaKeysValue.toObject(), nickname.rsaKeys)) {
         return false;
     }
 
@@ -121,6 +126,24 @@ bool NicknameManager::decodeNickname(const QJsonObject &obj, Nickname &nickname)
         }
         nickname.whitelist.push_back(wlEntity);
     }
+
+    return true;
+
+}
+
+bool NicknameManager::decodeRSAKeys(const QJsonObject &obj, RSAKeys &rsaKeys) const {
+
+    QJsonValue encryptionRSAValue = obj["encryptionRSA"];
+    if (!encryptionRSAValue.isString()) {
+        return false;
+    }
+    rsaKeys.encryptionRSA = encryptionRSAValue.toString();
+
+    QJsonValue signingRSAValue = obj["signingRSA"];
+    if (!signingRSAValue.isString()) {
+        return false;
+    }
+    rsaKeys.signingRSA = signingRSAValue.toString();
 
     return true;
 
@@ -195,17 +218,17 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
     QJsonObject entityObj;
     entityObj["nickname"] = nickname.entity.nickname;
     entityObj["publicId"] = state->publicId;
-    entityObj["encryptionRSA"] = nickname.entity.encryptionRSA;
-    entityObj["signingRSA"] = nickname.entity.signingRSA;
     nickObj["entity"] = entityObj;
+    //QJsonObject rsaKeys;
+    //rsaKeys["encryptionRSA"] = nickname.rsaKeys.encryptionRSA;
+    //rsaKeys["signingRSA"] = nickname.rsaKeys.signingRSA;
+    //nickObj["rsaKeys"] = rsaKeys;
     nickObj["policy"] = nickname.policy;
     QJsonArray whitelist;
     for (auto entity : nickname.whitelist) {
         QJsonObject wlEntityObj;
         wlEntityObj["nickname"] = entity.nickname;
         wlEntityObj["publicId"] = entity.publicId;
-        wlEntityObj["encryptionRSA"] = entity.encryptionRSA;
-        wlEntityObj["signingRSA"] = entity.signingRSA;
         whitelist.append(wlEntityObj);
     }
     nickObj["whitelist"] = whitelist;
@@ -274,7 +297,6 @@ void NicknameManager::loadNicknames() {
     if (!loaded) {
         EnclaveRequest req(state);
         req.setRequestType("getNicknames");
-        req.setValue("publicId", state->publicId);
         RESTHandler *handler = new RESTHandler(this);
         connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(loadComplete(RESTHandler*)));
         connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(loadComplete(RESTHandler*)));
@@ -317,11 +339,7 @@ void NicknameManager::requestTimedOut() {
 }
 
 void NicknameManager::updateNickname(const Nickname& nick) {
-/*
-    std::cout << "updateNickname called" << std::endl;
-    std::cout << "Nickname : " << nick.entity.nickname.toUtf8().toStdString() << std::endl;
-    std::cout << "Policy :" << nick.policy.toUtf8().toStdString() << std::endl;
-*/
+
     EnclaveRequest req(state);
     req.setRequestType("updateNickname");
     req.setValue("publicId", state->publicId);
@@ -360,7 +378,7 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
     }
 
 }
-
+/*
 void NicknameManager::updatePolicy(const Nickname& nickname) {
 
     for (Nickname& nick : nicknames) {
@@ -370,5 +388,5 @@ void NicknameManager::updatePolicy(const Nickname& nickname) {
     }
 
 }
-
+*/
 } // namespace Pippip

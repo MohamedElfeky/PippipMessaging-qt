@@ -24,8 +24,9 @@ class NicknameManager : public QObject {
         ~NicknameManager() {}
 
     signals:
-        void nicknameAdded(const QString& name);
+        void nicknameAdded();
         void nicknameDeleted(const QString& name);
+        void nicknameExists();
         void nicknamesLoaded();
         void nicknameUpdated(const Pippip::Nickname&);
         void requestFailed(const QString& reqName, const QString& error);
@@ -49,12 +50,13 @@ class NicknameManager : public QObject {
 
     private:
         void deleteFromNicknames(const QString& nickname);
-        bool decodeEntity(const QJsonObject& obj, Entity& entity);
-        bool decodeNickname(const QJsonObject& obj, Nickname& nickname);
+        bool decodeEntity(const QJsonObject& obj, Entity& entity) const;
+        bool decodeNickname(const QJsonObject& obj, Nickname& nickname) const;
+        bool decodeRSAKeys(const QJsonObject& obj, RSAKeys& rsaKey) const;
         QJsonObject encodeNickname(const Nickname& nickname);
         bool getNickname(const EnclaveResponse& resp, Nickname& nickname);
         bool loadNicknames(const QJsonObject& json);
-        void updatePolicy(const Nickname& nickname);
+        //void updatePolicy(const Nickname& nickname);
 
     private:
         bool loaded;

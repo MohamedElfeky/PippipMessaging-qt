@@ -141,16 +141,16 @@ void NicknameHandler::loadTable() {
 
 }
 
-void NicknameHandler::nicknameAdded(const QString& name) {
+void NicknameHandler::nicknameAdded() {
 
     nicknames = manager->getNicknames();
     loadTable();
     for (size_t row = 0; row < nicknames.size(); ++row) {
-        if (nicknames[row].entity.nickname == name) {
+        if (nicknames[row].entity.nickname == toAdd) {
             ui->nicknameTableWidget->selectRow(row);
         }
     }
-    ui->statusLabel->setText(name + " added");
+    ui->statusLabel->setText(toAdd + " added");
     qApp->processEvents();
 
 }
@@ -167,9 +167,9 @@ void NicknameHandler::nicknameDeleted(const QString& name) {
 void NicknameHandler::nicknameEdited() {
 
     int row = ui->nicknameTableWidget->currentRow();
-    QString nickname = nicknameLineEdit->text();
-    nicknames[row].entity.nickname = nickname;
-    QLabel *nameLabel = new QLabel(nickname);
+    toAdd = nicknameLineEdit->text();
+    nicknames[row].entity.nickname = toAdd;
+    QLabel *nameLabel = new QLabel(toAdd);
     nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
 

@@ -2,6 +2,7 @@
 #define CONTACT_H
 
 #include "Entity.h"
+#include "RSAKeys.h"
 #include <QStringList>
 
 namespace Pippip {
@@ -10,6 +11,7 @@ struct Contact {
     QString status;
     QString contactOf;
     Entity entity;
+    RSAKeys rsaKeys;
     QString nonce;
     QString authData;
     QStringList messageKeys;

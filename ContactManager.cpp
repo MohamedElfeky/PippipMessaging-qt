@@ -121,7 +121,9 @@ void ContactManager::incrementSequences(const Message &message) {
 
 void ContactManager::loadContacts() {
 
-    EnclaveRequest req(state);
+    emit contactsLoaded();
+
+/*    EnclaveRequest req(state);
     req.setRequestType("getContacts");
     req.setValue("publicId", state->publicId);
     RESTHandler *handler = new RESTHandler(this);
@@ -129,7 +131,7 @@ void ContactManager::loadContacts() {
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(contactLoadComplete(RESTHandler*)));
     timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
-    handler->doPost(req);
+    handler->doPost(req); */
 
 }
 
@@ -154,8 +156,8 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
         QJsonObject entity = contactObj["entity"].toObject();
         contact.entity.nickname = entity["nickname"].toString();
         contact.entity.publicId = entity["publicId"].toString();
-        contact.entity.encryptionRSA = entity["encryptionRSA"].toString();
-        contact.entity.signingRSA = entity["signingRSA"].toString();
+        contact.rsaKeys.encryptionRSA = entity["encryptionRSA"].toString();
+        contact.rsaKeys.signingRSA = entity["signingRSA"].toString();
         contact.nonce = contactObj["nonce"].toString();
         contact.authData = contactObj["authData"].toString();
         QJsonArray messageKeys = contactObj["messageKeys"].toArray();

@@ -112,7 +112,8 @@ HEADERS  += mainwindow.h \
     Message.h \
     MessageException.h \
     StringCodec.h \
-    ContactAddKeyFilter.h
+    ContactAddKeyFilter.h \
+    RSAKeys.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

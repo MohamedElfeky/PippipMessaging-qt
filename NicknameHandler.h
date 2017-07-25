@@ -46,7 +46,7 @@ class NicknameHandler : public QObject {
         void policyUpdated(const QString& policy);
 
     public slots:
-        void nicknameAdded(const QString& name);
+        void nicknameAdded();
         void nicknameDeleted(const QString& name);
         void nicknamesLoaded();
         void nicknameUpdated(Pippip::Nickname nickname);
@@ -74,6 +74,7 @@ class NicknameHandler : public QObject {
 
     private:
         bool newItem;
+        QString toAdd;
         Ui::NicknamesDialog *ui;
         Pippip::NicknameList nicknames;
         QComboBox *policyComboBox;

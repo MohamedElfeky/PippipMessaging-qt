@@ -9,8 +9,6 @@ namespace Pippip {
     struct Entity {
         QString nickname;
         QString publicId;
-        QString encryptionRSA;
-        QString signingRSA;
     };
 
     typedef std::vector<Entity> EntityList;

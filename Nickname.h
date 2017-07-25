@@ -2,11 +2,13 @@
 #define NICKNAME_H
 
 #include "Entity.h"
+#include "RSAKeys.h"
 
 namespace Pippip {
 
     struct Nickname {
         Entity entity;
+        RSAKeys rsaKeys;
         QString policy;
         EntityList whitelist;
     };
