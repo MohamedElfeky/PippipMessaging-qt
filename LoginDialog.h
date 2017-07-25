@@ -22,14 +22,15 @@ class LoginDialog : public QDialog
 
     public slots:
         void login();
+        void loginReset();
         void updateInfo(QString);
 
     protected:
         void showEvent(QShowEvent *);
 
-    private:
+/*    private:
         void accountNameAlert();
-
+*/
     private:
         Ui::LoginDialog *ui;
         Pippip::Vault *vault;

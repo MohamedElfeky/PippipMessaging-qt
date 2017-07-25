@@ -378,7 +378,7 @@ void NicknameManager::updateComplete(RESTHandler *handler) {
     }
 
 }
-/*
+
 void NicknameManager::updatePolicy(const Nickname& nickname) {
 
     for (Nickname& nick : nicknames) {
@@ -388,5 +388,5 @@ void NicknameManager::updatePolicy(const Nickname& nickname) {
     }
 
 }
-*/
+
 } // namespace Pippip

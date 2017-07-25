@@ -32,6 +32,7 @@ LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
     MainWindow *main = dynamic_cast<MainWindow*>(parent);
     auth = new Pippip::Authenticator(this, vault);
     connect(auth, SIGNAL(authenticationComplete(QString)), main, SLOT(loggedIn(QString)));
+    connect(auth, SIGNAL(loginReset()), this, SLOT(loginReset()));
 
 }
 
@@ -40,7 +41,7 @@ LoginDialog::~LoginDialog() {
     delete ui;
 
 }
-
+/*
 void LoginDialog::accountNameAlert() {
 
     QMessageBox *message = new QMessageBox;
@@ -51,19 +52,28 @@ void LoginDialog::accountNameAlert() {
     message->exec();
 
 }
-
+*/
 void LoginDialog::login() {
 
     QString accountName = ui->accountNameComboBox->currentText();
     QString passphrase = ui->PassphraseText->text();
     ui->loginButton->setEnabled(false);
-    if (accountName.length() == 0) {
-        accountNameAlert();
-    }
-    else {
+    //if (accountName.length() == 0) {
+    //    accountNameAlert();
+    //}
+    //else {
         auth->reset();
         auth->authenticate(accountName, passphrase);
-    }
+    //}
+
+}
+
+void LoginDialog::loginReset() {
+
+    ui->loginButton->setEnabled(true);
+    ui->PassphraseText->clear();
+    //ui->accountNameComboBox->setCurrentIndex(0);
+    qApp->processEvents();
 
 }
 

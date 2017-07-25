@@ -86,6 +86,7 @@ void Authenticator::authFailed(const QString& error) {
                         error);
     alert.exec();
     emit updateInfo("Unable to authenticate");
+    emit loginReset();
 
 }
 

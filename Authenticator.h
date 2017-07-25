@@ -44,6 +44,7 @@ class Authenticator : public SessionTask {
     signals:
         void authenticationComplete(const QString& account);
         void loginComplete(int);
+        void loginReset();
         void loggedOut();
         void updateInfo(QString info);
         void updateStatus(QString);
