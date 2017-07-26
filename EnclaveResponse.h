@@ -23,7 +23,7 @@ class EnclaveResponse {
 
     public:
         const QString& getError() const { return error; }
-        const QString& getRequestName() const { return requestName; }
+        const QString& getResponseType() const { return responseType; }
         QJsonValue getValue(const QString& name) const;
         const QJsonObject& getJson() const { return json; }
 
@@ -31,7 +31,7 @@ class EnclaveResponse {
         // QJsonObject encrypted;
         QJsonObject json;
         SessionState *state;
-        QString requestName;
+        QString responseType;
         QString error;
 
 };

@@ -3,6 +3,7 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QDebug>
 #include <coder/ByteArray.h>
 #include <CryptoKitty-C/encoding/GCMCodec.h>
 
@@ -41,13 +42,14 @@ EnclaveResponse::operator bool() {
         // Get json object.
         json = doc.object();
         // Get the request name
-        QJsonValue name = json["requestName"];
-        if (!name.isString()) {
+        QJsonValue rType = json["responseType"];
+        if (!rType.isString()) {
+            qDebug() << "Missing responde type in enclave response";
             error = "Invalid response from server";
             return false;
         }
         else {
-            requestName = name.toString();
+            responseType = rType.toString();
             return true;
         }
     }

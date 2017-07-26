@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <QDebug>
 #include <assert.h>
 #include <iostream>
 
@@ -189,12 +190,6 @@ void NicknameManager::deleteFromNicknames(const QString& nickname) {
 }
 
 void NicknameManager::deleteNickname(const QString& nick) {
-/*
-    std::cout << "deleteNickname called" << std::endl;
-    std::cout << "Nickname : " << nick.toUtf8().toStdString() << std::endl;
-
-    emit nicknameDeleted(nick);
-*/
 
     EnclaveRequest req(state);
     req.setRequestType("deleteNickname");
@@ -277,7 +272,7 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
             emit requestFailed("Fetch Nicknames", handler->getError());
         }
         else if (response) {
-            if (loadNicknames(response.getJson())) {
+            if (response.getResponseType() == "getNicknames" && loadNicknames(response.getJson())) {
                 loaded = true;
                 emit nicknamesLoaded();
             }
@@ -314,6 +309,7 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
 
     QJsonValue nickValue = json["nicknames"];
     if (!nickValue.isArray()) {
+        qDebug() << "Missing nicknames array in get nicknames response";
         return false;
     }
 
