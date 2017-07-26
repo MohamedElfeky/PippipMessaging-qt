@@ -5,6 +5,7 @@
 #include "NicknameManager.h"
 #include "CriticalAlert.h"
 #include <QHeaderView>
+#include <assert.h>
 
 NicknamesDialog::NicknamesDialog(QWidget *parent)
 : QDialog(parent),
@@ -48,10 +49,16 @@ NicknamesDialog::~NicknamesDialog() {
 void NicknamesDialog::nicknameSelected() {
 
     ui->deleteNicknameButton->setEnabled(true);
-    if (nicknameHandler->nicknameCount() > 0) {
-        QString policy = nicknameHandler->currentNickname().policy;
-        ui->tabWidget->setTabEnabled(1, policy != "Public");
+    bool enableTab = false;
+    if (ui->nicknameTableWidget->rowCount() > 0) {
+        int row = ui->nicknameTableWidget->currentRow();
+        QLabel *policyLabel = dynamic_cast<QLabel*>(ui->nicknameTableWidget->cellWidget(row, 1));
+        if (policyLabel != 0) {     // Empty row or widget is QComboBox
+            QString policy = policyLabel->text();
+            enableTab = policy != "Public";
+        }
     }
+    ui->tabWidget->setTabEnabled(1, enableTab);
 
 }
 
@@ -65,7 +72,6 @@ void NicknamesDialog::requestFailed(const QString &reqName, const QString& error
 
     Pippip::CriticalAlert alert(reqName + " Failed", "Unable to process request", error);
     alert.exec();
-    nicknameHandler->setNicknames(manager->getNicknames());
 
 }
 
@@ -79,6 +85,7 @@ void NicknamesDialog::setManager(Pippip::NicknameManager *man) {
     connect(manager, SIGNAL(nicknameUpdated(Pippip::Nickname)),
                                                 nicknameHandler, SLOT(nicknameUpdated(Pippip::Nickname)));
     connect(manager, SIGNAL(nicknameAdded()), nicknameHandler, SLOT(nicknameAdded()));
+    connect(manager, SIGNAL(requestFailed(QString,QString)), nicknameHandler, SLOT(requestFailed(QString,QString)));
 
     manager->loadNicknames();
 
@@ -93,7 +100,10 @@ void NicknamesDialog::wlEntrySelected() {
 void NicknamesDialog::wlTabSelected(int tab) {
 
     if (tab == 1) {
-        whitelistHandler->setWhitelist(nicknameHandler->currentNickname().whitelist);
+        const Pippip::NicknameList& list = manager->getNicknames();
+        size_t row = ui->nicknameTableWidget->currentRow();
+        assert(row < list.size());
+        whitelistHandler->setWhitelist(list[row].whitelist);
     }
 
 }

@@ -54,6 +54,7 @@ class NicknameManager : public QObject {
         bool decodeNickname(const QJsonObject& obj, Nickname& nickname) const;
         bool decodeRSAKeys(const QJsonObject& obj, RSAKeys& rsaKey) const;
         QJsonObject encodeNickname(const Nickname& nickname);
+        QJsonArray encodeWhitelist(const Nickname& nickname);
         bool getNickname(const EnclaveResponse& resp, Nickname& nickname);
         bool loadNicknames(const QJsonObject& json);
         void updatePolicy(const Nickname& nickname);

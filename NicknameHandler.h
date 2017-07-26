@@ -50,6 +50,7 @@ class NicknameHandler : public QObject {
         void nicknameDeleted(const QString& name);
         void nicknamesLoaded();
         void nicknameUpdated(Pippip::Nickname nickname);
+        void requestFailed(const QString& taskName, const QString& error);
         void whitelistChanged(const Pippip::EntityList& list);
 
     private slots:
@@ -61,27 +62,27 @@ class NicknameHandler : public QObject {
         void policySelected();
 
     public:
-        const Pippip::Nickname& currentNickname() const;
-        size_t nicknameCount() const { return nicknames.size(); }
-        void setNicknames(const Pippip::NicknameList& nicknames);
+        //const Pippip::Nickname& currentNickname() const;
+        //size_t nicknameCount() const { return nicknames.size(); }
+        //void setNicknames(const Pippip::NicknameList& nicknames);
         void setManager(Pippip::NicknameManager *mgr) { manager = mgr; }
 
     private:
         const QString& getPolicy(const QString& name) const;
         const QString& getPolicyName(const QString& policy) const;
-        void loadTable();
+        void loadTable(const Pippip::NicknameList& nicknames);
         void policyEdited(const QString& policy);
 
     private:
         bool newItem;
         QString toAdd;
         Ui::NicknamesDialog *ui;
-        Pippip::NicknameList nicknames;
         QComboBox *policyComboBox;
         QLineEdit *nicknameLineEdit;
         QRegularExpression nicknameRE;
         QRegularExpressionValidator *nicknameValidator;
         Pippip::NicknameManager *manager;
+        Pippip::Nickname working;
 
 };
 

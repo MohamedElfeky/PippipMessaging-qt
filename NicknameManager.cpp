@@ -4,6 +4,7 @@
 #include "RESTHandler.h"
 #include "EnclaveResponse.h"
 #include "EnclaveException.h"
+#include "Constants.h"
 #include <QTimer>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -29,14 +30,15 @@ void NicknameManager::addComplete(RESTHandler *handler) {
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
-            emit requestFailed("Add Nickname", handler->getError());
+            emit requestFailed(Constants::ADD_NICKNAME, handler->getError());
         }
         else if (response) {
-            QJsonObject responseObj = handler->getResponse();
-            QJsonValue statusValue = responseObj["status"];
+            //QJsonObject responseObj = handler->getResponse();
+            QJsonValue statusValue = response.getValue("status");
             if (statusValue.isString()) {
                 QString status = statusValue.toString();
                 if (status == "added") {
+                    loaded = false;
                     emit nicknameAdded();
                 }
                 else if (status == "exists") {
@@ -62,8 +64,9 @@ void NicknameManager::addNickname(const Nickname &nick) {
 
     EnclaveRequest req(state);
     req.setRequestType("addNickname");
-    req.setValue("publicId", state->publicId);
-    req.setValue("nickname", encodeNickname(nick));
+    req.setValue("nickname", nick.entity.nickname);
+    req.setValue("policy", nick.policy);
+    req.setValue("whitelist", encodeWhitelist(nick));
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
@@ -219,6 +222,14 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
     //rsaKeys["signingRSA"] = nickname.rsaKeys.signingRSA;
     //nickObj["rsaKeys"] = rsaKeys;
     nickObj["policy"] = nickname.policy;
+    nickObj["whitelist"] = encodeWhitelist(nickname);
+
+    return nickObj;
+
+}
+
+QJsonArray NicknameManager::encodeWhitelist(const Nickname &nickname) {
+
     QJsonArray whitelist;
     for (auto entity : nickname.whitelist) {
         QJsonObject wlEntityObj;
@@ -226,9 +237,7 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
         wlEntityObj["publicId"] = entity.publicId;
         whitelist.append(wlEntityObj);
     }
-    nickObj["whitelist"] = whitelist;
-
-    return nickObj;
+    return whitelist;
 
 }
 
@@ -290,6 +299,7 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
 void NicknameManager::loadNicknames() {
 
     if (!loaded) {
+        nicknames.clear();
         EnclaveRequest req(state);
         req.setRequestType("getNicknames");
         RESTHandler *handler = new RESTHandler(this);
