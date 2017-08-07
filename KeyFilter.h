@@ -16,25 +16,32 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTACTADDKEYFILTER_H
-#define CONTACTADDKEYFILTER_H
+#ifndef KEYFILTER_H
+#define KEYFILTER_H
 
 #include <QObject>
+#include <vector>
 
-class ContactAddKeyFilter : public QObject {
+class KeyFilter : public QObject {
         Q_OBJECT
 
     public:
-        explicit ContactAddKeyFilter(QObject *parent = 0);
-        ~ContactAddKeyFilter() {}
+        explicit KeyFilter(QObject *parent = 0);
+        ~KeyFilter() {}
 
     signals:
-        void enterPressed();
-        void tabPressed();
+        void keyPressed(Qt::Key key);
+
+    public:
+        void addKey(Qt::Key key);
 
     protected:
         bool eventFilter(QObject* obj, QEvent* event);
 
+    private:
+        typedef std::vector<Qt::Key> KeyList;
+        KeyList keyList;
+
 };
 
-#endif // CONTACTADDFILTER_H
+#endif // KEYFILTER_H

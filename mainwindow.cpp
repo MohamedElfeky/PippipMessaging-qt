@@ -11,10 +11,14 @@
 #include "Authenticator.h"
 #include "EntropyStream.h"
 #include "UDPListener.h"
-#include "EnterKeyFilter.h"
 #include "MessageManager.h"
 #include "MessageException.h"
+#include "Nicknames.h"
 //#include "MessageDatabase.h"
+#include "ContactsDatabase.h"
+#include "DatabaseException.h"
+#include "KeyFilter.h"
+#include "Constants.h"
 #include <CryptoKitty-C/keys/RSAPrivateKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QThread>
@@ -39,29 +43,32 @@ MainWindow::MainWindow(QWidget *parent)
   createMessage(false),
   session(0),
   nicknameManager(0),
-  contactManager(0) {
+  contactsDatabase(0) {
 
     ui->setupUi(this);
     setDefaults();
     restoreSettings();
 
     connect(ui->NewAccountAction, SIGNAL(triggered()), this, SLOT(newAccount()));
-    //connect(loginAction, SIGNAL(toggled()), this, SLOT(logIn()));
     connect(ui->LoginAction, SIGNAL(triggered()), this, SLOT(logIn()));
     connect(ui->LogoutAction, SIGNAL(triggered()), this, SLOT(logOut()));
     connect(ui->NicknamesAction, SIGNAL(triggered()), this, SLOT(manageNicknames()));
     connect(ui->ContactsAction, SIGNAL(triggered()), this, SLOT(manageContacts()));
     connect(ui->NewMessageAction, SIGNAL(triggered()), this, SLOT(newMessage()));
 
-    statusLabel = new QLabel("Log in", this);
+    statusLabel = new QLabel(this);
+    statusLabel->setTextFormat(Qt::RichText);
+    statusLabel->setText(Constants::INFO_ICON + "<big>Log In");
     statusLabel->setMargin(3);
-    statusLabel->setAlignment(Qt::AlignLeft);
+    statusLabel->setAlignment(Qt::AlignVCenter);
     statusLabel->setIndent(10);
     statusBar()->addWidget(statusLabel);
 
-    EnterKeyFilter *keyFilter = new EnterKeyFilter(ui->messageTextEdit);
+    KeyFilter *keyFilter = new KeyFilter(ui->messageTextEdit);
+    keyFilter->addKey(Qt::Key_Enter);
+    keyFilter->addKey(Qt::Key_Return);
     ui->messageTextEdit->installEventFilter(keyFilter);
-    connect(keyFilter, SIGNAL(enterPressed()), this, SLOT(sendMessage()));
+    connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(sendMessage(Qt::Key)));
 
 }
 
@@ -69,6 +76,7 @@ MainWindow::~MainWindow() {
 
     delete session;
     delete ui;
+    delete contactsDatabase;
 
 }
 
@@ -76,12 +84,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
     saveSettings();
     QMainWindow::closeEvent(event);
-
-}
-
-void MainWindow::contactsLoaded() {
-
-    nicknameManager->loadNicknames();
 
 }
 
@@ -109,25 +111,37 @@ void MainWindow::loggedIn(const QString& account) {
 
     try {
         // Do this first in case the database open fails
-        messageManager = new Pippip::MessageManager(account, session, this);
+        // messageManager = new Pippip::MessageManager(account, session, this);
 
         ui->LoginAction->setEnabled(false);
         ui->NewAccountAction->setEnabled(false);
         ui->LogoutAction->setEnabled(true);
+        ui->ContactsAction->setEnabled(true);
+        ui->NicknamesAction->setEnabled(true);
+        ui->NewMessageAction->setEnabled(true);
         nicknameManager = new Pippip::NicknameManager(this, session);
-        connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
-        connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-                this, SLOT(requestFailed(QString,QString)));
-        contactManager = new Pippip::ContactManager(this, session);
-        connect(contactManager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
-        connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-                this, SLOT(requestFailed(QString,QString)));
-        contactManager->loadContacts();
+        //connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
+        //connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
+        //        this, SLOT(requestFailed(QString,QString)));
+        //contactManager = new Pippip::ContactManager(this, session);
+        //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
+        //        this, SLOT(requestFailed(QString,QString)));
+        //contactManager->loadContacts();
 
-        updateStatus("Authentication Complete");
+        Pippip::ContactsDatabase::initialize(account);
+        contactsDatabase = new Pippip::ContactsDatabase(session, this);
+        connect(contactsDatabase, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+        contactsDatabase->open(account);
+        contactsDatabase->loadContacts();
+
+        updateStatus(Constants::CHECK_ICON + "<big>Authentication Complete");
     }
     catch (Pippip::MessageException& e) {
-        updateStatus("Authentication failed - " + QString(e.what()));
+        updateStatus(Constants::REDX_ICON + "<big>Authentication failed - " + QString(e.what()));
+    }
+    catch (Pippip::DatabaseException& e) {
+        // TODO Log out
+        updateStatus(Constants::REDX_ICON + "<big>Authentication failed - " + QString(e.what()));
     }
 
 }
@@ -147,17 +161,20 @@ void MainWindow::loggedOut() {
     session = 0;
     nicknameManager->deleteLater();
     nicknameManager = 0;
-    contactManager->deleteLater();
-    contactManager = 0;
-    messageManager->deleteLater();
-    messageManager = 0;
+    //contactManager->deleteLater();
+    //contactManager = 0;
+    //messageManager->deleteLater();
+    //messageManager = 0;
+    contactsDatabase->close();
+    contactsDatabase->deleteLater();
+    contactsDatabase = 0;
     ui->LoginAction->setEnabled(true);
     ui->NewAccountAction->setEnabled(true);
     ui->LogoutAction->setEnabled(false);
     ui->NicknamesAction->setEnabled(false);
     ui->ContactsAction->setEnabled(false);
     ui->NewMessageAction->setEnabled(false);
-    updateStatus("Logged out");
+    updateStatus(Constants::INFO_ICON + "<big>Logged out");
 
 }
 
@@ -165,15 +182,15 @@ void MainWindow::manageContacts() {
 
     statusLabel->clear();
     ContactsDialog *dialog = new ContactsDialog(session, this);
-    disconnect(contactManager, SIGNAL(requestFailed(QString,QString)),
-                                        this, SLOT(requestFailed(QString,QString)));
-    connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-                                                dialog, SLOT(requestFailed(QString,QString)));
-    dialog->setContactManager(contactManager);
+    //disconnect(contactManager, SIGNAL(requestFailed(QString,QString)),
+    //                                    this, SLOT(requestFailed(QString,QString)));
+    //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
+    //                                            dialog, SLOT(requestFailed(QString,QString)));
+    dialog->setContactsDatabase(contactsDatabase);
     dialog->setNicknameManager(nicknameManager);
     dialog->exec();
-    connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-                                                this, SLOT(requestFailed(QString,QString)));
+    //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
+    //                                            this, SLOT(requestFailed(QString,QString)));
 
 }
 
@@ -201,7 +218,7 @@ void MainWindow::newAccount() {
 }
 
 void MainWindow::newMessage() {
-
+/*
     createMessage = true;
 
     ui->messagesTable->clearContents();
@@ -210,9 +227,9 @@ void MainWindow::newMessage() {
 
     QLabel *fromLabel = new QLabel("From: ");
     QComboBox *fromComboBox = new QComboBox;
-    const Pippip::NicknameList& nicknames = nicknameManager->getNicknames();
+    Pippip::Nicknames *nicknames = nicknameManager->getNicknames();
     QStringList nicknameItems;
-    for (auto nickname : nicknames) {
+    for (auto nickname : *nicknames) {
         nicknameItems << nickname.entity.nickname;
     }
     fromComboBox->addItems(nicknameItems);
@@ -231,7 +248,7 @@ void MainWindow::newMessage() {
     ui->messagesTable->setCellWidget(0, 4, toComboBox);
 
     ui->messageTextEdit->setFocus();
-
+*/
 }
 
 void MainWindow::nicknamesLoaded() {
@@ -270,7 +287,7 @@ void MainWindow::saveSettings() {
 
 }
 
-void MainWindow::sendMessage() {
+void MainWindow::sendMessage(Qt::Key) {
 
     QString sender;
     QString recipient;
@@ -326,7 +343,7 @@ void MainWindow::startFortuna() {
 
 }
 
-void MainWindow::updateStatus(QString status) {
+void MainWindow::updateStatus(const QString& status) {
 
     statusLabel->setText(status);
     statusBar()->show();

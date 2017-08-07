@@ -37,6 +37,8 @@
 
 namespace Pippip {
 
+static const std::string CURRENT_VERSION = "1.0";
+
 Vault::Vault() {
 
     QSettings settings;
@@ -64,13 +66,21 @@ void Vault::decodeVault(const coder::ByteArray &ciphertext, const std::string &p
     try {
         s2k(passphrase);
 
+        std::string version;
         std::string userkey;
         std::string serverkey;
         CK::GCMCodec codec(ciphertext);
         codec.decrypt(vaultKey, coder::ByteArray(passphrase, false));
         coder::ByteArray idBytes;
-        codec >> idBytes >> genpass >> enclaveKey >> accountRandom
-              >> userkey >> serverkey;
+        // Pre-conversion
+        //codec >> idBytes >> genpass >> enclaveKey >> accountRandom
+        //      >> userkey >> serverkey;
+        codec >> version;
+        if (version != CURRENT_VERSION) {
+            throw VaultException("Not a valid user vault");
+        }
+        codec >> idBytes >> genpass >> enclaveKey >> contactKey
+              >> accountRandom >> userkey >> serverkey;
         publicId = QString(idBytes.toHexString().c_str());
 
         CK::PEMCodec pem(true); // X.509 keys
@@ -98,10 +108,15 @@ void Vault::encodeVault(const std::string& passphrase) {
         std::ostringstream ustr;
         pem.encode(ustr, *userPrivateKey, *userPublicKey);
 
+        // One time for vault conversion to version 1.0
+        //CK::FortunaSecureRandom rnd;
+        //contactKey.setLength(32);
+        //rnd.nextBytes(contactKey);
+
         CK::GCMCodec codec;
         coder::ByteArray idBytes(publicId.toStdString(), true);
-        codec << idBytes << genpass << enclaveKey << accountRandom
-              << ustr.str() << sstr.str();
+        codec << CURRENT_VERSION << idBytes << genpass << enclaveKey << contactKey
+              << accountRandom << ustr.str() << sstr.str();
         codec.encrypt(vaultKey, coder::ByteArray(passphrase, false));
         encoded = codec.toArray();
 
@@ -122,23 +137,6 @@ void Vault::loadVault(const QString& accountName, const QString& passphrase) {
     else {
         throw VaultException("Vault file read error");
     }
-
-/*    std::ifstream in(vaultPath + accountName, std::ios::binary);
-    if (in) {
-        // Find the file size
-        std::streampos vsize = in.tellg();
-        in.seekg(0, std::ios::end);
-        vsize = in.tellg() - vsize;
-        in.seekg(0, std::ios::beg);
-        // Read the vault.
-        std::unique_ptr<uint8_t[]> buffer(new uint8_t[vsize]);
-        in.read(reinterpret_cast<char*>(buffer.get()), vsize);
-        in.close();
-        decodeVault(coder::ByteArray(buffer.get(), vsize), passphrase);
-    }
-    else {
-        throw VaultException("Vault file read error");
-    }*/
 
 }
 
@@ -179,16 +177,6 @@ void Vault::storeVault(const QString& accountName, const QString& passphrase) {
     else {
         throw VaultException("Vault file write error");
     }
-
-/*    std::ofstream out(vaultPath + accountName, std::ios::binary);
-    if (out) {
-        std::unique_ptr<uint8_t[]> buffer(encoded.asArray());
-        out.write(reinterpret_cast<const char*>(buffer.get()), encoded.getLength());
-        out.close();
-    }
-    else {
-        throw VaultException("Vault file write error");
-    }*/
 
 }
 

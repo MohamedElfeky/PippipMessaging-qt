@@ -59,6 +59,10 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     digest.update(bytecodec.toArray());
     enclaveKey = digest.digest();
 
+    // Generate the contact list encryption key.
+    contactKey.setLength(32);
+    rnd.nextBytes(contactKey);
+
     // Generate the user authentication keys.
     CK::RSAKeyPairGenerator keygen(&rnd, 2048);
     CK::KeyPair<CK::RSAPublicKey, CK::RSAPrivateKey> *keypair = keygen.generateKeyPair();

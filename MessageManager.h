@@ -15,6 +15,7 @@ class RESTHandler;
 class ContactManager;
 class NicknameManager;
 struct Contact;
+class Contacts;
 
 class MessageManager : public QObject {
         Q_OBJECT
@@ -45,6 +46,7 @@ class MessageManager : public QObject {
         SessionState *state;
         MessageDatabase *database;
         ContactManager *contactManager;
+        Contacts *contacts;
         NicknameManager *nicknameManager;
         typedef std::deque<Message> MessageQueue;
         MessageQueue messageQueue;

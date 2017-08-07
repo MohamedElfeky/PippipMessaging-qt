@@ -47,7 +47,6 @@ SOURCES += main.cpp\
     ContactsDialog.cpp \
     ContactManager.cpp \
     AddContactDialog.cpp \
-    EnterKeyFilter.cpp \
     NicknameHandler.cpp \
     WhitelistHandler.cpp \
     EmptyStringValidator.cpp \
@@ -56,8 +55,12 @@ SOURCES += main.cpp\
     MessageManager.cpp \
     ByteCodec.cpp \
     StringCodec.cpp \
-    ContactAddKeyFilter.cpp \
-    Contants.cpp
+    Constants.cpp \
+    KeyFilter.cpp \
+    Nicknames.cpp \
+    Contacts.cpp \
+    Function.cpp \
+    ContactsDatabase.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -102,7 +105,6 @@ HEADERS  += mainwindow.h \
     Nickname.h \
     Entity.h \
     ContactRequest.h \
-    EnterKeyFilter.h \
     NicknameHandler.h \
     WhitelistHandler.h \
     EmptyStringValidator.h \
@@ -113,9 +115,14 @@ HEADERS  += mainwindow.h \
     Message.h \
     MessageException.h \
     StringCodec.h \
-    ContactAddKeyFilter.h \
     RSAKeys.h \
-    Constants.h
+    Constants.h \
+    KeyFilter.h \
+    Nicknames.h \
+    Contacts.h \
+    Function.h \
+    DatabaseException.h \
+    ContactsDatabase.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

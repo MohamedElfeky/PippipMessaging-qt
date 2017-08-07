@@ -26,7 +26,7 @@ namespace Pippip {
 
 MessageDatabase::MessageDatabase() {
 
-    database = QSqlDatabase::addDatabase("QSQLITE");
+//    database = QSqlDatabase::addDatabase("QSQLITE");
 
 }
 
@@ -83,6 +83,12 @@ bool MessageDatabase::create(const QString &account) {
         db.close();
     }
     return success;
+
+}
+
+void MessageDatabase::initialize(/* SessionState *state */) {
+
+    QSqlDatabase::addDatabase("QSQLITE", "messages");
 
 }
 

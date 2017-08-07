@@ -13,7 +13,7 @@ namespace Pippip {
 
 class RESTHandler;
 class SessionState;
-
+class Nicknames;
 class EnclaveResponse;
 
 class NicknameManager : public QObject {
@@ -21,50 +21,50 @@ class NicknameManager : public QObject {
 
     public:
         NicknameManager(QWidget *parent, SessionState *state);
-        ~NicknameManager() {}
+        ~NicknameManager();
 
     signals:
-        void nicknameAdded();
-        void nicknameDeleted(const QString& name);
+        void addCompleted(const QString& status);
+        void deleteCompleted(const QString& status);
         void nicknameExists();
         void nicknamesLoaded();
-        void nicknameUpdated(const Pippip::Nickname&);
+        void policyUpdated(const QString& status);
         void requestFailed(const QString& reqName, const QString& error);
+        void taskFailed(const QString& taskName);
+        void whitelistUpdated(const QString& status);
 
     protected slots:
-        void addComplete(RESTHandler*);
-        void delComplete(RESTHandler*);
         void loadComplete(RESTHandler*);
+        void requestComplete(RESTHandler*);
         void requestTimedOut();
-        void updateComplete(RESTHandler*);
 
     public:
         void addNickname(const Nickname& nick);
         void deleteNickname(const QString& nick);
-        const Nickname& getNickname(const QString& nick) const;
-        const NicknameList& getNicknames() const { return nicknames; }
-        //bool isLoaded() const { return loaded; }
+        Nicknames *getNicknames() const { return nicknames; }
         void loadNicknames();
-        void manageNicknames();
-        void updateNickname(const Nickname& nickname);
+        void updatePolicy(const QString& nickname, const QString& policy);
+        void updateWhitelist(const QString& nickname, const Entity& whitelistEntity,
+                             const QString& action);
 
     private:
-        void deleteFromNicknames(const QString& nickname);
         bool decodeEntity(const QJsonObject& obj, Entity& entity) const;
         bool decodeNickname(const QJsonObject& obj, Nickname& nickname) const;
         bool decodeRSAKeys(const QJsonObject& obj, RSAKeys& rsaKey) const;
         QJsonObject encodeNickname(const Nickname& nickname);
         QJsonArray encodeWhitelist(const Nickname& nickname);
-        bool getNickname(const EnclaveResponse& resp, Nickname& nickname);
         bool loadNicknames(const QJsonObject& json);
-        void updatePolicy(const Nickname& nickname);
+        void requestError(const QString& error);
+        void requestValid(const EnclaveResponse& response);
 
     private:
         bool loaded;
-        bool requestComplete;
+        bool requestCompleted;
         bool timedOut;
+        enum Task { nicknameAdd, nicknameDelete, policyModify, whitelistModify };
+        Task inProgress;
         SessionState *state;
-        NicknameList nicknames;
+        Nicknames *nicknames;
 
 };
 

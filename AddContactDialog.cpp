@@ -1,6 +1,7 @@
 #include "AddContactDialog.h"
 #include "NicknameManager.h"
 #include "ui_AddContactDialog.h"
+#include "Nicknames.h"
 #include <QPushButton>
 #include <QClipboard>
 #include <QApplication>
@@ -71,9 +72,9 @@ void AddContactDialog::accept() {
 
 void AddContactDialog::nicknamesLoaded() {
 
-    const Pippip::NicknameList& nicknames = nicknameManager->getNicknames();
-    if (nicknames.size() > 0) {
-        for (auto nickname : nicknames) {
+    Pippip::Nicknames *nicknames = nicknameManager->getNicknames();
+    if (nicknames->size() > 0) {
+        for (auto nickname : *nicknames) {
             ui->nicknameComboBox->addItem(nickname.entity.nickname);
         }
         ui->nicknameComboBox->setCurrentIndex(0);

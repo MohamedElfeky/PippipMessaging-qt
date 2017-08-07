@@ -24,20 +24,23 @@
 #include "ContactRequest.h"
 #include <QObject>
 #include <QRegularExpression>
+#include <QStringList>
 
 namespace Ui {
     class ContactsDialog;
 }
 
 namespace Pippip {
-    class ContactManager;
+    class ContactsDatabase;
     class NicknameManager;
     class SessionState;
+    class Nicknames;
+    class Contacts;
 }
 
 class QLineEdit;
 class QComboBox;
-class EmptyStringValidator;
+class QRegularExpressionValidator;
 
 class ContactHandler : public QObject {
         Q_OBJECT
@@ -48,38 +51,44 @@ class ContactHandler : public QObject {
     signals:
 
     public slots:
-        void contactsLoaded();
-        void contactRequested(const QString& name);
+        //void contactsLoaded();
+        //void contactRequested(const QString& name);
 
     private slots:
-        void requestedEdited();
+        void addContactFailed(const QString& error);
+        void contactRequestComplete();
+        void contactRequestFailed(const QString& error);
+        void requestedIdEdited();
         void requestContact();
-        void requestedSelected();
-        void requestingSelected();
+        void idTypeSelected(Qt::Key);
+        void requestingIdSelected(Qt::Key);
 
     public:
-        void setContactManager(Pippip::ContactManager *manager) { contactManager = manager; }
-        void setNicknames(const Pippip::NicknameList& nicks);
+        void loadTable(int startingRow = 0);
+        void setContactsDatabase(Pippip::ContactsDatabase *database);
+        void setNicknames(Pippip::Nicknames *nicks);
 
     private:
-        void loadTable();
+        int columnGeometry() const;
 
     private:
         Ui::ContactsDialog *ui;
         Pippip::SessionState *state;
-        Pippip::ContactManager *contactManager;
-        Pippip::NicknameList nicknames;
-        Pippip::ContactList contacts;
+        Pippip::ContactsDatabase *contactsDatabase;
+        Pippip::Nicknames *nicknames;
+        Pippip::Contacts *contacts;
         // Editing widgets
-        QComboBox *requestingComboBox;
-        QComboBox *requestedComboBox;
-        QLineEdit *requestedLineEdit;
+        QStringList requestHeadings;
+        QStringList contactHeadings;
+        QComboBox *requestingIdComboBox;
+        QComboBox *idTypeComboBox;
+        QLineEdit *requestedIdLineEdit;
         QRegularExpression nicknameRE;
-        EmptyStringValidator *nicknameValidator;
+        QRegularExpressionValidator *nicknameValidator;
         QRegularExpression puidRE;
-        EmptyStringValidator *puidValidator;
+        QRegularExpressionValidator *puidValidator;
         // Contact request variables
-        Pippip::ContactRequest working;
+        Pippip::ContactRequest workingRequest;
         QString requestingType;     // P or N
         QString requestedType;      // P or N
 

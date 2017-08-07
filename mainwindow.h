@@ -10,8 +10,9 @@ class MainWindow;
 namespace Pippip {
     class SessionState;
     class NicknameManager;
-    class ContactManager;
+    // class ContactManager;
     class MessageManager;
+    class ContactsDatabase;
 }
 
 class QLabel;
@@ -29,7 +30,6 @@ class MainWindow : public QMainWindow {
     private slots:
         //void fortunaStreamError(QString error);
         //void fortunaUDPError(QString error, bool fatal);
-        void contactsLoaded();
         void logIn();
         void logOut();
         void loggedIn(const QString& account);
@@ -40,8 +40,8 @@ class MainWindow : public QMainWindow {
         void newMessage();
         void nicknamesLoaded();
         void requestFailed(const QString& reqName, const QString& error);
-        void sendMessage();
-        void updateStatus(QString);
+        void sendMessage(Qt::Key);
+        void updateStatus(const QString& status);
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -57,8 +57,9 @@ class MainWindow : public QMainWindow {
         Pippip::SessionState *session;
         QLabel *statusLabel;
         Pippip::NicknameManager *nicknameManager;
-        Pippip::ContactManager *contactManager;
+        //Pippip::ContactManager *contactManager;
         Pippip::MessageManager *messageManager;
+        Pippip::ContactsDatabase *contactsDatabase;
 
 };
 

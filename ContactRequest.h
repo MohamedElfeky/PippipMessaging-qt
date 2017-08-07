@@ -11,7 +11,7 @@ static const QString PUBLICID_NICKNAME = "PN";
 static const QString PUBLICID_PUBLICID = "PP";
 
 struct ContactRequest {
-    QString requestType;
+    QString idTypes;
     QString requestingId;
     QString requestedId;
 };

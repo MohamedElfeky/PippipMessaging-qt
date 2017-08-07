@@ -45,7 +45,7 @@ class StringCodec {
     private:
         QString qtString;
         std::string stdString;
-        bool qt;
+        // bool qt;
         char* cstr;
         size_t strLength;
 

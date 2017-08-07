@@ -24,7 +24,6 @@ namespace Pippip {
 
 StringCodec::StringCodec(const QString& q)
 : qtString(q),
-  qt(true),
   strLength(q.length()) {
 
     QByteArray data = qtString.toUtf8();
@@ -37,7 +36,6 @@ StringCodec::StringCodec(const QString& q)
 
 StringCodec::StringCodec(const std::string& c)
 : stdString(c),
-  qt(false),
   strLength(c.length()) {
 
     cstr = new char[strLength + 1];
@@ -46,11 +44,18 @@ StringCodec::StringCodec(const std::string& c)
 
 }
 
+StringCodec::StringCodec(const char *str)
+: qtString(str),
+  stdString(str) {
+
+    cstr = new char[strlen(str) + 1];
+    strcpy(cstr, str);
+
+}
+
 StringCodec::~StringCodec() {
 
-    if (!qt) {
-        delete[] cstr;
-    }
+    delete[] cstr;
 
 }
 

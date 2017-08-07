@@ -29,6 +29,23 @@ class Constants
     public:
         // Task names
         static const QString ADD_NICKNAME;
+        static const QString DELETE_NICKNAME;
+        static const QString LOAD_NICKNAMES;
+        static const QString UPDATE_CONTACT_POLICY;
+        static const QString UPDATE_WHITELIST;
+
+        // Policy names
+        static const QString PUBLIC_POLICY;
+        static const QString FRIENDS_ONLY_POLICY;
+        static const QString FRIENDS_OF_FRIENDS_POLICY;
+        static const QString POLICIES[];
+
+        // RTF graphics display text
+        static const QString CAUTION_ICON;
+        static const QString CHECK_ICON;
+        static const QString INFO_ICON;
+        static const QString REDBAR_ICON;
+        static const QString REDX_ICON;
 
 };
 

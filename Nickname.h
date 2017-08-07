@@ -11,6 +11,12 @@ namespace Pippip {
         RSAKeys rsaKeys;
         QString policy;
         EntityList whitelist;
+        void clear() {
+            entity.nickname = entity.publicId = "";
+            rsaKeys.encryptionRSA = rsaKeys.signingRSA = "";
+            policy = "";
+            whitelist.clear();
+        }
     };
 
     typedef std::vector<Nickname> NicknameList;

@@ -2,7 +2,7 @@
 #define CONTACTSDIALOG_H
 
 #include "Contact.h"
-#include "Nickname.h"
+//#include "Nickname.h"
 #include <QDialog>
 
 namespace Ui {
@@ -10,13 +10,13 @@ class ContactsDialog;
 }
 
 namespace Pippip {
-    class ContactManager;
+    class ContactsDatabase;
     class NicknameManager;
     class SessionState;
 }
 
 class ContactHandler;
-class RequestHandler;
+//class RequestHandler;
 
 class ContactsDialog : public QDialog {
         Q_OBJECT
@@ -32,19 +32,19 @@ class ContactsDialog : public QDialog {
         //void requestsLoaded();
 
     private slots:
-        void contactsLoaded();
+        //void contactsLoaded();
 
     public:
-        void setContactManager(Pippip::ContactManager *manager);
+        void setContactsDatabase(Pippip::ContactsDatabase *database);
         void setNicknameManager(Pippip::NicknameManager *manager);
 
     private:
         Ui::ContactsDialog *ui;
         Pippip::SessionState *state;
-        Pippip::ContactManager *contactManager;
+        //Pippip::ContactsDatabase *contactsDatabase;
         Pippip::NicknameManager *nicknameManager;
         ContactHandler *contactHandler;
-        RequestHandler *requestHandler;
+        //RequestHandler *requestHandler;
 
 };
 

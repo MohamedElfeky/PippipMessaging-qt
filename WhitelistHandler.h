@@ -19,7 +19,7 @@
 #ifndef WHITELISTHANDLER_H
 #define WHITELISTHANDLER_H
 
-#include "Entity.h"
+#include "Nickname.h"
 #include <QObject>
 #include <QRegularExpression>
 
@@ -29,6 +29,7 @@ namespace Ui {
 
 namespace Pippip {
     class NicknameManager;
+    class Nicknames;
 }
 
 class QLineEdit;
@@ -41,8 +42,9 @@ class WhitelistHandler : public QObject
         explicit WhitelistHandler(Ui::NicknamesDialog *ui, QObject *parent = 0);
         ~WhitelistHandler() {}
 
-    signals:
-        void whitelistChanged(const Pippip::EntityList& list);
+    public slots:
+        void whitelistUpdated(const QString& status);
+        void taskFailed(const QString& taskName);
 
     private slots:
         void addEntry();
@@ -53,16 +55,20 @@ class WhitelistHandler : public QObject
         void puidEdited();
 
     public:
-        void setWhitelist(const Pippip::EntityList& whitelist);
+        void loadTable();
+        void setCurrentIndex(unsigned index);
+        void setNicknameManager(Pippip::NicknameManager *manager);
 
     private:
-        void loadTable();
-        void removeEntry(unsigned index);
+        void removeEntry(const Pippip::Entity& entry);
 
     private:
         bool newItem;
+        unsigned currentIndex;
         Ui::NicknamesDialog *ui;
-        Pippip::EntityList whitelist;
+        Pippip::Nicknames *nicknames;
+        Pippip::EntityList undo;
+        Pippip::NicknameManager *nicknameManager;
         QLineEdit *nicknameLineEdit;
         QLineEdit *puidLineEdit;
         EmptyStringValidator *nicknameValidator;

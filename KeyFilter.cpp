@@ -16,26 +16,30 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ContactAddKeyFilter.h"
+#include "KeyFilter.h"
 #include <QEvent>
 #include <QKeyEvent>
 
-ContactAddKeyFilter::ContactAddKeyFilter(QObject *parent)
+KeyFilter::KeyFilter(QObject *parent)
 : QObject(parent) {
 }
 
-bool ContactAddKeyFilter::eventFilter(QObject* obj, QEvent* event) {
+void KeyFilter::addKey(Qt::Key key) {
+
+    keyList.push_back(key);
+
+}
+
+bool KeyFilter::eventFilter(QObject* obj, QEvent* event) {
 
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(event);
-        switch (keyEvent->key()) {
-            case Qt::Key_Tab:
-                emit tabPressed();
+        int eventKey = keyEvent->key();
+        for (auto key : keyList) {
+            if (eventKey == key) {
+                emit keyPressed(key);
                 return true;
-            case Qt::Key_Return:
-            case Qt::Key_Enter:
-                emit enterPressed();
-                return true;
+            }
         }
     }
 

@@ -39,6 +39,7 @@ class MessageDatabase {
         void close();
         static bool create(const QString& account);
         const QString& getLastError() const { return lastError; }
+        static void initialize(/* SessionState *state */);    // Throws DatabaseException
         bool open(const QString& account);
 
     private:

@@ -44,7 +44,7 @@ EnclaveResponse::operator bool() {
         // Get the request name
         QJsonValue rType = json["responseType"];
         if (!rType.isString()) {
-            qDebug() << "Missing responde type in enclave response";
+            qDebug() << "Missing response type in enclave response";
             error = "Invalid response from server";
             return false;
         }

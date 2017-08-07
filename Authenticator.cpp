@@ -70,6 +70,8 @@ void Authenticator::authenticate(const QString &accountName, const QString &pass
 
     try {
         vault->loadVault(accountName, passphrase);
+        // One time for conversion to version 1.0
+        // vault->storeVault(accountName, passphrase);
         emit updateInfo("Contacting the server");
         startSession();
     }

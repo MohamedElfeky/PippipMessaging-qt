@@ -2,5 +2,11 @@
     <qresource prefix="/mainwindow/images">
         <file>PippipTopHatSmall.png</file>
         <file>652762-clipboard-alt-480.png</file>
+        <file>check.ico</file>
+        <file>info.ico</file>
+        <file>redbar.ico</file>
+        <file>caution.ico</file>
+        <file>redx.ico</file>
+        <file>info.png</file>
     </qresource>
 </RCC>

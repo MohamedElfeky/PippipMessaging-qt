@@ -5,6 +5,7 @@
 #include "EnclaveResponse.h"
 #include "EnclaveException.h"
 #include "Constants.h"
+#include "Nicknames.h"
 #include <QTimer>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -18,58 +19,29 @@ namespace Pippip {
 NicknameManager::NicknameManager(QWidget *parent, SessionState *sess)
 : QObject(parent),
   loaded(false),
-  requestComplete(false),
+  requestCompleted(false),
   timedOut(false),
-  state(sess) {
+  state(sess),
+  nicknames(new Nicknames){
 }
 
-void NicknameManager::addComplete(RESTHandler *handler) {
+NicknameManager::~NicknameManager() {
 
-    if (!timedOut) {
-        requestComplete = true;
-
-        EnclaveResponse response(handler->getResponse(), state);
-        if (!handler->successful()) {
-            emit requestFailed(Constants::ADD_NICKNAME, handler->getError());
-        }
-        else if (response) {
-            //QJsonObject responseObj = handler->getResponse();
-            QJsonValue statusValue = response.getValue("status");
-            if (statusValue.isString()) {
-                QString status = statusValue.toString();
-                if (status == "added") {
-                    loaded = false;
-                    emit nicknameAdded();
-                }
-                else if (status == "exists") {
-                    emit nicknameExists();
-                }
-                else {
-                    emit requestFailed("Add Nickname", "Invalid server response");
-                }
-            }
-            else {
-                emit requestFailed("Add Nickname", "Invalid server response");
-            }
-        }
-        else {
-            emit requestFailed("Add Nickname", response.getError());
-        }
-    }
+    delete nicknames;
 
 }
 
 void NicknameManager::addNickname(const Nickname &nick) {
 
-
+    inProgress = nicknameAdd;
     EnclaveRequest req(state);
     req.setRequestType("addNickname");
     req.setValue("nickname", nick.entity.nickname);
     req.setValue("policy", nick.policy);
     req.setValue("whitelist", encodeWhitelist(nick));
     RESTHandler *handler = new RESTHandler(this);
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(addComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
@@ -153,57 +125,15 @@ bool NicknameManager::decodeRSAKeys(const QJsonObject &obj, RSAKeys &rsaKeys) co
 
 }
 
-void NicknameManager::delComplete(RESTHandler *handler) {
+void NicknameManager::deleteNickname(const QString& nickname) {
 
-    if (!timedOut) {
-        requestComplete = true;
-
-        EnclaveResponse response(handler->getResponse(), state);
-        if (!handler->successful()) {
-            emit requestFailed("Delete Nickname", handler->getError());
-        }
-        else if (response) {
-            Nickname nickname;
-            if (getNickname(response, nickname)) {
-                deleteFromNicknames(nickname.entity.nickname);
-                emit nicknameDeleted(nickname.entity.nickname);
-            }
-            else {
-                emit requestFailed("Delete Nickname", "Invalid server response");
-            }
-        }
-        else {
-            emit requestFailed("Delete Nickname", response.getError());
-        }
-    }
-
-}
-
-void NicknameManager::deleteFromNicknames(const QString& nickname) {
-
-    NicknameList temp;
-
-    for (auto nick : nicknames) {
-        if (nick.entity.nickname != nickname) {
-            temp.push_back(nick);
-        }
-    }
-    nicknames.swap(temp);
-
-}
-
-void NicknameManager::deleteNickname(const QString& nick) {
-
+    inProgress = nicknameDelete;
     EnclaveRequest req(state);
     req.setRequestType("deleteNickname");
-    req.setValue("publicId", state->publicId);
-    Nickname nickname;
-    nickname.entity.nickname = nick;
-    nickname.entity.publicId = state->publicId;
-    req.setValue("nickname", encodeNickname(nickname));
+    req.setValue("nickname", nickname);
     RESTHandler *handler = new RESTHandler(this);
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(delComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
@@ -215,12 +145,7 @@ QJsonObject NicknameManager::encodeNickname(const Nickname &nickname) {
     QJsonObject nickObj;
     QJsonObject entityObj;
     entityObj["nickname"] = nickname.entity.nickname;
-    entityObj["publicId"] = state->publicId;
     nickObj["entity"] = entityObj;
-    //QJsonObject rsaKeys;
-    //rsaKeys["encryptionRSA"] = nickname.rsaKeys.encryptionRSA;
-    //rsaKeys["signingRSA"] = nickname.rsaKeys.signingRSA;
-    //nickObj["rsaKeys"] = rsaKeys;
     nickObj["policy"] = nickname.policy;
     nickObj["whitelist"] = encodeWhitelist(nickname);
 
@@ -241,40 +166,10 @@ QJsonArray NicknameManager::encodeWhitelist(const Nickname &nickname) {
 
 }
 
-/*
- * Returns the first nickname in the nicknames array.
- */
-bool NicknameManager::getNickname(const EnclaveResponse& resp, Nickname& nickname) {
-
-    QJsonValue nicksValue = resp.getValue("nicknames");
-    if (!nicksValue.isArray()) {
-        return false;
-    }
-    QJsonArray nicknames  = nicksValue.toArray();
-    QJsonValue nickValue = nicknames[0];
-    if (!nickValue.isObject() || !decodeNickname(nickValue.toObject(), nickname)) {
-        return false;
-    }
-
-    return true;
-
-}
-
-const Nickname& NicknameManager::getNickname(const QString &name) const {
-
-    for (const Nickname& nickname : nicknames) {
-        if (nickname.entity.nickname == name) {
-            return nickname;
-        }
-    }
-    assert(false);
-
-}
-
 void NicknameManager::loadComplete(RESTHandler *handler) {
 
     if (!timedOut) {
-        requestComplete = true;
+        requestCompleted = true;
 
         EnclaveResponse response(handler->getResponse(), state);
         if (!handler->successful()) {
@@ -299,7 +194,7 @@ void NicknameManager::loadComplete(RESTHandler *handler) {
 void NicknameManager::loadNicknames() {
 
     if (!loaded) {
-        nicknames.clear();
+        nicknames->clear();
         EnclaveRequest req(state);
         req.setRequestType("getNicknames");
         RESTHandler *handler = new RESTHandler(this);
@@ -329,69 +224,127 @@ bool NicknameManager::loadNicknames(const QJsonObject &json) {
         if (!value.isObject() || !decodeNickname(value.toObject(), nickname)) {
             return false;
         }
-        nicknames.push_back(nickname);
+        nicknames->append(nickname);
     }
     return true;
 
 }
 
+/*
+ * Validate the response here. Status handling is in the nickname and whitelist handlers.
+ */
+void NicknameManager::requestComplete(RESTHandler *handler) {
+
+    if (!timedOut) {
+        requestCompleted = true;
+
+        EnclaveResponse response(handler->getResponse(), state);
+        if (!handler->successful()) {
+            requestError(handler->getError());
+        }
+        else if (response) {
+            loaded = false;
+            if (response.getValue("status").isString()) {
+                requestValid(response);
+            }
+            else {
+                requestError("Invalid server response");
+            }
+        }
+        else {
+            requestError(response.getError());
+        }
+    }
+
+}
+
+void NicknameManager::requestError(const QString &error) {
+
+    switch (inProgress) {
+        case nicknameAdd:
+            emit requestFailed(Constants::ADD_NICKNAME, error);
+            emit taskFailed(Constants::ADD_NICKNAME);
+            break;
+        case nicknameDelete:
+            emit requestFailed(Constants::DELETE_NICKNAME, error);
+            emit taskFailed(Constants::DELETE_NICKNAME);
+            break;
+        case policyModify:
+            emit requestFailed(Constants::UPDATE_CONTACT_POLICY, error);
+            emit taskFailed(Constants::UPDATE_CONTACT_POLICY);
+            break;
+        case whitelistModify:
+            emit requestFailed(Constants::UPDATE_WHITELIST, error);
+            emit taskFailed(Constants::UPDATE_WHITELIST);
+            break;
+    }
+
+}
+
+void NicknameManager::requestValid(const EnclaveResponse &response) {
+
+    QString status = response.getValue("status").toString();
+    switch (inProgress) {
+        case nicknameAdd:
+            emit addCompleted(status);
+            break;
+        case nicknameDelete:
+            emit deleteCompleted(status);
+            break;
+        case policyModify:
+            emit policyUpdated(status);
+            break;
+        case whitelistModify:
+            loaded = false;
+            emit whitelistUpdated(status);
+            break;
+    }
+
+}
+
 void NicknameManager::requestTimedOut() {
 
-    if (!requestComplete) {
+    if (!requestCompleted) {
         timedOut = true;
         emit requestFailed("Nickname Request", "Request timed out");
     }
 
 }
 
-void NicknameManager::updateNickname(const Nickname& nick) {
+void NicknameManager::updatePolicy(const QString& nickname, const QString& policy) {
 
+    inProgress = policyModify;
     EnclaveRequest req(state);
     req.setRequestType("updateNickname");
-    req.setValue("publicId", state->publicId);
-    req.setValue("nickname", encodeNickname(nick));
+    req.setValue("nickname", nickname);
+    req.setValue("policy", policy);
+    req.setValue("type", QString("policy"));
     RESTHandler *handler = new RESTHandler(this);
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(updateComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
     timedOut = false;
     QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
     handler->doPost(req);
 
 }
 
-void NicknameManager::updateComplete(RESTHandler *handler) {
+void NicknameManager::updateWhitelist(const QString& nickname, const Entity& whitelistEntity,
+                                        const QString& action) {
 
-    if (!timedOut) {
-        requestComplete = true;
-
-        EnclaveResponse response(handler->getResponse(), state);
-        if (!handler->successful()) {
-            emit requestFailed("Update Nickname", handler->getError());
-        }
-        else if (response) {
-            Nickname nickname;
-            if (getNickname(response, nickname)) {
-                updatePolicy(nickname);
-                emit nicknameUpdated(nickname);
-            }
-            else {
-                emit requestFailed("Update Nickname", "Invalid server response");
-            }
-        }
-        else {
-            emit requestFailed("Update Nickname", response.getError());
-        }
-    }
-
-}
-
-void NicknameManager::updatePolicy(const Nickname& nickname) {
-
-    for (Nickname& nick : nicknames) {
-        if (nick.entity.nickname == nickname.entity.nickname) {
-            nick.policy = nickname.policy;
-        }
-    }
+    inProgress = whitelistModify;
+    EnclaveRequest req(state);
+    req.setRequestType("updateNickname");
+    req.setValue("nickname", nickname);
+    req.setValue("whitelistNickname", whitelistEntity.nickname);
+    req.setValue("whitelistPublicId", whitelistEntity.publicId);
+    req.setValue("action", action);
+    req.setValue("type", QString("whitelist"));
+    RESTHandler *handler = new RESTHandler(this);
+    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
+    timedOut = false;
+    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
+    handler->doPost(req);
 
 }
 

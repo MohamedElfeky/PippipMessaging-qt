@@ -46,6 +46,7 @@ class SessionState {
         QString publicId;
         coder::ByteArray genpass;
         coder::ByteArray enclaveKey;
+        coder::ByteArray contactKey;
         coder::ByteArray authData;
         coder::ByteArray accountRandom;
         coder::ByteArray serverAuthRandom;

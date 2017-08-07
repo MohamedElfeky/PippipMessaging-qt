@@ -18,4 +18,22 @@
 
 #include "Constants.h"
 
+// Task names
 const QString Constants::ADD_NICKNAME = "Add Nickname";
+const QString Constants::DELETE_NICKNAME = "Delete Nickname";
+const QString Constants::LOAD_NICKNAMES = "Load Nicknames";
+const QString Constants::UPDATE_CONTACT_POLICY = "Update Contact Policy";
+const QString Constants::UPDATE_WHITELIST = "Update Friends List";
+
+// Policy names
+const QString Constants::PUBLIC_POLICY = "Public";
+const QString Constants::FRIENDS_ONLY_POLICY = "FriendsOnly";
+const QString Constants::FRIENDS_OF_FRIENDS_POLICY = "FriendsOfFriends";
+const QString Constants::POLICIES[] = { PUBLIC_POLICY, FRIENDS_ONLY_POLICY, FRIENDS_OF_FRIENDS_POLICY };
+
+// RTF graphics display text
+const QString Constants::CHECK_ICON = "<img src=:/mainwindow/images/check.ico width=16 height=16> ";
+const QString Constants::CAUTION_ICON = "<img src=:/mainwindow/images/check.ico width=16 height=16> ";
+const QString Constants::INFO_ICON = "<img src=:/mainwindow/images/info.ico width=18 height=18> ";
+const QString Constants::REDBAR_ICON = "<img src=:/mainwindow/images/redbar.ico width=16 height=16> ";
+const QString Constants::REDX_ICON = "<img src=:/mainwindow/images/redx.ico width=16 height=16> ";
