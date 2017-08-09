@@ -59,6 +59,19 @@ void ContactHandler::addContactFailed(const QString &error) {
 
 }
 
+void ContactHandler::checkButtons() {
+
+    // All contacts can be deleted.
+    ui->deleteButton->setEnabled(true);
+    int row = ui->contactsTableWidget->currentRow();
+    QLabel *statusLabel =
+            dynamic_cast<QLabel*>(ui->contactsTableWidget->cellWidget(row, 0));
+    QString status = statusLabel->text();
+    ui->queryButton->setEnabled(status == "pending");
+    ui->suspendButton->setEnabled(status == "active");
+
+}
+
 /*
  * Calculates the remaining column width for coumn 3.
  */
@@ -76,6 +89,8 @@ int ContactHandler::columnGeometry() const {
 void ContactHandler::contactRequestComplete() {
 
     loadTable();
+    ui->addButton->setEnabled(true);
+    ui->pastePushButton->setEnabled(false);
     ui->contactsStatusLabel->setText(Constants::CHECK_ICON + "Contact requested");
     qApp->processEvents();
 
@@ -84,24 +99,14 @@ void ContactHandler::contactRequestComplete() {
 void ContactHandler::contactRequestFailed(const QString &error) {
 
     loadTable();
+    ui->addButton->setEnabled(true);
+    ui->pastePushButton->setEnabled(false);
     ui->contactsStatusLabel->setText(Constants::REDX_ICON + "Contact request failed - "
                                      + error);
     qApp->processEvents();
 
 }
-/*
-void ContactHandler::contactsLoaded() {
 
-    contacts = contactManager->getContacts();
-    loadTable();
-    if (contacts->size() > 0) {
-        ui->contactsTableWidget->selectRow(0);
-    }
-    ui->contactsStatusLabel->setText("Contacts loaded");
-    qApp->processEvents();
-
-}
-*/
 /*
  * Invoked by key filter signal on enter or return pressed.
  */
@@ -168,59 +173,18 @@ void ContactHandler::loadTable(int startingRow) {
         ui->contactsTableWidget->setCellWidget(row++, 3, puidLabel);
     }
 
-}
-
-/*
- * Invoked by the nickname line edit editing finished signal.
-void ContactHandler::nicknameEdited() {
-
-    disconnect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
-    int row = ui->contactsTableWidget->currentRow();
-    nicknameLineEdit->setEnabled(false);
-    QLabel *nicknameLabel = new QLabel(nicknameLineEdit->text());
-    nicknameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    nicknameLabel->setMargin(5);
-    ui->contactsTableWidget->setCellWidget(row, 2, nicknameLabel);
-    working.requested.nickname = nicknameLineEdit->text();
-
-    puidLineEdit = new QLineEdit;
-    puidLineEdit->setValidator(puidValidator);
-    ui->contactsTableWidget->setCellWidget(row, 3, puidLineEdit);
-    puidLineEdit->setFocus();
-    connect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
-    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
+    if (startingRow == 0 && contacts->size() > 0) {
+        ui->contactsTableWidget->selectRow(0);
+    }
 
 }
- */
-
-/*
- * Invoked by the public ID line edit editing finished signal.
-void ContactHandler::puidEdited() {
-
-    disconnect(puidLineEdit, SIGNAL(editingFinished()), this, SLOT(puidEdited()));
-    int row = ui->contactsTableWidget->currentRow();
-    puidLineEdit->setEnabled(false);
-    QString publicId = puidLineEdit->text();
-    QLabel *puidLabel = new QLabel(publicId);
-    puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    puidLabel->setMargin(5);
-    ui->contactsTableWidget->setCellWidget(row, 3, puidLabel);
-    ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
-
-    ui->addButton->setEnabled(true);
-    ui->pastePushButton->setEnabled(false);
-
-    working.requested.publicId = puidLineEdit->text();
-    contactManager->requestContact(working);
-
-}
- */
 
 void ContactHandler::requestContact() {
 
     ui->addButton->setEnabled(false);
+    ui->deleteButton->setEnabled(false);
+    ui->suspendButton->setEnabled(false);
+    ui->queryButton->setEnabled(false);
     loadTable(1);   // Starting at row 1.
     ui->contactsTableWidget->setHorizontalHeaderLabels(requestHeadings);
 
@@ -264,24 +228,9 @@ void ContactHandler::requestedIdEdited() {
     workingRequest.requestedId = requestedIdLineEdit->text();
     workingRequest.idTypes = requestingType + requestedType;
 
-    qDebug() << "Calling contactmanager";
-    qDebug() << "requestType : " << workingRequest.idTypes;
-    qDebug() << "requestingId : " << workingRequest.requestingId;
-    qDebug() << "requestedId : " << workingRequest.requestedId;
-
     contactsDatabase->requestContact(workingRequest);
 
 }
-
-/*
- * Invoked by key filter signal on enter or return pressed.
-void ContactHandler::requestedSelected() {
-
-    QString type = requestedComboBox->currentText();
-    requestedSet(type);
-
-}
- */
 
 /*
  * Invoked by key filter signal on enter or return pressed.

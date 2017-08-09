@@ -46,6 +46,7 @@ class Authenticator : public SessionTask {
         void loginComplete(int);
         void loginReset();
         void loggedOut();
+        void sessionFailed(const QString& error);
         void updateInfo(QString info);
         void updateStatus(QString);
 

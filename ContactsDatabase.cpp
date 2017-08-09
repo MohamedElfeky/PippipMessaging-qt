@@ -8,7 +8,7 @@
 #include "SessionState.h"
 #include "ContactManager.h"
 #include "Constants.h"
-#include "ContactRequest.h"
+#include "ContactRequests.h"
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSettings>
@@ -17,8 +17,11 @@
 #include <CryptoKitty-C/encoding/GCMCodec.h>
 #include <CryptoKitty-C/exceptions/EncodingException.h>
 #include <sstream>
+#include <cstdlib>
 
 namespace Pippip {
+
+static const int ID_MASK = 0x7fffffff;
 
 bool ContactsDatabase::once = true;
 
@@ -39,9 +42,9 @@ void ContactsDatabase::addPending() {
 
     CK::FortunaSecureRandom rnd;
     try {
-        pending.contactId = rnd.nextUnsignedInt();
+        pending.contactId = rnd.nextUnsignedInt() & ID_MASK;
         while (contactExists(pending.contactId)) {
-            pending.contactId = rnd.nextUnsignedInt();
+            pending.contactId = rnd.nextUnsignedInt() & ID_MASK;
         }
 
         CK::GCMCodec codec;
@@ -115,6 +118,31 @@ void ContactsDatabase::close() {
 
     database.close();
     delete contacts;
+
+}
+
+/*
+ * This is a new contact created in the acknowledge requests task.
+ * The user is the requested entity.
+ */
+void ContactsDatabase::createContact(Contact& contact, const ContactRequestIn &request) {
+
+    contact.contactOf = request.requested.nickname;
+    contact.entity = request.requesting;
+    contact.rsaKeys = request.rsaKeys;
+
+    CK::GCMCodec codec(request.keyBlock);
+    codec.decrypt(state->enclaveKey, state->authData);
+    contact.nonce.setLength(8);
+    codec.getBytes(contact.nonce);
+    contact.authData.setLength(16);
+    codec.getBytes(contact.authData);
+    coder::ByteArray key(32, 0);
+    while (contact.messageKeys.size() < 10) {
+        codec.getBytes(key);
+        contact.messageKeys.push_back(key);
+    }
+    contact.currentKey = contact.currentSequence = 0;
 
 }
 
@@ -199,6 +227,33 @@ void ContactsDatabase::loadFailed(const QString &error) {
 
 }
 
+void ContactsDatabase::newContact(const ContactRequestIn &request) {
+
+    Contact contact;
+    createContact(contact, request);
+    CK::GCMCodec codec;
+    codec << contact;
+    codec.encrypt(state->contactKey, state->authData);
+
+    QSqlQuery query(database);
+    query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :encoded)");
+    query.bindValue(":id", contact.contactId);
+    query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
+    query.exec();
+    if (!query.isActive()) {
+        throw DatabaseException(StringCodec(query.lastError().text()));
+    }
+
+    contacts->add(contact);
+
+    /*
+     * This is a no-fault operation. The contact is either updated or added
+     * to the enclave.
+     */
+    contactManager->addContact(contact);
+
+}
+
 void ContactsDatabase::open(const QString& account) {
 
     database = QSqlDatabase::database("contacts");
@@ -212,18 +267,87 @@ void ContactsDatabase::open(const QString& account) {
 
 }
 
-void ContactsDatabase::requestContact(const ContactRequest &request) {
+void ContactsDatabase::requestContact(const ContactRequestOut &request) {
 
-    if (request.idTypes == NICKNAME_NICKNAME || request.idTypes == NICKNAME_PUBLICID) {
+    if (request.idTypes == Constants::NICKNAME_NICKNAME
+            || request.idTypes == Constants::NICKNAME_PUBLICID) {
         pending.contactOf = request.requestingId;
     }
-    if (request.idTypes == NICKNAME_NICKNAME || request.idTypes == PUBLICID_NICKNAME) {
+    if (request.idTypes == Constants::NICKNAME_NICKNAME
+            || request.idTypes == Constants::PUBLICID_NICKNAME) {
         pending.entity.nickname = request.requestedId;
     }
     else {
         pending.entity.publicId = request.requestedId;
     }
     contactManager->requestContact(request);
+
+}
+
+void ContactsDatabase::requestsAcknowledged(ContactRequests *acknowledged) {
+
+    for (auto request : *acknowledged) {
+        if (request.status == "accepted") { // Update or build a contact
+            Contact contact;
+            if (contacts->fromRequestId(request.requestId, contact)) {
+                updateContact(contact, request);
+                contacts->replace(contact);
+            }
+            else {
+                newContact(request);
+            }
+        }
+    }
+
+}
+
+/*
+ * This will update the provisional contact that was created during the
+ * request contact task. The user is the requesting entity.
+ */
+void ContactsDatabase:: updateContact(Contact& contact, const ContactRequestIn &request) {
+
+    contact.contactOf = request.requesting.nickname;
+    contact.entity = request.requested;
+    contact.rsaKeys = request.rsaKeys;
+
+    CK::GCMCodec codec(request.keyBlock);
+    codec.decrypt(state->enclaveKey, state->authData);
+    contact.nonce.setLength(8);
+    codec.getBytes(contact.nonce);
+    contact.authData.setLength(16);
+    codec.getBytes(contact.authData);
+    coder::ByteArray key(32, 0);
+    while (contact.messageKeys.size() < 10) {
+        codec.getBytes(key);
+        contact.messageKeys.push_back(key);
+    }
+    contact.currentKey = contact.currentSequence = 0;
+
+    updateContact(contact);
+
+}
+
+void ContactsDatabase:: updateContact(const Contact &contact) {
+
+    CK::GCMCodec codec;
+    codec << contact;
+    codec.encrypt(state->contactKey, state->authData);
+
+    QSqlQuery query(database);
+    query.prepare("UPDATE contacts SET contact = :encoded WHERE id = :id");
+    query.bindValue(":id", contact.contactId);
+    query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
+    query.exec();
+    if (!query.isActive()) {
+        throw DatabaseException(StringCodec(query.lastError().text()));
+    }
+
+    /*
+     * This is a no-fault operation. The contact is either updated or added
+     * to the enclave.
+     */
+    contactManager->addContact(contact);
 
 }
 

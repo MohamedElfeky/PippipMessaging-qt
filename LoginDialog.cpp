@@ -1,6 +1,7 @@
 #include "LoginDialog.h"
 #include "Authenticator.h"
 #include "mainwindow.h"
+#include "Constants.h"
 #include "ui_LoginDialog.h"
 #include <QPushButton>
 #include <QMessageBox>
@@ -33,6 +34,7 @@ LoginDialog::LoginDialog(Pippip::Vault *v, QWidget *parent)
     auth = new Pippip::Authenticator(this, vault);
     connect(auth, SIGNAL(authenticationComplete(QString)), main, SLOT(loggedIn(QString)));
     connect(auth, SIGNAL(loginReset()), this, SLOT(loginReset()));
+    connect(auth, SIGNAL(sessionFailed(QString)), this, SLOT(sessionFailed(QString)));
 
 }
 
@@ -77,6 +79,16 @@ void LoginDialog::loginReset() {
 
 }
 
+void LoginDialog::sessionFailed(const QString &error) {
+
+    ui->PassphraseText->clear();
+    ui->loginButton->setEnabled(true);
+    ui->infoLabel->setText(Constants::REDX_ICON + "Failed to establish session - "
+                           + error);
+    qApp->processEvents();
+
+}
+
 void LoginDialog::showEvent(QShowEvent *event) {
 
     // Have to do this to give account name the focus.
@@ -93,5 +105,4 @@ void LoginDialog::updateInfo(QString info) {
     qApp->processEvents();
 
 }
-
 

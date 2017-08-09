@@ -47,6 +47,12 @@ class Constants
         static const QString REDBAR_ICON;
         static const QString REDX_ICON;
 
+        // Request ID types
+        static const QString NICKNAME_NICKNAME;
+        static const QString NICKNAME_PUBLICID;
+        static const QString PUBLICID_NICKNAME;
+        static const QString PUBLICID_PUBLICID;
+
 };
 
 #endif // CONSTANTS_H

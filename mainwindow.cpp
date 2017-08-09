@@ -1,41 +1,27 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "ParameterGenerator.h"
-#include "Vault.h"
-#include "NewAccountDialog.h"
-#include "NicknamesDialog.h"
-#include "ContactsDialog.h"
-#include "LoginDialog.h"
-#include "NicknameManager.h"
-#include "ContactManager.h"
 #include "Authenticator.h"
-#include "EntropyStream.h"
-#include "UDPListener.h"
-#include "MessageManager.h"
-#include "MessageException.h"
-#include "Nicknames.h"
-//#include "MessageDatabase.h"
-#include "ContactsDatabase.h"
-#include "DatabaseException.h"
-#include "KeyFilter.h"
 #include "Constants.h"
-#include <CryptoKitty-C/keys/RSAPrivateKey.h>
-#include <CryptoKitty-C/keys/RSAPublicKey.h>
-#include <QThread>
-#include <QLabel>
-#include <QKeySequence>
-#include <QMenu>
-#include <QMenuBar>
-#include <QAction>
-#include <QSettings>
-#include <QByteArray>
-#include <QHBoxLayout>
+#include "ContactsDatabase.h"
+#include "ContactsDialog.h"
+#include "DatabaseException.h"
+#include "EntropyStream.h"
+#include "KeyFilter.h"
+#include "LoginDialog.h"
+#include "MessageException.h"
+#include "MessageManager.h"
+#include "NewAccountDialog.h"
+#include "NicknameManager.h"
+#include "NicknamesDialog.h"
+#include "ParameterGenerator.h"
+#include "UDPListener.h"
+#include "Vault.h"
 #include <QComboBox>
 #include <QDir>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QKeySequence>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSettings>
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
@@ -56,13 +42,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ContactsAction, SIGNAL(triggered()), this, SLOT(manageContacts()));
     connect(ui->NewMessageAction, SIGNAL(triggered()), this, SLOT(newMessage()));
 
-    statusLabel = new QLabel(this);
+    QWidget *status = new QWidget(this);
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    iconLabel = new QLabel(status);
+    iconLabel->setTextFormat(Qt::RichText);
+    iconLabel->setText(Constants::INFO_ICON);
+    statusLabel = new QLabel(status);
     statusLabel->setTextFormat(Qt::RichText);
-    statusLabel->setText(Constants::INFO_ICON + "<big>Log In");
-    statusLabel->setMargin(3);
+    statusLabel->setText("Log In");
+    //statusLabel->setMargin(3);
     statusLabel->setAlignment(Qt::AlignVCenter);
-    statusLabel->setIndent(10);
-    statusBar()->addWidget(statusLabel);
+    statusLabel->setIndent(5);
+    layout->addWidget(iconLabel);
+    layout->addWidget(statusLabel);
+    status->setLayout(layout);
+    statusBar()->addWidget(status);
 
     KeyFilter *keyFilter = new KeyFilter(ui->messageTextEdit);
     keyFilter->addKey(Qt::Key_Enter);
@@ -134,14 +128,14 @@ void MainWindow::loggedIn(const QString& account) {
         contactsDatabase->open(account);
         contactsDatabase->loadContacts();
 
-        updateStatus(Constants::CHECK_ICON + "<big>Authentication Complete");
+        updateStatus(Constants::CHECK_ICON, "Authentication Complete");
     }
     catch (Pippip::MessageException& e) {
-        updateStatus(Constants::REDX_ICON + "<big>Authentication failed - " + QString(e.what()));
+        updateStatus(Constants::REDX_ICON, "Authentication failed - " + QString(e.what()));
     }
     catch (Pippip::DatabaseException& e) {
         // TODO Log out
-        updateStatus(Constants::REDX_ICON + "<big>Authentication failed - " + QString(e.what()));
+        updateStatus(Constants::REDX_ICON, "Authentication failed - " + QString(e.what()));
     }
 
 }
@@ -161,8 +155,6 @@ void MainWindow::loggedOut() {
     session = 0;
     nicknameManager->deleteLater();
     nicknameManager = 0;
-    //contactManager->deleteLater();
-    //contactManager = 0;
     //messageManager->deleteLater();
     //messageManager = 0;
     contactsDatabase->close();
@@ -174,7 +166,7 @@ void MainWindow::loggedOut() {
     ui->NicknamesAction->setEnabled(false);
     ui->ContactsAction->setEnabled(false);
     ui->NewMessageAction->setEnabled(false);
-    updateStatus(Constants::INFO_ICON + "<big>Logged out");
+    updateStatus(Constants::INFO_ICON, "Logged out");
 
 }
 
@@ -182,15 +174,9 @@ void MainWindow::manageContacts() {
 
     statusLabel->clear();
     ContactsDialog *dialog = new ContactsDialog(session, this);
-    //disconnect(contactManager, SIGNAL(requestFailed(QString,QString)),
-    //                                    this, SLOT(requestFailed(QString,QString)));
-    //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-    //                                            dialog, SLOT(requestFailed(QString,QString)));
     dialog->setContactsDatabase(contactsDatabase);
     dialog->setNicknameManager(nicknameManager);
     dialog->exec();
-    //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-    //                                            this, SLOT(requestFailed(QString,QString)));
 
 }
 
@@ -343,8 +329,9 @@ void MainWindow::startFortuna() {
 
 }
 
-void MainWindow::updateStatus(const QString& status) {
+void MainWindow::updateStatus(const QString& icon, const QString& status) {
 
+    iconLabel->setText(icon);
     statusLabel->setText(status);
     statusBar()->show();
 

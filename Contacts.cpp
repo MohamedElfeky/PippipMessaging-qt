@@ -9,7 +9,7 @@ Contacts::Contacts() {
 
 }
 
-const Contact& Contacts::operator [] (int contactId) const {
+const Contact& Contacts::operator [] (unsigned contactId) const {
 
     IdConstIter it = idMap.find(contactId);
     if (it != idMap.end()) {
@@ -70,14 +70,14 @@ void Contacts::diff(const Contacts &other, ContactList &lhs, ContactList &rhs) c
 
     for (auto contact : contactList) {
         IdConstIter it = other.idMap.find(contact.contactId);
-        if (it != other.idMap.end()) {
+        if (it == other.idMap.end()) {
             lhs.push_back(contact);
         }
     }
 
     for (auto contact : other.contactList) {
         IdConstIter it = idMap.find(contact.contactId);
-        if (it != idMap.end()) {
+        if (it == idMap.end()) {
             rhs.push_back(contact);
         }
     }
@@ -96,6 +96,53 @@ void Contacts::fill(const Contacts &other) {
     for (auto pair : other.idMap) {
         add(pair.second);
     }
+
+}
+
+bool Contacts::fromRequestId(long long requestId, Contact &contact) const {
+
+    for (auto existing : contactList) {
+        if (existing.requestId == requestId) {
+            contact = existing;
+            return true;
+        }
+    }
+
+    return false;
+
+}
+
+void Contacts::remove(const Contact &contact) {
+
+    ContactList tmp;
+    for (auto existing : contactList) {
+        if (existing.contactId != contact.contactId) {
+            tmp.push_back(existing);
+        }
+    }
+    contactList.swap(tmp);
+
+    IdIter idIt = idMap.find(contact.contactId);
+    if (idIt != idMap.end()) {
+        idMap.erase(idIt);
+    }
+
+    ContactIter nicknameIt = nicknameMap.find(contact.entity.nickname);
+    if (nicknameIt != nicknameMap.end()) {
+        nicknameMap.erase(nicknameIt);
+    }
+
+    ContactIter puidIt = publicIdMap.find(contact.entity.publicId);
+    if (puidIt != publicIdMap.end()) {
+        publicIdMap.erase(puidIt);
+    }
+
+}
+
+void Contacts::replace(const Contact &contact) {
+
+    remove(contact);
+    add(contact);
 
 }
 

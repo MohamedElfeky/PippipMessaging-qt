@@ -25,6 +25,9 @@ class LoginDialog : public QDialog
         void loginReset();
         void updateInfo(QString);
 
+    private slots:
+        void sessionFailed(const QString& error);
+
     protected:
         void showEvent(QShowEvent *);
 

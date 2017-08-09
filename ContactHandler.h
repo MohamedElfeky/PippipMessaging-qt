@@ -36,6 +36,7 @@ namespace Pippip {
     class SessionState;
     class Nicknames;
     class Contacts;
+    struct ContactRequestOut;
 }
 
 class QLineEdit;
@@ -48,12 +49,6 @@ class ContactHandler : public QObject {
         explicit ContactHandler(Ui::ContactsDialog *ui, Pippip::SessionState *state, QObject *parent = 0);
         ~ContactHandler() {}
 
-    signals:
-
-    public slots:
-        //void contactsLoaded();
-        //void contactRequested(const QString& name);
-
     private slots:
         void addContactFailed(const QString& error);
         void contactRequestComplete();
@@ -64,6 +59,7 @@ class ContactHandler : public QObject {
         void requestingIdSelected(Qt::Key);
 
     public:
+        void checkButtons();
         void loadTable(int startingRow = 0);
         void setContactsDatabase(Pippip::ContactsDatabase *database);
         void setNicknames(Pippip::Nicknames *nicks);
@@ -88,7 +84,7 @@ class ContactHandler : public QObject {
         QRegularExpression puidRE;
         QRegularExpressionValidator *puidValidator;
         // Contact request variables
-        Pippip::ContactRequest workingRequest;
+        Pippip::ContactRequestOut workingRequest;
         QString requestingType;     // P or N
         QString requestedType;      // P or N
 

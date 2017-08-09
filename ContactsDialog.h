@@ -16,7 +16,7 @@ namespace Pippip {
 }
 
 class ContactHandler;
-//class RequestHandler;
+class RequestHandler;
 
 class ContactsDialog : public QDialog {
         Q_OBJECT
@@ -29,10 +29,11 @@ class ContactsDialog : public QDialog {
         //void contactRequested(Pippip::Contact);
         void nicknamesLoaded();
         void requestFailed(const QString& reqName, const QString& error);
-        //void requestsLoaded();
+        void requestsAcknowledged();
 
     private slots:
-        //void contactsLoaded();
+        void contactSelected();
+        void tabSelected(int tab);
 
     public:
         void setContactsDatabase(Pippip::ContactsDatabase *database);
@@ -41,10 +42,10 @@ class ContactsDialog : public QDialog {
     private:
         Ui::ContactsDialog *ui;
         Pippip::SessionState *state;
-        //Pippip::ContactsDatabase *contactsDatabase;
+        Pippip::ContactsDatabase *contactsDatabase;
         Pippip::NicknameManager *nicknameManager;
         ContactHandler *contactHandler;
-        //RequestHandler *requestHandler;
+        RequestHandler *requestHandler;
 
 };
 

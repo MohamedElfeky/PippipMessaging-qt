@@ -60,7 +60,9 @@ SOURCES += main.cpp\
     Nicknames.cpp \
     Contacts.cpp \
     Function.cpp \
-    ContactsDatabase.cpp
+    ContactsDatabase.cpp \
+    ContactRequests.cpp \
+    RequestManager.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -122,7 +124,9 @@ HEADERS  += mainwindow.h \
     Contacts.h \
     Function.h \
     DatabaseException.h \
-    ContactsDatabase.h
+    ContactsDatabase.h \
+    ContactRequests.h \
+    RequestManager.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

@@ -276,7 +276,7 @@ void Authenticator::sessionComplete(const QString& result) {
         doLogin();
     }
     else {
-        emit updateInfo(result);
+        emit sessionFailed(result);
     }
 
 }

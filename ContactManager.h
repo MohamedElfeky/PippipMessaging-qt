@@ -3,7 +3,6 @@
 
 #include "Contact.h"
 #include <QObject>
-//#include <QStringList>
 
 class QJsonObject;
 class QJsonArray;
@@ -11,9 +10,8 @@ class QJsonArray;
 namespace Pippip {
 
 class SessionState;
-struct ContactRequest;
+struct ContactRequestOut;
 class RESTHandler;
-//struct Message;
 class Contacts;
 
 class ContactManager : public QObject {
@@ -30,7 +28,6 @@ class ContactManager : public QObject {
         void deleteFailed(const QString& error);
         void loadFailed(const QString& error);
         void contactRequestFailed(const QString& error);
-        //void requestsLoaded();
 
     protected slots:
         void addComplete(RESTHandler*);
@@ -39,22 +36,15 @@ class ContactManager : public QObject {
         void deleteComplete(RESTHandler*);
         void deleteTimedOut();
         void contactRequestComplete(RESTHandler*);
-        //void requestLoadComplete(RESTHandler*);
         void loadTimedOut();
         void contactRequestTimedOut();
 
     public:
         void addContact(const Contact& contact);
-        //bool getContactByNickname(const QString& nickname, Contact& contact) const;
-        //bool getContactById(const QString& id, Contact& contact) const;
-        //const Contact& getContactById(const QString& id) const;
         Contacts *getContacts() { return contacts; }
-        //const RequestList& getRequests() const { return requests; }
-        //void incrementSequences(const Message& message);
         void loadContacts();
-        //void loadRequests();
         void reconcile(const Contacts& record);
-        void requestContact(const ContactRequest& request);
+        void requestContact(const ContactRequestOut& request);
 
     private:
         void addContacts();

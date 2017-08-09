@@ -2,21 +2,27 @@
 #define CONTACTREQUEST_H
 
 #include "Entity.h"
+#include "RSAKeys.h"
+#include <coder/ByteArray.h>
 
 namespace Pippip {
 
-static const QString NICKNAME_NICKNAME = "NN";
-static const QString NICKNAME_PUBLICID = "NP";
-static const QString PUBLICID_NICKNAME = "PN";
-static const QString PUBLICID_PUBLICID = "PP";
-
-struct ContactRequest {
+struct ContactRequestOut {
     QString idTypes;
     QString requestingId;
     QString requestedId;
 };
 
-typedef std::vector<ContactRequest> RequestList;
+struct ContactRequestIn {
+    QString status;
+    long requestId;
+    Entity requested;
+    Entity requesting;
+    RSAKeys rsaKeys;
+    coder::ByteArray keyBlock;
+};
+
+typedef std::vector<ContactRequestIn> RequestList;
 
 }
 

@@ -37,3 +37,9 @@ const QString Constants::CAUTION_ICON = "<img src=:/mainwindow/images/check.ico 
 const QString Constants::INFO_ICON = "<img src=:/mainwindow/images/info.ico width=18 height=18> ";
 const QString Constants::REDBAR_ICON = "<img src=:/mainwindow/images/redbar.ico width=16 height=16> ";
 const QString Constants::REDX_ICON = "<img src=:/mainwindow/images/redx.ico width=16 height=16> ";
+
+// Request ID types
+const QString Constants::NICKNAME_NICKNAME = "NN";
+const QString Constants::NICKNAME_PUBLICID = "NP";
+const QString Constants::PUBLICID_NICKNAME = "PN";
+const QString Constants::PUBLICID_PUBLICID = "PP";

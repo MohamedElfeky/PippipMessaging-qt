@@ -13,7 +13,8 @@ class Contacts {
         ~Contacts() {}
 
     public:
-        const Contact& operator [] (int contactId) const;
+        const Contact& operator [] (unsigned contactId) const;
+        Contact& operator [] (long long requestId) const;
         const Contact& operator [] (const QString& nickname) const;
 
     public:
@@ -29,12 +30,15 @@ class Contacts {
         ContactList::const_iterator end() const;
         void fill(const Contacts& other);
         bool fromPublicId(const QString& publicId, Contact& contact) const;
+        bool fromRequestId(long long requestId, Contact& contact) const;
+        void remove(const Contact& contact);
+        void replace(const Contact& contact);
         unsigned size() const;
 
     private:
         ContactList contactList;
 
-        typedef std::map<int, Contact> ContactIdMap;
+        typedef std::map<unsigned, Contact> ContactIdMap;
         typedef ContactIdMap::iterator IdIter;
         typedef ContactIdMap::const_iterator IdConstIter;
 

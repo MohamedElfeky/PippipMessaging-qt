@@ -41,7 +41,7 @@ class MainWindow : public QMainWindow {
         void nicknamesLoaded();
         void requestFailed(const QString& reqName, const QString& error);
         void sendMessage(Qt::Key);
-        void updateStatus(const QString& status);
+        void updateStatus(const QString& icon, const QString& status);
 
     protected:
         void closeEvent(QCloseEvent *event);
@@ -55,9 +55,9 @@ class MainWindow : public QMainWindow {
         Ui::MainWindow *ui;
         bool createMessage;
         Pippip::SessionState *session;
+        QLabel *iconLabel;
         QLabel *statusLabel;
         Pippip::NicknameManager *nicknameManager;
-        //Pippip::ContactManager *contactManager;
         Pippip::MessageManager *messageManager;
         Pippip::ContactsDatabase *contactsDatabase;
 

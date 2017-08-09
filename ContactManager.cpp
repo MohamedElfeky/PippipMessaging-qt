@@ -202,47 +202,6 @@ void ContactManager::encodeContacts(const ContactList &list, QJsonArray &array) 
 
 }
 
-/*
-bool ContactManager::getContactByNickname(const QString &nickname, Contact& aContact) const {
-
-    for(auto contact : contacts) {
-        if (contact.entity.nickname == nickname) {
-            aContact = contact;
-            return true;
-        }
-    }
-    return false;
-
-}
-
-bool ContactManager::getContactById(const QString &id, Contact& aContact) const {
-
-    for(auto contact : contacts) {
-        if (contact.entity.publicId == id) {
-            aContact = contact;
-            return true;
-        }
-    }
-    return false;
-
-}
-
-void ContactManager::incrementSequences(const Message &message) {
-
-    for (auto contact : contacts) {
-        if ((message.sender == contact.contactOf || message.senderId == state->publicId)
-                && message.recipient == contact.entity.nickname
-                && message.recipientId == contact.entity.publicId) {
-            contact.currentKey = message.keyIndex + 1;
-            if (contact.currentKey > 9) {
-                contact.currentKey = 0;
-            }
-            contact.currentSequence = message.sequence + 1;
-        }
-    }
-
-}
-*/
 void ContactManager::loadContacts() {
 
     EnclaveRequest req(state);
@@ -277,10 +236,10 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
         }
         Pippip::Contact contact;
         QJsonObject contactObj = value.toObject();
-        contact.status = contactObj["status"].toString();
         contact.contactId = contactObj["contactId"].toDouble();
-        QString contactBytes = contactObj["contact"].toString();
-        CK::GCMCodec codec(Pippip::ByteCodec(contactBytes.toUtf8()));
+        QString encodedStr = contactObj["encoded"].toString();
+        coder::ByteArray encoded(StringCodec(encodedStr), true);
+        CK::GCMCodec codec(encoded);
         codec.decrypt(state->contactKey, state->authData);
         codec >> contact;
         contacts->add(contact);
@@ -289,27 +248,11 @@ bool ContactManager::loadContacts(const QJsonObject &json) {
 
 }
 
-/*
-void ContactManager::loadRequests() {
-
-    std::cout << "loadRequests called" << std::endl;
-
-    EnclaveRequest req(state);
-    req.setRequestType("getRequests");
-    req.setValue("publicId", state->publicId);
-    RESTHandler *handler = new RESTHandler(this);
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
-    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
-    handler->doPost(req);
-
-}
-*/
 void ContactManager::loadTimedOut() {
 
     if (!requestCompleted) {
         timedOut = true;
-        emit loadFailed("Contact request timed out");
+        emit loadFailed("Contact load timed out");
     }
 
 }
@@ -326,13 +269,13 @@ void ContactManager::reconcile(const Contacts &record) {
 
 }
 
-void ContactManager::requestContact(const ContactRequest &request) {
+void ContactManager::requestContact(const ContactRequestOut &request) {
 
     EnclaveRequest req(state);
     req.setRequestType("requestContact");
     req.setValue("idTypes", request.idTypes);
-    req.setValue("requestingId", request.requestingId);
     req.setValue("requestedId", request.requestedId);
+    req.setValue("requestingId", request.requestingId);
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(contactRequestComplete(RESTHandler*)));
@@ -341,11 +284,7 @@ void ContactManager::requestContact(const ContactRequest &request) {
     handler->doPost(req);
 
 }
-/*
-void ContactManager::requestLoadComplete(RESTHandler *) {
 
-}
-*/
 void ContactManager::contactRequestTimedOut() {
 
     if (!requestCompleted) {

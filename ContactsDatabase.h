@@ -10,7 +10,9 @@ namespace Pippip {
 class Contacts;
 class SessionState;
 class ContactManager;
-struct ContactRequest;
+struct ContactRequestOut;
+struct ContactRequestIn;
+class ContactRequests;
 
 class ContactsDatabase : public QObject {
         Q_OBJECT
@@ -37,12 +39,17 @@ class ContactsDatabase : public QObject {
         static void initialize(const QString& account); // Throws DatabaseException
         void open(const QString& account);              // Throws DatabaseException
         void loadContacts();                            // Throws DatabaseException
-        void requestContact(const ContactRequest& request);
+        void requestsAcknowledged(ContactRequests *acknowledged);
+        void requestContact(const ContactRequestOut& request);
 
     private:
         void addPending();
         bool contactExists(unsigned id);                    // Throws DatabaseException
+        void createContact(Contact& contact, const ContactRequestIn& request);
         static void createDatabase(const QString& account); // Throws DatabaseException
+        void newContact(const ContactRequestIn& request);
+        void updateContact(const Contact& contact);
+        void updateContact(Contact& contact, const ContactRequestIn& request);
 
     private:
         static bool once;
