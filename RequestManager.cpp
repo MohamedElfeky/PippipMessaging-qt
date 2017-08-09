@@ -161,11 +161,11 @@ bool RequestManager::loadRequests(const QJsonObject &json) {
         QJsonObject requestingObj = reqObj["requesting"].toObject();
         contactRequest.requesting.nickname = requestingObj["nickname"].toString();
         contactRequest.requesting.publicId = requestingObj["publicId"].toString();
-        QJsonObject rsaObj = reqObj["rsaKeys"].toObject();
-        contactRequest.rsaKeys.encryptionRSA = rsaObj["encryptionRSA"].toString();
-        contactRequest.rsaKeys.signingRSA = rsaObj["encryptionRSA"].toString();
-        QString keyStr = reqObj["keyBlock"].toString();
-        contactRequest.keyBlock = coder::ByteArray(StringCodec(keyStr), true);
+        //QJsonObject rsaObj = reqObj["rsaKeys"].toObject();
+        //contactRequest.rsaKeys.encryptionRSA = rsaObj["encryptionRSA"].toString();
+        //contactRequest.rsaKeys.signingRSA = rsaObj["encryptionRSA"].toString();
+        //QString keyStr = reqObj["keyBlock"].toString();
+        //contactRequest.keyBlock = coder::ByteArray(StringCodec(keyStr), true);
         contactRequests->add(contactRequest);
     }
     return true;
