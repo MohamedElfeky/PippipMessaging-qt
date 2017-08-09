@@ -124,7 +124,8 @@ void MainWindow::loggedIn(const QString& account) {
 
         Pippip::ContactsDatabase::initialize(account);
         contactsDatabase = new Pippip::ContactsDatabase(session, this);
-        connect(contactsDatabase, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+        connect(contactsDatabase, SIGNAL(updateStatus(QString,QString)),
+                this, SLOT(updateStatus(QString,QString)));
         contactsDatabase->open(account);
         contactsDatabase->loadContacts();
 

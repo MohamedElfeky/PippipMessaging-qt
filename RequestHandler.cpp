@@ -5,6 +5,7 @@
 #include "ContactsDialog.h"
 #include "ui_ContactsDialog.h"
 #include <QLabel>
+#include <QPushButton>
 #include <assert.h>
 
 RequestHandler::RequestHandler(Ui::ContactsDialog *u, Pippip::SessionState *st, ContactsDialog *parent)
@@ -19,7 +20,7 @@ RequestHandler::RequestHandler(Ui::ContactsDialog *u, Pippip::SessionState *st, 
     connect(requestManager, SIGNAL(loadFailed(QString)), this, SLOT(loadFailed(QString)));
     connect(requestManager, SIGNAL(requestsAcknowledged()), parent, SLOT(requestsAcknowledged()));
 
-    connect(ui->approveButton, SIGNAL(toggled()), SLOT(acceptContact()));
+    connect(ui->approveButton, SIGNAL(clicked()), SLOT(acceptContact()));
 
 }
 

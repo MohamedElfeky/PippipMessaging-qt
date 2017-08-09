@@ -251,7 +251,6 @@ void ContactHandler::requestingIdSelected(Qt::Key) {
         requestingType = "N";
     }
 
-
     idTypeComboBox = new QComboBox;
     QStringList items;
     items << "Nickname" << "Public ID";

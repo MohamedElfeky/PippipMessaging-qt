@@ -223,7 +223,7 @@ void ContactsDatabase::loadContacts() {
 
 void ContactsDatabase::loadFailed(const QString &error) {
 
-    emit updateStatus(Constants::REDX_ICON + "<big>Contacts load failed - " + error);
+    emit updateStatus(Constants::REDX_ICON, "Contacts load failed - " + error);
 
 }
 

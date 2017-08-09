@@ -25,7 +25,7 @@ class ContactsDatabase : public QObject {
         void addContactFailed(const QString& error);
         void contactRequestComplete();
         void contactRequestFailed(const QString &error);
-        void updateStatus(const QString& status);
+        void updateStatus(const QString& icon, const QString& status);
 
     private slots:
         void contactRequestComplete(long requestId, const QString& status);
