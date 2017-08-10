@@ -26,6 +26,7 @@ class RequestHandler : public QObject {
     signals:
 
     public slots:
+        void ackFailed(const QString& error);
         void loadFailed(const QString& error);
         void requestsLoaded();
 

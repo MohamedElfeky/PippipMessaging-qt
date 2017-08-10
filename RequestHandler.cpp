@@ -18,6 +18,7 @@ RequestHandler::RequestHandler(Ui::ContactsDialog *u, Pippip::SessionState *st, 
     acknowledged = requestManager->getAcknowledged();
     connect(requestManager, SIGNAL(requestsLoaded()), this, SLOT(requestsLoaded()));
     connect(requestManager, SIGNAL(loadFailed(QString)), this, SLOT(loadFailed(QString)));
+    connect(requestManager, SIGNAL(ackFailed(QString)), this, SLOT(ackFailed(QString)));
     connect(requestManager, SIGNAL(requestsAcknowledged()), parent, SLOT(requestsAcknowledged()));
 
     connect(ui->approveButton, SIGNAL(clicked()), SLOT(acceptContact()));
@@ -28,6 +29,13 @@ void RequestHandler::acceptContact() {
 
     int row = ui->requestsTableWidget->currentRow();
     requestManager->ackRequest("accept", (*requests)[row].requestId);
+
+}
+
+void RequestHandler::ackFailed(const QString &error) {
+
+    ui->requestStatusLabel->setText(Constants::REDX_ICON + "Acknowledgement failed - " + error);
+    qApp->processEvents();
 
 }
 
