@@ -6,6 +6,7 @@
 #include "StringCodec.h"
 #include <QJsonArray>
 #include <QTimer>
+#include <iostream>
 
 namespace Pippip {
 
@@ -130,6 +131,8 @@ bool RequestManager::loadAcknowledged(const QJsonObject &json) {
         contactRequest.rsaKeys.encryptionRSA = rsaObj["encryptionRSA"].toString();
         contactRequest.rsaKeys.signingRSA = rsaObj["encryptionRSA"].toString();
         QString keyStr = reqObj["keyBlock"].toString();
+        std::cout << "Key block received = " << StringCodec(keyStr) << std::endl;
+
         contactRequest.keyBlock = coder::ByteArray(StringCodec(keyStr), true);
         acknowledged->add(contactRequest);
     }

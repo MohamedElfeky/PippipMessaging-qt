@@ -127,10 +127,12 @@ void ContactsDatabase::close() {
  */
 void ContactsDatabase::createContact(Contact& contact, const ContactRequestIn &request) {
 
+    contact.status = request.status;
     contact.contactOf = request.requested.nickname;
     contact.entity = request.requesting;
     contact.rsaKeys = request.rsaKeys;
 
+    std::cout << "Key block in = " << request.keyBlock.toHexString() << std::endl;
     CK::GCMCodec codec(request.keyBlock);
     codec.decrypt(state->enclaveKey, state->authData);
     contact.nonce.setLength(8);
@@ -229,28 +231,34 @@ void ContactsDatabase::loadFailed(const QString &error) {
 
 void ContactsDatabase::newContact(const ContactRequestIn &request) {
 
-    Contact contact;
-    createContact(contact, request);
-    CK::GCMCodec codec;
-    codec << contact;
-    codec.encrypt(state->contactKey, state->authData);
+    try {
+        Contact contact;
+        createContact(contact, request);
+        CK::GCMCodec codec;
+        codec << contact;
+        codec.encrypt(state->contactKey, state->authData);
 
-    QSqlQuery query(database);
-    query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :encoded)");
-    query.bindValue(":id", contact.contactId);
-    query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
-    query.exec();
-    if (!query.isActive()) {
-        throw DatabaseException(StringCodec(query.lastError().text()));
-    }
+        QSqlQuery query(database);
+        query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :encoded)");
+        query.bindValue(":id", contact.contactId);
+        query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
+        query.exec();
+        if (!query.isActive()) {
+            throw DatabaseException(StringCodec(query.lastError().text()));
+        }
 
-    contacts->add(contact);
+        contacts->add(contact);
 
-    /*
+        /*
      * This is a no-fault operation. The contact is either updated or added
      * to the enclave.
      */
-    contactManager->addContact(contact);
+        contactManager->addContact(contact);
+    }
+    catch (CK::EncodingException& e) {
+        emit updateStatus(Constants::REDX_ICON, QString("Failed to create new contact - ")
+                          + e.what());
+    }
 
 }
 
@@ -287,7 +295,7 @@ void ContactsDatabase::requestContact(const ContactRequestOut &request) {
 void ContactsDatabase::requestsAcknowledged(ContactRequests *acknowledged) {
 
     for (auto request : *acknowledged) {
-        if (request.status == "accepted") { // Update or build a contact
+        if (request.status == "active") { // Update or build a contact
             Contact contact;
             if (contacts->fromRequestId(request.requestId, contact)) {
                 updateContact(contact, request);
@@ -311,18 +319,24 @@ void ContactsDatabase:: updateContact(Contact& contact, const ContactRequestIn &
     contact.entity = request.requested;
     contact.rsaKeys = request.rsaKeys;
 
-    CK::GCMCodec codec(request.keyBlock);
-    codec.decrypt(state->enclaveKey, state->authData);
-    contact.nonce.setLength(8);
-    codec.getBytes(contact.nonce);
-    contact.authData.setLength(16);
-    codec.getBytes(contact.authData);
-    coder::ByteArray key(32, 0);
-    while (contact.messageKeys.size() < 10) {
-        codec.getBytes(key);
-        contact.messageKeys.push_back(key);
+    try {
+        CK::GCMCodec codec(request.keyBlock);
+        codec.decrypt(state->enclaveKey, state->authData);
+        contact.nonce.setLength(8);
+        codec.getBytes(contact.nonce);
+        contact.authData.setLength(16);
+        codec.getBytes(contact.authData);
+        coder::ByteArray key(32, 0);
+        while (contact.messageKeys.size() < 10) {
+            codec.getBytes(key);
+            contact.messageKeys.push_back(key);
+        }
+        contact.currentKey = contact.currentSequence = 0;
     }
-    contact.currentKey = contact.currentSequence = 0;
+    catch (CK::EncodingException& e) {
+        emit updateStatus(Constants::REDX_ICON, QString("Failed to update contact - ")
+                          + e.what());
+    }
 
     updateContact(contact);
 
