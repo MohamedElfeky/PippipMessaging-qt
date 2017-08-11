@@ -69,9 +69,11 @@ void ContactsDialog::requestFailed(const QString &reqName, const QString& error)
 
 }
 
-void ContactsDialog::requestsAcknowledged() {
+void ContactsDialog::requestsAcknowledged(Pippip::ContactRequests *acknowledged) {
 
-    contactsDatabase->requestsAcknowledged(requestHandler->getAcknowledged());
+    contactsDatabase->requestsAcknowledged(acknowledged);
+    ui->tabWidget->setCurrentIndex(0);
+    contactHandler->loadTable();
 
 }
 

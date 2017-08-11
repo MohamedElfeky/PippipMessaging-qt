@@ -28,6 +28,7 @@ class RequestHandler : public QObject {
     public slots:
         void ackFailed(const QString& error);
         void loadFailed(const QString& error);
+        void requestsAcknowledged();
         void requestsLoaded();
 
     private slots:
@@ -37,11 +38,11 @@ class RequestHandler : public QObject {
         void loadTable();
 
     public:
-        Pippip::ContactRequests *getAcknowledged() { return acknowledged; }
         void loadRequests();
 
     private:
         Ui::ContactsDialog *ui;
+        ContactsDialog *dialog;
         Pippip::SessionState *state;
         Pippip::RequestManager *requestManager;
         Pippip::ContactRequests *requests;

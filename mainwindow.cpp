@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->NewMessageAction, SIGNAL(triggered()), this, SLOT(newMessage()));
 
     QWidget *status = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(this);
+    //QHBoxLayout *layout = new QHBoxLayout(this);
     iconLabel = new QLabel(status);
     iconLabel->setTextFormat(Qt::RichText);
     iconLabel->setText(Constants::INFO_ICON);
@@ -53,10 +53,12 @@ MainWindow::MainWindow(QWidget *parent)
     //statusLabel->setMargin(3);
     statusLabel->setAlignment(Qt::AlignVCenter);
     statusLabel->setIndent(5);
-    layout->addWidget(iconLabel);
-    layout->addWidget(statusLabel);
-    status->setLayout(layout);
-    statusBar()->addWidget(status);
+    //layout->addWidget(iconLabel);
+    //layout->addWidget(statusLabel);
+    //status->setLayout(layout);
+    //statusBar()->addWidget(status);
+    statusBar()->addWidget(iconLabel);
+    statusBar()->addWidget(statusLabel);
 
     KeyFilter *keyFilter = new KeyFilter(ui->messageTextEdit);
     keyFilter->addKey(Qt::Key_Enter);
