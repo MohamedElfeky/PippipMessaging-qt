@@ -38,9 +38,9 @@
   <widget class="QLabel" name="statusLabel">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>37</x>
      <y>263</y>
-     <width>421</width>
+     <width>408</width>
      <height>20</height>
     </rect>
    </property>
@@ -223,6 +223,22 @@
      </property>
     </widget>
    </widget>
+  </widget>
+  <widget class="QLabel" name="statusIconLabel">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>263</y>
+     <width>21</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::RichText</enum>
+   </property>
   </widget>
  </widget>
  <tabstops>

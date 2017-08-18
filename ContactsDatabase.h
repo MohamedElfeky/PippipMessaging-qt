@@ -2,62 +2,51 @@
 #define CONTACTSDATABASE_H
 
 #include "Contact.h"
-#include <QObject>
 #include <QSqlDatabase>
 
 namespace Pippip {
-
+/*
+class EnclaveRequestTask;
 class Contacts;
-class SessionState;
-class ContactManager;
 struct ContactRequestOut;
 struct ContactRequestIn;
 class ContactRequests;
+*/
+class SessionState;
 
-class ContactsDatabase : public QObject {
-        Q_OBJECT
+class ContactsDatabase {
+
+    protected:
+        ContactsDatabase(SessionState *state);
 
     public:
-        explicit ContactsDatabase(SessionState *state, QObject *parent = 0);
         ~ContactsDatabase() {}
 
-    signals:
-        void addContactFailed(const QString& error);
-        void contactRequestComplete();
-        void contactRequestFailed(const QString &error);
-        void updateStatus(const QString& icon, const QString& status);
-
-    private slots:
-        void contactRequestComplete(long requestId, const QString& status);
-        void contactsLoaded();
-        void loadFailed(const QString& error);
-
     public:
+        void addContact(DatabaseContact& contact);
+        void addContacts(const DatabaseContactList& list);
         void close();
-        ContactManager *getContactManager() { return contactManager; }
-        Contacts *getContacts() { return contacts; }
-        static void initialize(const QString& account); // Throws DatabaseException
-        void open(const QString& account);              // Throws DatabaseException
-        void loadContacts();                            // Throws DatabaseException
-        void requestsAcknowledged(ContactRequests *acknowledged);
-        void requestContact(const ContactRequestOut& request);
+        static void createDatabase(const QString& account);
+        void deleteContact(unsigned id);
+        void getContacts(DatabaseContactList& list);
+        static void initialize(SessionState *state);
+        static ContactsDatabase *open(SessionState *state);
+        void updateContact(const DatabaseContact& contact);
 
     private:
-        void addPending();
-        bool contactExists(unsigned id);                    // Throws DatabaseException
-        void createContact(Contact& contact, const ContactRequestIn& request);
-        static void createDatabase(const QString& account); // Throws DatabaseException
+        bool contactExists(unsigned id);
+/*        void createContact(Contact& contact, const ContactRequestIn& request);
+        void insertContacts(const ServerContactList& contacts);
+        void loadServerContacts();
         void newContact(const ContactRequestIn& request);
+        void resolveContacts(const ServerContactList& serverContacts);
         void updateContact(const Contact& contact);
         void updateContact(Contact& contact, const ContactRequestIn& request);
-
+*/
     private:
         static bool once;
         SessionState *state;
         QSqlDatabase database;
-        Contacts *contacts;
-        ContactManager *contactManager;
-        Contact pending;
 
 };
 

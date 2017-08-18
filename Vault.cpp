@@ -126,8 +126,9 @@ void Vault::encodeVault(const std::string& passphrase) {
     }
 }
 
-void Vault::loadVault(const QString& accountName, const QString& passphrase) {
+void Vault::loadVault(const QString& account, const QString& passphrase) {
 
+    accountName = account;
     QFile vault(vaultPath + "/" + accountName);
     if (vault.open(QIODevice::ReadOnly)) {
         QByteArray bytes = vault.readAll();
@@ -164,13 +165,13 @@ void Vault::s2k(const std::string& passphrase) {
 
 }
 
-void Vault::storeVault(const QString& accountName, const QString& passphrase) {
+void Vault::storeVault(const QString& passphrase) {
 
     encodeVault(StringCodec(passphrase));
     QFile vault(vaultPath + "/" + accountName);
     if (vault.open(QIODevice::WriteOnly)) {
         ByteCodec codec(encoded);
-        vault.write(codec, codec.size());
+        vault.write(codec);
 
         vault.close();
     }

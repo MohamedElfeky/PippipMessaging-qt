@@ -2,77 +2,88 @@
 
 namespace Pippip {
 
-typedef NicknameList::iterator NicknameIter;
+static const Nickname EMPTY;
 
-Nicknames::Nicknames()
-: currentIndex(0) {
+Nicknames::Nicknames() {
+//: currentIndex(0) {
+}
+
+const Nickname& Nicknames::operator [](unsigned index) const {
+
+    return nicknameList[index];
+
+}
+
+Nickname& Nicknames::operator [](unsigned index) {
+
+    return nicknameList[index];
+
 }
 
 void Nicknames::append(const Nickname &nickname) {
 
-    nicknames.push_back(nickname);
+    nicknameList.push_back(nickname);
 
 }
 
 NicknameList::iterator Nicknames::begin() {
 
-    return nicknames.begin();
+    return nicknameList.begin();
 
 }
 
 NicknameList::const_iterator Nicknames::begin() const {
 
-    return nicknames.begin();
+    return nicknameList.begin();
 
 }
 
 void Nicknames::clear() {
 
-    nicknames.clear();
-
-}
-
-Nickname& Nicknames::current() {
-
-    return nicknames[currentIndex];
-
-}
-
-const Nickname& Nicknames::current() const {
-
-    return nicknames[currentIndex];
+    nicknameList.clear();
 
 }
 
 NicknameList::iterator Nicknames::end() {
 
-    return nicknames.end();
+    return nicknameList.end();
 
 }
 
 NicknameList::const_iterator Nicknames::end() const {
 
-    return nicknames.end();
+    return nicknameList.end();
+
+}
+
+void Nicknames::erase(const QString &nickname) {
+
+    NicknameList tmp;
+    for (auto nick : nicknameList) {
+        if (nick.entity.nickname != nickname) {
+            tmp.push_back(nick);
+        }
+    }
+    nicknameList.swap(tmp);
+
+}
+
+bool Nicknames::get(const QString &name, Nickname &nickname) {
+
+    for (auto nick : nicknameList) {
+        if (nick.entity.nickname == name) {
+            nickname = nick;
+            return true;
+        }
+    }
+
+    return false;
 
 }
 
 unsigned Nicknames::size() const {
 
-    return nicknames.size();
-
-}
-
-void Nicknames::remove(const QString &nickname) {
-
-    NicknameIter it = nicknames.begin();
-    bool removed = false;
-    while (!removed && it != nicknames.end()) {
-        if ((*it).entity.nickname == nickname) {
-            nicknames.erase(it);
-            removed = true;
-        }
-        ++it;
-    }
+    return nicknameList.size();
 
 }
 

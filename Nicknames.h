@@ -2,6 +2,7 @@
 #define NICKNAMES_H
 
 #include "Nickname.h"
+#include <map>
 
 namespace Pippip {
 
@@ -20,18 +21,14 @@ class Nicknames {
         NicknameList::iterator begin();
         NicknameList::const_iterator begin() const;
         void clear();
-        Nickname& current();
-        const Nickname& current() const;
         NicknameList::iterator end();
         NicknameList::const_iterator end() const;
-        unsigned getCurrentIndex() const { return currentIndex; }
-        void setCurrentIndex(unsigned index) { currentIndex = index; }
-        void remove(const QString& nickname);
+        void erase(const QString& nickname);
+        bool get(const QString& name, Nickname& nickname);
         unsigned size() const;
 
     private:
-        unsigned currentIndex;
-        NicknameList nicknames;
+        NicknameList nicknameList;
 
 };
 

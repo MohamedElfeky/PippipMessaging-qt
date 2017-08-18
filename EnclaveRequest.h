@@ -22,11 +22,12 @@ class EnclaveRequest : public PostPacket {
     public:
         QString getValue(const QString& name) const;
         void setRequestType(const QString& type);
-        void setValue(const QString& name, quint64 value);
-        void setValue(const QString& name, const QString& value);
-        void setValue(const QString& name, const QJsonObject& value);
-        void setValue(const QString& name, const QJsonArray& value);
-        void setValue(const QString& name, const QByteArray& value);
+        void setLongValue(const QString& name, quint64 value);
+        void setBoolValue(const QString& name, bool value);
+        void setStringValue(const QString& name, const QString& value);
+        void setObjectValue(const QString& name, const QJsonObject& value);
+        void setArrayValue(const QString& name, const QJsonArray& value);
+        void setBinaryValue(const QString& name, const QByteArray& value);
 
     public:
         QJsonObject *getJson() const;

@@ -24,6 +24,8 @@
 
 namespace Pippip {
 
+class SessionState;
+
 class MessageDatabase {
 
     public:
@@ -37,7 +39,7 @@ class MessageDatabase {
     public:
         bool addMessage(const Message& message);
         void close();
-        static bool create(const QString& account);
+        static bool create(SessionState *state);
         const QString& getLastError() const { return lastError; }
         static void initialize(/* SessionState *state */);    // Throws DatabaseException
         bool open(const QString& account);

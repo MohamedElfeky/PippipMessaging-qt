@@ -25,6 +25,8 @@
 #include "Nicknames.h"
 #include "Contacts.h"
 #include "Constants.h"
+#include "RequestContactTask.h"
+#include "AddContactsTask.h"
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
@@ -38,6 +40,7 @@ ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, Q
   state(s) {
 
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(requestContact()));
+    connect(ui->queryButton, SIGNAL(clicked()), this, SLOT(queryContact()));
 
     nicknameRE.setPattern("[A-z]+[A-z0-9 _\\-]{5,}");
     nicknameRE.setPatternOptions(QRegularExpression::OptimizeOnFirstUsageOption);
@@ -49,13 +52,6 @@ ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, Q
 
     requestHeadings << "Status" << "Requesting ID" << "Requested ID Type" << "Requested ID";
     contactHeadings << "Status" << "My Nickname" << "Contact Nickname" << "Contact Public ID";
-
-}
-
-void ContactHandler::addContactFailed(const QString &error) {
-
-    ui->contactsStatusLabel->setText(Constants::REDX_ICON + "Add contact failed - " + error);
-    qApp->processEvents();
 
 }
 
@@ -85,13 +81,14 @@ int ContactHandler::columnGeometry() const {
     return tableWidth - columnWidths;
 
 }
-
+/*
 void ContactHandler::contactRequestComplete() {
 
     loadTable();
     ui->addButton->setEnabled(true);
     ui->pastePushButton->setEnabled(false);
-    ui->contactsStatusLabel->setText(Constants::CHECK_ICON + "Contact requested");
+    ui->statusIconLabel->setText(Constants::CHECK_ICON);
+    ui->statusLabel->setText("Contact requested");
     qApp->processEvents();
 
 }
@@ -101,12 +98,12 @@ void ContactHandler::contactRequestFailed(const QString &error) {
     loadTable();
     ui->addButton->setEnabled(true);
     ui->pastePushButton->setEnabled(false);
-    ui->contactsStatusLabel->setText(Constants::REDX_ICON + "Contact request failed - "
-                                     + error);
+    ui->statusIconLabel->setText(Constants::REDX_ICON);
+    ui->statusLabel->setText("Contact request failed - " + error);
     qApp->processEvents();
 
 }
-
+*/
 /*
  * Invoked by key filter signal on enter or return pressed.
  */
@@ -117,7 +114,7 @@ void ContactHandler::idTypeSelected(Qt::Key) {
     requestedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     requestedLabel->setMargin(5);
     ui->contactsTableWidget->setCellWidget(0, 2, requestedLabel);
-    if (type == "Public ID") {
+    if (type == Constants::PUBLIC_ID) {
         requestedType = "P";
     }
     else {
@@ -137,7 +134,6 @@ void ContactHandler::idTypeSelected(Qt::Key) {
     ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui->contactsTableWidget->setColumnWidth(3, columnGeometry());
-    //requestedIdLineEdit->setFixedWidth(sectionWidth);
     requestedIdLineEdit->setFocus();
 
 }
@@ -145,13 +141,13 @@ void ContactHandler::idTypeSelected(Qt::Key) {
 void ContactHandler::loadTable(int startingRow) {
 
     ui->contactsTableWidget->clearContents();
-    ui->contactsTableWidget->setRowCount(contacts->size() + startingRow);
+    ui->contactsTableWidget->setRowCount(state->contacts->size() + startingRow);
     if (startingRow == 0) {
         ui->contactsTableWidget->setHorizontalHeaderLabels(contactHeadings);
     }
 
     int row = startingRow;
-    for (const auto contact : *contacts) {
+    for (const auto contact : *state->contacts) {
         QLabel *statusLabel = new QLabel(contact.status);
         statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         statusLabel->setMargin(5);
@@ -172,10 +168,52 @@ void ContactHandler::loadTable(int startingRow) {
         puidLabel->setMargin(5);
         ui->contactsTableWidget->setCellWidget(row++, 3, puidLabel);
     }
-
-    if (startingRow == 0 && contacts->size() > 0) {
+    if (startingRow > 0) {
         ui->contactsTableWidget->selectRow(0);
     }
+
+}
+
+void ContactHandler::queryContact() {
+/*
+    int row = ui->contactsTableWidget->currentRow();
+    long requestId = (*contacts)[row].requestId;
+    //contactsDatabase->getContactManager()->queryContact(requestId, true);
+*/
+}
+/*
+void ContactHandler::queryFailed(const QString &error) {
+
+    ui->statusIconLabel->setText(Constants::REDX_ICON);
+    ui->statusLabel->setText(error);
+    qApp->processEvents();
+
+}
+*/
+void ContactHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
+
+    QString status;
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::LOAD_NICKNAMES_TASK) {
+        status = "Nicknames loaded";
+        ui->addButton->setEnabled(state->nicknames->size() > 0);
+    }
+    else if (taskName == Constants::REQUEST_CONTACT_TASK) {
+        Pippip::RequestContactTask *reqTask = dynamic_cast<Pippip::RequestContactTask*>(task);
+        Pippip::AddContactsTask *addTask = new Pippip::AddContactsTask(state, this);
+        addTask->addContact(reqTask->getServerContact());
+        connect(addTask, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+        connect(addTask, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+        status = "Contact requested";
+    }
+    else if (taskName == Constants::ADD_CONTACTS_TASK) {
+        status = "Contacts uploaded";
+    }
+
+    updateStatus(Constants::CHECK_ICON, status);
+    task->deleteLater();
 
 }
 
@@ -195,10 +233,10 @@ void ContactHandler::requestContact() {
 
     requestingIdComboBox = new QComboBox;
     QStringList items;
-    for (auto nickname : *nicknames) {
+    for (auto nickname : *state->nicknames) {
         items << nickname.entity.nickname;
     }
-    items << "Public ID";
+    items << Constants::MY_PUBLIC_ID;
     requestingIdComboBox->addItems(items);
     KeyFilter *keyFilter = new KeyFilter(requestingIdComboBox);
     keyFilter->addKey(Qt::Key_Enter);
@@ -207,11 +245,28 @@ void ContactHandler::requestContact() {
     requestingIdComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(requestingIdSelected(Qt::Key)));
     ui->contactsTableWidget->setCellWidget(0, 1, requestingIdComboBox);
-    // Do this here so the event doesn't fire when the value is changed above.
-    //connect(requestingComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestingSet(QString)));
     ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
     requestingIdComboBox->setFocus();
+
+}
+
+void ContactHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
+
+    QString status;
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::LOAD_NICKNAMES_TASK) {
+        status = "Failed to load nicknames - " + task->getError();
+    }
+    else if (taskName == Constants::REQUEST_CONTACT_TASK) {
+        status = "Contact request failed - " + task->getError();
+    }
+    else if (taskName == Constants::ADD_CONTACTS_TASK) {
+        status = "Failed to upload contacts - " + task->getError();
+    }
+
+    updateStatus(Constants::REDX_ICON, status);
+    task->deleteLater();
 
 }
 
@@ -228,7 +283,13 @@ void ContactHandler::requestedIdEdited() {
     workingRequest.requestedId = requestedIdLineEdit->text();
     workingRequest.idTypes = requestingType + requestedType;
 
-    contactsDatabase->requestContact(workingRequest);
+    Pippip::RequestContactTask *task = new Pippip::RequestContactTask(state, this);
+    task->setRequest(workingRequest);
+    connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+    connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+    task->doRequest();
 
 }
 
@@ -242,7 +303,7 @@ void ContactHandler::requestingIdSelected(Qt::Key) {
     requestingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     requestingLabel->setMargin(5);
     ui->contactsTableWidget->setCellWidget(0, 1, requestingLabel);
-    if (id == "Public ID") {
+    if (id == Constants::MY_PUBLIC_ID) {
         workingRequest.requestingId = state->publicId;
         requestingType = "P";
     }
@@ -253,7 +314,7 @@ void ContactHandler::requestingIdSelected(Qt::Key) {
 
     idTypeComboBox = new QComboBox;
     QStringList items;
-    items << "Nickname" << "Public ID";
+    items << Constants::NICKNAME_ID << Constants::PUBLIC_ID;
     idTypeComboBox->addItems(items);
     KeyFilter *keyFilter = new KeyFilter(idTypeComboBox);
     keyFilter->addKey(Qt::Key_Enter);
@@ -262,30 +323,25 @@ void ContactHandler::requestingIdSelected(Qt::Key) {
     idTypeComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(idTypeSelected(Qt::Key)));
     ui->contactsTableWidget->setCellWidget(0, 2, idTypeComboBox);
-    // Do this here so the event doesn't fire when the value is changed above.
-    //connect(requestedComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(requestedSet(QString)));
     ui->contactsTableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->contactsTableWidget->horizontalHeader()->setStretchLastSection(true);
     idTypeComboBox->setFocus();
 
 }
-
+/*
 void ContactHandler::setContactsDatabase(Pippip::ContactsDatabase *database) {
 
     contactsDatabase = database;
-    Pippip::ContactManager *contactManager = contactsDatabase->getContactManager();
-    connect(contactManager, SIGNAL(contactRequestFailed(QString)),
-            this, SLOT(contactRequestFailed(QString)));
-    connect(contactsDatabase, SIGNAL(addContactFailed(QString)), this, SLOT(addContactFailed(QString)));
-    contacts = contactsDatabase->getContacts();
-    ui->contactsStatusLabel->setText(Constants::CHECK_ICON + "Contacts loaded");
+    ui->statusIconLabel->setText(Constants::CHECK_ICON);
+    ui->statusLabel->setText("Contacts loaded");
     qApp->processEvents();
 
 }
+*/
+void ContactHandler::updateStatus(const QString &icon, const QString &status) {
 
-void ContactHandler::setNicknames(Pippip::Nicknames *nicks) {
-
-    nicknames = nicks;
-    ui->addButton->setEnabled(true);
+    ui->statusIconLabel->setText(icon);
+    ui->statusLabel->setText(status);
+    qApp->processEvents();
 
 }

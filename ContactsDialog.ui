@@ -41,7 +41,7 @@
      <x>10</x>
      <y>10</y>
      <width>670</width>
-     <height>271</height>
+     <height>241</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -113,19 +113,6 @@
      </property>
      <property name="text">
       <string>-</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="contactsStatusLabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>210</y>
-       <width>591</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Loading contacts</string>
      </property>
     </widget>
     <widget class="QPushButton" name="suspendButton">
@@ -228,19 +215,6 @@
      <column/>
      <column/>
     </widget>
-    <widget class="QLabel" name="requestStatusLabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>210</y>
-       <width>541</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Loading requests</string>
-     </property>
-    </widget>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
@@ -278,6 +252,35 @@
      </layout>
     </widget>
    </widget>
+  </widget>
+  <widget class="QLabel" name="statusLabel">
+   <property name="geometry">
+    <rect>
+     <x>43</x>
+     <y>260</y>
+     <width>631</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Loading requests</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="statusIconLabel">
+   <property name="geometry">
+    <rect>
+     <x>14</x>
+     <y>260</y>
+     <width>21</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::RichText</enum>
+   </property>
   </widget>
  </widget>
  <resources>

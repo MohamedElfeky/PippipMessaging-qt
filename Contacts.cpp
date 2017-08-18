@@ -1,5 +1,8 @@
 #include "Contacts.h"
-#include "StringCodec.h"
+#include "ContactAdapter.h"
+//#include "StringCodec.h"
+//#include "Nicknames.h"
+//#include "Contacts.h"
 
 namespace Pippip {
 
@@ -18,6 +21,12 @@ const Contact& Contacts::operator [] (unsigned contactId) const {
     else {
         return EMPTY;
     }
+
+}
+
+const Contact& Contacts::operator [] (int index) const {
+
+    return contactList[index];
 
 }
 
@@ -109,6 +118,14 @@ bool Contacts::fromRequestId(long long requestId, Contact &contact) const {
     }
 
     return false;
+
+}
+
+void Contacts::load(const DatabaseContactList &list, SessionState *state) {
+
+    for (auto contact : list) {
+        contactList.push_back(ContactAdapter(contact).toLocal(state));
+    }
 
 }
 

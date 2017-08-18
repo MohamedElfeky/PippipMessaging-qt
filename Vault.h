@@ -38,7 +38,7 @@ class Vault : public SessionState {
 
     public:
         void loadVault(const QString& accountName, const QString& passphrase);
-        void storeVault(const QString& accountName, const QString& passphrase);
+        void storeVault(const QString& passphrase);
 
     private:
         void encodeVault(const std::string& passphrase);

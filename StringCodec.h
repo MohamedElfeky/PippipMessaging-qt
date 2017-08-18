@@ -29,11 +29,11 @@ class StringCodec {
     public:
         StringCodec(const QString& qtString);
         StringCodec(const std::string& stdString);
-        StringCodec(const char *str);   // Null terminated string
+        explicit StringCodec(const char *str);   // Null terminated string
         ~StringCodec();
 
     public:
-        operator const char* () const { return cstr; }
+        explicit operator const char* () const { return cstr; }
         operator const QString& () const { return qtString; }
         operator const std::string& () const { return stdString; }
 

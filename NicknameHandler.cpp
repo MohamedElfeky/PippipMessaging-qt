@@ -18,11 +18,14 @@
 
 #include "NicknameHandler.h"
 #include "ui_NicknamesDialog.h"
-#include "NicknameManager.h"
 #include "Nicknames.h"
-#include "EnclaveResponse.h"
+#include "AddNicknameTask.h"
+#include "LoadNicknamesTask.h"
+#include "DeleteNicknameTask.h"
+#include "UpdateNicknameTask.h"
 #include "Constants.h"
 #include "KeyFilter.h"
+#include "SessionState.h"
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
@@ -32,7 +35,8 @@ static const QString POLICY_NAMES[] = { "Public", "Friends", "Friends of Friends
 
 NicknameHandler::NicknameHandler(Ui::NicknamesDialog *u, QObject *parent)
 : QObject(parent),
-  firstLoad(true),
+  nicknamesValid(false),
+  selectedRow(0),
   ui(u) {
 
     connect(ui->addNicknameButton, SIGNAL(clicked()), this, SLOT(addNickname()));
@@ -52,16 +56,12 @@ void NicknameHandler::addNickname() {
     // Grow the table widget.
     int editRow = ui->nicknameTableWidget->rowCount();
     ui->nicknameTableWidget->setRowCount(editRow + 1);
-    // Add a provisional nickname.
-    Pippip::Nickname nickname;
-    nicknames->append(nickname);
-    // This is the only place in NicknameHandler that setCurrentIndex should be called.
-    nicknames->setCurrentIndex(editRow);
+    loadTable(1);
     // Set up the editing widget.
     nicknameLineEdit = new QLineEdit;
     nicknameLineEdit->setValidator(nicknameValidator);
     connect(nicknameLineEdit, SIGNAL(editingFinished()), this, SLOT(nicknameEdited()));
-    ui->nicknameTableWidget->setCellWidget(editRow, 0, nicknameLineEdit);
+    ui->nicknameTableWidget->setCellWidget(0, 0, nicknameLineEdit);
 
     nicknameLineEdit->setFocus();
 
@@ -69,26 +69,27 @@ void NicknameHandler::addNickname() {
 
 void NicknameHandler::deleteNickname() {
 
-    unsigned currentIndex = nicknames->getCurrentIndex();
+    int row = ui->nicknameTableWidget->currentRow();
     QLabel *nicknameLabel =
-            dynamic_cast<QLabel*>(ui->nicknameTableWidget->cellWidget(currentIndex, 0));
-    working = nicknameLabel->text();
-    ui->nicknameTableWidget->removeRow(currentIndex);
-    nicknameManager->deleteNickname(working);
+            dynamic_cast<QLabel*>(ui->nicknameTableWidget->cellWidget(row, 0));
+    QString nickname = nicknameLabel->text();
+    Pippip::DeleteNicknameTask *task = new Pippip::DeleteNicknameTask(state, this);
+    task->setNickname(nickname);
+    connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+    connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+    task->doRequest();
 
 }
 
 void NicknameHandler::editPolicy(int row, int /* column */) {
 
     newItem = false;
-    assert(static_cast<unsigned>(row) == nicknames->getCurrentIndex());
-    QLabel *nicknameLabel = dynamic_cast<QLabel*>(ui->nicknameTableWidget->cellWidget(row, 0));
-    if (nicknameLabel != 0) {
-        working = nicknameLabel->text();
-    }
     ui->addNicknameButton->setEnabled(false);
     ui->deleteNicknameButton->setEnabled(false);
-    undo = nicknames->current();
+    selectedRow = row;
+    working = (*state->nicknames)[row];
     policyComboBox = new QComboBox;
     QStringList items;
     items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
@@ -101,7 +102,7 @@ void NicknameHandler::editPolicy(int row, int /* column */) {
     connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(policyEdited(Qt::Key)));
     ui->nicknameTableWidget->setCellWidget(row, 1, policyComboBox);
     for (int index = 0; index < 3; ++index) {
-        if (nicknames->current().policy == Constants::POLICIES[index]) {
+        if ((*state->nicknames)[row].policy == Constants::POLICIES[index]) {
             policyComboBox->setCurrentIndex(index);
         }
     }
@@ -131,71 +132,50 @@ const QString& NicknameHandler::getPolicyName(const QString& policy) const {
 
 }
 
-/*
- * This synchronizes the table widget to the nicknames list.
- */
-void NicknameHandler::loadTable() {
+void NicknameHandler::loadNicknames(Pippip::SessionState *st) {
+
+    state = st;
+    Pippip::LoadNicknamesTask *task = new Pippip::LoadNicknamesTask(state, this);
+    connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+    connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+    task->doRequest();
+
+}
+
+void NicknameHandler::loadTable(int start) {
 
     ui->nicknameTableWidget->clearContents();
-    ui->nicknameTableWidget->setRowCount(nicknames->size());
-    int row = 0;
-    for (auto nickname : *nicknames) {
-        QLabel *nameLabel = new QLabel(nickname.entity.nickname);
-        nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
-        QLabel *policyLabel = new QLabel(getPolicyName(nickname.policy));
-        policyLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        ui->nicknameTableWidget->setCellWidget(row++, 1, policyLabel);
+    if (state->nicknames->size() > 0) {
+        ui->nicknameTableWidget->setRowCount(state->nicknames->size() + start);
+        int row = start;
+        for (auto nickname : *state->nicknames) {
+            QLabel *nameLabel = new QLabel(nickname.entity.nickname);
+            nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+            ui->nicknameTableWidget->setCellWidget(row, 0, nameLabel);
+            QLabel *policyLabel = new QLabel(getPolicyName(nickname.policy));
+            policyLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+            ui->nicknameTableWidget->setCellWidget(row++, 1, policyLabel);
+        }
+
+        if (start > 0) {
+            ui->nicknameTableWidget->selectRow(0);
+        }
+        else {
+            ui->nicknameTableWidget->selectRow(selectedRow);
+        }
     }
-    ui->nicknameTableWidget->selectRow(nicknames->getCurrentIndex());
     ui->addNicknameButton->setEnabled(true);
-
-}
-
-void NicknameHandler::nicknameAdded(const QString& status) {
-
-    if (status == "added") {
-        ui->statusLabel->setText(Constants::CHECK_ICON + working + " added");
-    }
-    else if (status == "exists") {
-        ui->statusLabel->setText(Constants::REDBAR_ICON + working + " exists");
-        nicknames->remove(working); // Remove the provisional nickname.
-    }
-    else {
-        ui->statusLabel->setText(Constants::CAUTION_ICON
-                                 + "Failed to add nickname - invalid server response");
-        nicknames->remove(working); // Remove the provisional nickname.
-    }
-    loadTable();
-    qApp->processEvents();
-
-}
-
-void NicknameHandler::nicknameDeleted(const QString& status) {
-
-    if (status == "deleted") {
-        ui->statusLabel->setText(Constants::CHECK_ICON + working + " deleted");
-        nicknames->remove(working);
-    }
-    else if (status == "not found") {   // This should probably never happen.
-        ui->statusLabel->setText(Constants::CAUTION_ICON + working + " not found");
-    }
-    else {
-        ui->statusLabel->setText(Constants::CAUTION_ICON
-                                 + "Failed to delete nickname - invalid server response");
-    }
-    qApp->processEvents();
 
 }
 
 void NicknameHandler::nicknameEdited() {
 
-    working = nicknameLineEdit->text();
-    nicknames->current().entity.nickname = working;
-    QLabel *nameLabel = new QLabel(working);
+    working.entity.nickname = nicknameLineEdit->text();
+    QLabel *nameLabel = new QLabel(working.entity.nickname);
     nameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    unsigned currentIndex = nicknames->getCurrentIndex();
-    ui->nicknameTableWidget->setCellWidget(currentIndex, 0, nameLabel);
+    ui->nicknameTableWidget->setCellWidget(0, 0, nameLabel);
 
     policyComboBox = new QComboBox;
     QStringList items;
@@ -207,31 +187,8 @@ void NicknameHandler::nicknameEdited() {
     keyFilter->addKey(Qt::Key_Tab);
     policyComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(policyEdited(Qt::Key)));
-    ui->nicknameTableWidget->setCellWidget(currentIndex, 1, policyComboBox);
-    for (int index = 0; index < 3; ++index) {
-        if (nicknames->current().policy == Constants::POLICIES[index]) {
-            policyComboBox->setCurrentIndex(index);
-        }
-    }
+    ui->nicknameTableWidget->setCellWidget(0, 1, policyComboBox);
     policyComboBox->setFocus();
-
-}
-/*
-void NicknameHandler::nicknameNotFound() {
-
-    ui->statusLabel->setText(working + " not found");
-    qApp->processEvents();
-
-}
-*/
-void NicknameHandler::nicknamesLoaded() {
-
-    loadTable();
-    if (firstLoad) {
-        ui->statusLabel->setText(Constants::CHECK_ICON + "Nicknames loaded");
-        qApp->processEvents();
-        firstLoad = false;
-    }
 
 }
 
@@ -239,71 +196,91 @@ void NicknameHandler::policyEdited(Qt::Key) {
 
     QString policyName = policyComboBox->currentText();
     QString policy = getPolicy(policyName);
-    nicknames->current().policy = policy;
 
     if (newItem) {
-        // TODO Check for empty whitelist.
-        nicknameManager->addNickname(nicknames->current());
         newItem = false;
+        Pippip::AddNicknameTask *task = new Pippip::AddNicknameTask(state, this);
+        working.policy = policy;
+        task->setNickname(working);
+        connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+        connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+        task->doRequest();
     }
     else {
         QLabel *policyLabel = new QLabel(policyName);
         policyLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        unsigned currentIndex = nicknames->getCurrentIndex();
-        ui->nicknameTableWidget->setCellWidget(currentIndex, 1, policyLabel);
-        nicknameManager->updatePolicy(working, policy);
+        ui->nicknameTableWidget->setCellWidget(selectedRow, 1, policyLabel);
+        Pippip::UpdateNicknameTask *task = new Pippip::UpdateNicknameTask(state, this);
+        task->setUpdateType("policy");
+        task->setNickname(working.entity.nickname);
+        task->setPolicy(policy);
+        connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+        connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+                this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+        task->doRequest();
     }
     ui->addNicknameButton->setEnabled(true);
     ui->nicknameTableWidget->setFocus();
 
 }
 
-void NicknameHandler::policyUpdated(const QString& status) {
+void NicknameHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
 
-    if (status == "updated") {
-        ui->statusLabel->setText(Constants::CHECK_ICON + working + " contact policy updated");
+    ui->statusIconLabel->setText(Constants::CHECK_ICON);
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::ADD_NICKNAME_TASK) {
+        ui->statusLabel->setText(working.entity.nickname + " added");
+        selectedRow = state->nicknames->size() - 1;
     }
-    else if (status == "not found") {
-        ui->statusLabel->setText(Constants::REDX_ICON
-                                 + "Policy update failed  - Nickname not found");
-        nicknames->current() = undo;
+    else if (taskName == Constants::LOAD_NICKNAMES_TASK) {
+        ui->statusLabel->setText("Nicknames loaded");
+        nicknamesValid = true;
+        selectedRow = 0;
     }
-    else if (status == "mismatch") {
-        ui->statusLabel->setText(Constants::REDX_ICON
-                                 + "Policy update failed - Nickname to ID mismatch");
-        nicknames->current() = undo;
+    else if (taskName == Constants::DELETE_NICKNAME_TASK) {
+        Pippip::DeleteNicknameTask *delTask =
+                dynamic_cast<Pippip::DeleteNicknameTask*>(task);
+        ui->statusLabel->setText(delTask->getNickname() + " deleted");
+        selectedRow = 0;
     }
-    else {
-        ui->statusLabel->setText(Constants::REDX_ICON + "Policy update failed - Invalid server response");
-        nicknames->current() = undo;
+    else if (taskName == Constants::UPDATE_NICKNAME_TASK) {
+        Pippip::UpdateNicknameTask *delTask =
+                dynamic_cast<Pippip::UpdateNicknameTask*>(task);
+        ui->statusLabel->setText(delTask->getNickname() + " updated");
     }
+
     loadTable();
     qApp->processEvents();
+    task->deleteLater();
 
 }
 
-void NicknameHandler::setManager(Pippip::NicknameManager *manager) {
+void NicknameHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
 
-    nicknameManager = manager;
-    nicknames = nicknameManager->getNicknames();
-
-}
-
-void NicknameHandler::taskFailed(const QString& taskName) {
-
-    if (taskName == Constants::ADD_NICKNAME) {
-        nicknames->remove(working);
+    ui->statusIconLabel->setText(Constants::REDX_ICON);
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::ADD_NICKNAME_TASK) {
+        ui->statusLabel->setText(QString("Failed to add nickname - ") + task->getError());
+        selectedRow = 0;
     }
-    if (taskName == Constants::UPDATE_CONTACT_POLICY) {
-        nicknames->current() = undo;
+    else if (taskName == Constants::LOAD_NICKNAMES_TASK) {
+        ui->statusLabel->setText("Failed to load nicknames");
+        selectedRow = 0;
     }
-    loadTable();
+    else if (taskName == Constants::DELETE_NICKNAME_TASK) {
+        ui->statusLabel->setText(QString("Failed to delete nickname - ") + task->getError());
+        selectedRow = 0;
+    }
+    else if (taskName == Constants::UPDATE_NICKNAME_TASK) {
+        ui->statusLabel->setText(QString("Failed to update contact policy - ")
+                                 + task->getError());
+        loadTable();
+    }
+
+    qApp->processEvents();
+    task->deleteLater();
 
 }
-/*
-void NicknameHandler::whitelistUpdated(const Pippip::EntityList &whitelist) {
-
-    working.whitelist = whitelist;
-
-}
-*/

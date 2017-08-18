@@ -35,14 +35,16 @@ void RequestHandler::acceptContact() {
 
 void RequestHandler::ackFailed(const QString &error) {
 
-    ui->requestStatusLabel->setText(Constants::REDX_ICON + "Acknowledgement failed - " + error);
+    ui->statusIconLabel->setText(Constants::REDX_ICON);
+    ui->statusLabel->setText("Acknowledgement failed - " + error);
     qApp->processEvents();
 
 }
 
 void RequestHandler::loadFailed(const QString &error) {
 
-    ui->requestStatusLabel->setText(Constants::REDX_ICON + "Request load failed - " + error);
+    ui->statusIconLabel->setText(Constants::REDX_ICON);
+    ui->statusLabel->setText("Request load failed - " + error);
     qApp->processEvents();
 
 }
@@ -97,7 +99,8 @@ void RequestHandler::requestsAcknowledged() {
 void RequestHandler::requestsLoaded() {
 
     loadTable();
-    ui->requestStatusLabel->setText(Constants::CHECK_ICON + "Requests loaded");
+    ui->statusIconLabel->setText(Constants::CHECK_ICON);
+    ui->statusLabel->setText("Requests loaded");
     qApp->processEvents();
 
 }

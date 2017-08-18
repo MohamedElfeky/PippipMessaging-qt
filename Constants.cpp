@@ -19,11 +19,14 @@
 #include "Constants.h"
 
 // Task names
-const QString Constants::ADD_NICKNAME = "Add Nickname";
-const QString Constants::DELETE_NICKNAME = "Delete Nickname";
-const QString Constants::LOAD_NICKNAMES = "Load Nicknames";
-const QString Constants::UPDATE_CONTACT_POLICY = "Update Contact Policy";
-const QString Constants::UPDATE_WHITELIST = "Update Friends List";
+const QString Constants::ADD_NICKNAME_TASK = "addNickname";
+const QString Constants::ADD_CONTACTS_TASK = "addContacts";
+const QString Constants::DELETE_NICKNAME_TASK = "deleteNickname";
+const QString Constants::LOAD_NICKNAMES_TASK = "getNicknames";
+const QString Constants::UPDATE_NICKNAME_TASK = "updateNickname";
+const QString Constants::UPDATE_CONTACT_TASK = "updateContact";
+const QString Constants::GET_CONTACTS_TASK = "getContacts";
+const QString Constants::REQUEST_CONTACT_TASK = "requestContact";
 
 // Policy names
 const QString Constants::PUBLIC_POLICY = "Public";
@@ -43,3 +46,8 @@ const QString Constants::NICKNAME_NICKNAME = "NN";
 const QString Constants::NICKNAME_PUBLICID = "NP";
 const QString Constants::PUBLICID_NICKNAME = "PN";
 const QString Constants::PUBLICID_PUBLICID = "PP";
+
+// Display constants
+const QString Constants::MY_PUBLIC_ID = "My Public ID";
+const QString Constants::PUBLIC_ID = "Public ID";
+const QString Constants::NICKNAME_ID = "Nickname";

@@ -30,6 +30,8 @@ namespace Ui {
 namespace Pippip {
     class NicknameManager;
     class Nicknames;
+    class EnclaveRequestTask;
+    class SessionState;
 }
 
 class QComboBox;
@@ -43,41 +45,36 @@ class NicknameHandler : public QObject {
         explicit NicknameHandler(Ui::NicknamesDialog *ui, QObject *parent = 0);
         ~NicknameHandler() {}
 
-    public slots:
-        void nicknameAdded(const QString& status);
-        void nicknameDeleted(const QString& status);
-        void nicknamesLoaded();
-        //void nicknameNotFound();
-        void policyUpdated(const QString& response);
-        void taskFailed(const QString& taskName);
-
     private slots:
         void addNickname();
         void deleteNickname();
         void editPolicy(int row, int column);
         void nicknameEdited();
         void policyEdited(Qt::Key);
+        void requestComplete(Pippip::EnclaveRequestTask *task);
+        void requestFailed(Pippip::EnclaveRequestTask *task);
 
     public:
-        void setManager(Pippip::NicknameManager *manager);
+        void loadNicknames(Pippip::SessionState *state);
+        void loadTable(int start = 0);
+        int getSelectedRow() const { return selectedRow; }
+        void setSelectedRow(int row) { selectedRow = row; }
 
     private:
         const QString& getPolicy(const QString& name) const;
         const QString& getPolicyName(const QString& policy) const;
-        void loadTable();
 
     private:
-        bool firstLoad;
+        bool nicknamesValid;
         bool newItem;
+        int selectedRow;
         Ui::NicknamesDialog *ui;
         QComboBox *policyComboBox;
         QLineEdit *nicknameLineEdit;
         QRegularExpression nicknameRE;
         QRegularExpressionValidator *nicknameValidator;
-        Pippip::NicknameManager *nicknameManager;
-        Pippip::Nicknames *nicknames;
-        QString working;
-        Pippip::Nickname undo;
+        Pippip::SessionState *state;
+        Pippip::Nickname working;
 
 };
 

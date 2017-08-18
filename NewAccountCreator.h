@@ -71,7 +71,6 @@ class NewAccountCreator : public SessionTask {
         bool timedOut;
         bool responseComplete;
         bool finalComplete;
-        QString accountName;
         QString passphrase;
         NewAccountDialog *dialog;
         ParameterGenerator *generator;

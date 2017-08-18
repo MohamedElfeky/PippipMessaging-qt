@@ -28,11 +28,14 @@ class Constants
 
     public:
         // Task names
-        static const QString ADD_NICKNAME;
-        static const QString DELETE_NICKNAME;
-        static const QString LOAD_NICKNAMES;
-        static const QString UPDATE_CONTACT_POLICY;
-        static const QString UPDATE_WHITELIST;
+        static const QString ADD_NICKNAME_TASK;
+        static const QString ADD_CONTACTS_TASK;
+        static const QString DELETE_NICKNAME_TASK;
+        static const QString LOAD_NICKNAMES_TASK;
+        static const QString UPDATE_NICKNAME_TASK;
+        static const QString GET_CONTACTS_TASK;
+        static const QString UPDATE_CONTACT_TASK;
+        static const QString REQUEST_CONTACT_TASK;
 
         // Policy names
         static const QString PUBLIC_POLICY;
@@ -52,6 +55,11 @@ class Constants
         static const QString NICKNAME_PUBLICID;
         static const QString PUBLICID_NICKNAME;
         static const QString PUBLICID_PUBLICID;
+
+        // Display constants
+        static const QString MY_PUBLIC_ID;
+        static const QString PUBLIC_ID;
+        static const QString NICKNAME_ID;
 
 };
 

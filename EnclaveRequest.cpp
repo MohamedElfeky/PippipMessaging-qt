@@ -32,38 +32,44 @@ QString EnclaveRequest::getValue(const QString& name) const {
 
 }
 
-void EnclaveRequest::setRequestType(const QString &type) {
+void EnclaveRequest::setBoolValue(const QString& name, bool value) {
 
-    (*request)["requestType"] = type;
+    (*request)[name] = value;
 
 }
 
-void EnclaveRequest::setValue(const QString &name, quint64 value) {
+void EnclaveRequest::setLongValue(const QString &name, quint64 value) {
 
     // Derp
     (*request)[name] = static_cast<qint64>(value);
 
 }
 
-void EnclaveRequest::setValue(const QString& name, const QString& value) {
+void EnclaveRequest::setRequestType(const QString &type) {
+
+    (*request)["requestType"] = type;
+
+}
+
+void EnclaveRequest::setStringValue(const QString& name, const QString& value) {
 
     (*request)[name] = value;
 
 }
 
-void EnclaveRequest::setValue(const QString& name, const QJsonObject& value) {
+void EnclaveRequest::setObjectValue(const QString& name, const QJsonObject& value) {
 
     (*request)[name] = value;
 
 }
 
-void EnclaveRequest::setValue(const QString& name, const QJsonArray& value) {
+void EnclaveRequest::setArrayValue(const QString& name, const QJsonArray& value) {
 
     (*request)[name] = value;
 
 }
 
-void EnclaveRequest::setValue(const QString &name, const QByteArray &value) {
+void EnclaveRequest::setBinaryValue(const QString &name, const QByteArray &value) {
 
     (*request)[name] = QString(value.toHex());
 

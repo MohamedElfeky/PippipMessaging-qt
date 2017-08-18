@@ -38,6 +38,7 @@ class RequestHandler : public QObject {
         void loadTable();
 
     public:
+        void queryRequest(long long requestId);
         void loadRequests();
 
     private:

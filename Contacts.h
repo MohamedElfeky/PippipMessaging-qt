@@ -6,6 +6,8 @@
 
 namespace Pippip {
 
+class SessionState;
+
 class Contacts {
 
     public:
@@ -14,7 +16,7 @@ class Contacts {
 
     public:
         const Contact& operator [] (unsigned contactId) const;
-        Contact& operator [] (long long requestId) const;
+        const Contact& operator [] (int index) const;
         const Contact& operator [] (const QString& nickname) const;
 
     public:
@@ -31,6 +33,7 @@ class Contacts {
         void fill(const Contacts& other);
         bool fromPublicId(const QString& publicId, Contact& contact) const;
         bool fromRequestId(long long requestId, Contact& contact) const;
+        void load(const DatabaseContactList& list, SessionState *state);
         void remove(const Contact& contact);
         void replace(const Contact& contact);
         unsigned size() const;

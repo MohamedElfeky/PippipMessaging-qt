@@ -83,7 +83,6 @@ class Authenticator : public SessionTask {
         bool timedOut;
         LoginDialog *dialog;
         Vault *vault;
-        QString account;
 
 };
 

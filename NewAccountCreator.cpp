@@ -26,6 +26,8 @@
 #include "NewAccountFinal.h"
 #include "Vault.h"
 #include "VaultException.h"
+#include "DatabaseException.h"
+#include "ContactsDatabase.h"
 #include "MessageDatabase.h"
 #include <QMessageBox>
 #include <QApplication>
@@ -76,12 +78,11 @@ void NewAccountCreator::addAccount(const QString& newUser) {
 
 void NewAccountCreator::createNewAccount(const QString &name, const QString &pass) {
 
-    accountName = name;
     passphrase = pass;
 
     emit updateInfo("Generating account parameters");
 
-    generator->generateParameters(accountName.toUtf8().toStdString());
+    generator->generateParameters(name);
 
     emit incrementProgress(20);
     emit updateInfo("Contacting the server");
@@ -126,14 +127,18 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
             requestFailed(handler->getError());
         }
         else if (final) {
-            if (MessageDatabase::create(accountName)) {
+            if (MessageDatabase::create(state)) {
                 try {
                     std::unique_ptr<Vault> vault(new Vault(*state));
-                    vault->storeVault(accountName, passphrase);
-                    addAccount(accountName);
+                    vault->storeVault(passphrase);
+                    addAccount(vault->accountName);
+                    Pippip::ContactsDatabase::initialize(state);
                     emit accountComplete(0);
                 }
                 catch (VaultException& e) {
+                    requestFailed(QString(e.what()));
+                }
+                catch (DatabaseException& e) {
                     requestFailed(QString(e.what()));
                 }
             }

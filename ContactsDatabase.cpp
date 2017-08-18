@@ -1,14 +1,15 @@
 #include "ContactsDatabase.h"
 #include "SessionState.h"
-#include "DatabaseException.h"
 #include "StringCodec.h"
 #include "ByteCodec.h"
 #include "Contacts.h"
 #include "Function.h"
 #include "SessionState.h"
-#include "ContactManager.h"
 #include "Constants.h"
 #include "ContactRequests.h"
+#include "GetContactsTask.h"
+#include "AddContactsTask.h"
+#include "DatabaseException.h"
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSettings>
@@ -25,48 +26,34 @@ static const int ID_MASK = 0x7fffffff;
 
 bool ContactsDatabase::once = true;
 
-ContactsDatabase::ContactsDatabase(SessionState *st, QObject *parent)
-: QObject(parent),
-  state(st),
-  contacts(new Contacts) {
+ContactsDatabase::ContactsDatabase(SessionState *st)
+: state(st) {
 
-    contactManager = new ContactManager(state, this);
+/*    contactManager = new ContactManager(state, this);
     connect(contactManager, SIGNAL(contactsLoaded()), this, SLOT(contactsLoaded()));
     connect(contactManager, SIGNAL(loadFailed(QString)), this, SLOT(loadFailed(QString)));
     connect(contactManager, SIGNAL(contactRequestComplete(long,QString)),
             this, SLOT(contactRequestComplete(long,QString)));
-
+*/
 }
 
-void ContactsDatabase::addPending() {
+void ContactsDatabase::addContact(DatabaseContact& contact) {
 
     CK::FortunaSecureRandom rnd;
-    try {
-        pending.contactId = rnd.nextUnsignedInt() & ID_MASK;
-        while (contactExists(pending.contactId)) {
-            pending.contactId = rnd.nextUnsignedInt() & ID_MASK;
+    if (contact.id == 0) {
+        contact.id = rnd.nextUnsignedInt() & ID_MASK;
+        while (contactExists(contact.id)) {
+            contact.id = rnd.nextUnsignedInt() & ID_MASK;
         }
+    }
 
-        CK::GCMCodec codec;
-        codec << pending;
-        codec.encrypt(state->contactKey, state->authData);
-        QSqlQuery query(database);
-        query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :contact)");
-        query.bindValue(":id", pending.contactId);
-        ByteCodec encoded(codec.toArray());
-        query.bindValue(":contact", encoded.getQtBytes());
-        query.exec();
-        if (!query.isActive()) {
-            emit addContactFailed(QString("Database error - ") + query.lastError().text());
-        }
-        contacts->add(pending);
-        contactManager->addContact(pending);
-    }
-    catch (CK::EncodingException& e) {
-        emit addContactFailed(QString("Encoding error - ") + e.what());
-    }
-    catch (DatabaseException& e) {
-        emit addContactFailed(QString("Database error - ") + e.what());
+    QSqlQuery query(database);
+    query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :contact)");
+    query.bindValue(":id", contact.id);
+    query.bindValue(":contact", contact.contact);
+    query.exec();
+    if (!query.isActive()) {
+        throw DatabaseException(StringCodec(query.lastError().text()));
     }
 
 }
@@ -86,15 +73,6 @@ bool ContactsDatabase::contactExists(unsigned id) {
 
 }
 
-void ContactsDatabase::contactRequestComplete(long requestId, const QString &status) {
-
-    pending.requestId = requestId;
-    pending.status = status;
-    addPending();
-
-
-}
-
 /*
  * Reconcile local contacts with server contacts.
  *
@@ -102,29 +80,16 @@ void ContactsDatabase::contactRequestComplete(long requestId, const QString &sta
  * the server database. Otherwise, the local database is the source of
  * record.
  */
-void ContactsDatabase::contactsLoaded() {
-
-    if (contacts->size() == 0) {
-        Contacts *cmContacts = contactManager->getContacts();
-        contacts->fill(*cmContacts);
-    }
-    else {
-        contactManager->reconcile(*contacts);
-    }
-
-}
-
 void ContactsDatabase::close() {
 
     database.close();
-    delete contacts;
 
 }
 
 /*
  * This is a new contact created in the acknowledge requests task.
  * The user is the requested entity.
- */
+
 void ContactsDatabase::createContact(Contact& contact, const ContactRequestIn &request) {
 
     contact.status = request.status;
@@ -147,7 +112,7 @@ void ContactsDatabase::createContact(Contact& contact, const ContactRequestIn &r
     contact.currentKey = contact.currentSequence = 0;
 
 }
-
+*/
 void ContactsDatabase::createDatabase(const QString &account) {
 
     QSqlDatabase db = QSqlDatabase::database("contacts", false);
@@ -158,20 +123,37 @@ void ContactsDatabase::createDatabase(const QString &account) {
         QSqlQuery query("CREATE TABLE contacts (id INTEGER PRIMARY KEY, "
                         "contact BLOB)", db);
         if (!query.isActive()) {
-            StringCodec error(query.lastError().text());
+            QString error = query.lastError().text();
             db.close();
-            throw DatabaseException(error);
+            throw DatabaseException(StringCodec(error));
         }
         db.close();
     }
     else {
-        StringCodec error(db.lastError().text());
-        throw DatabaseException(error);
+        throw DatabaseException(StringCodec(db.lastError().text()));
     }
 
 }
 
-void ContactsDatabase::initialize(const QString& account) {
+void ContactsDatabase::getContacts(DatabaseContactList& list) {
+
+    QSqlQuery query(database);
+    query.setForwardOnly(true);
+    query.exec("SELECT * FROM contacts");
+    if (query.isActive()) {
+        while (query.next()) {
+            DatabaseContact contact;
+            contact.id = query.value(0).toInt();
+            contact.contact = query.value(1).toByteArray();
+        }
+    }
+    else {
+        throw DatabaseException(StringCodec(query.lastError().text()));
+    }
+
+}
+
+void ContactsDatabase::initialize(SessionState *state) {
 
     if (once) {
         once = false;
@@ -183,49 +165,49 @@ void ContactsDatabase::initialize(const QString& account) {
 
     QSettings settings;
     QString dbPath = settings.value("Defaults/dbPath").toString();
-    QFile dbFile(dbPath + "/" + account + ".cdb");
+    QFile dbFile(dbPath + "/" + state->accountName + ".cdb");
     if (!dbFile.exists()) {
-        createDatabase(account);
+        createDatabase(state->accountName);
     }
 
 }
+/*
+void ContactsDatabase::insertContacts(const ServerContactList &contacts) {
 
-void ContactsDatabase::loadContacts() {
-
-    QSqlQuery query(database);
-    query.setForwardOnly(true);
-    query.exec("SELECT * FROM contacts");
-    if (query.isActive()) {
-        while (query.next()) {
-            Contact contact;
-            contact.contactId = query.value(0).toInt();
-            QByteArray encoded = query.value(1).toByteArray();
-            ByteCodec bytes(encoded);
+    for (auto serverContact : contacts) {
+        QSqlQuery query(database);
+        query.prepare("INSERT INTO contacts (id, contact) VALUES (:id, :contact)");
+        query.bindValue(":id", serverContact.contactId);
+        query.bindValue(":contact", serverContact.contact);
+        query.exec();
+        if (!query.isActive()) {
+            emit databaseError(query.lastError().text());
+        }
+        else {
             try {
+                ByteCodec bytes(serverContact.contact);
                 CK::GCMCodec codec(bytes);
                 codec.decrypt(state->contactKey, state->authData);
+                Contact contact;
                 codec >> contact;
-                contacts->add(contact);
+                state->contacts->add(contact);
             }
             catch (CK::EncodingException& e) {
-                std::ostringstream estr;
-                estr << "Error decoding contact - " << e.what();
-                throw DatabaseException(estr.str());
+                emit databaseError(QString("Error decoding contact - ") + e.what());
             }
         }
     }
-    else {
-        StringCodec error(query.lastError().text());
-        throw DatabaseException(error);
-    }
-
-    contactManager->loadContacts();
 
 }
 
-void ContactsDatabase::loadFailed(const QString &error) {
+void ContactsDatabase::loadServerContacts() {
 
-    emit updateStatus(Constants::REDX_ICON, "Contacts load failed - " + error);
+    LoadContactsTask *task = new LoadContactsTask(state, this);
+    connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestCompleted(Pippip::EnclaveRequestTask*)));
+    connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+            this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+    task->doRequest();
 
 }
 
@@ -244,16 +226,16 @@ void ContactsDatabase::newContact(const ContactRequestIn &request) {
         query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
         query.exec();
         if (!query.isActive()) {
-            throw DatabaseException(StringCodec(query.lastError().text()));
+            emit databaseError(query.lastError().text());
         }
 
-        contacts->add(contact);
+        //contacts->add(contact);
 
         /*
      * This is a no-fault operation. The contact is either updated or added
      * to the enclave.
-     */
-        contactManager->addContact(contact);
+
+        //contactManager->updateContact(contact);
     }
     catch (CK::EncodingException& e) {
         emit updateStatus(Constants::REDX_ICON, QString("Failed to create new contact - ")
@@ -261,34 +243,52 @@ void ContactsDatabase::newContact(const ContactRequestIn &request) {
     }
 
 }
+*/
+ContactsDatabase *ContactsDatabase::open(SessionState *state) {
 
-void ContactsDatabase::open(const QString& account) {
-
-    database = QSqlDatabase::database("contacts");
+    ContactsDatabase *database = new ContactsDatabase(state);
+    database->database = QSqlDatabase::database("contacts");
     QSettings settings;
     QString dbPath = settings.value("Defaults/dbPath").toString();
-    database.setDatabaseName(dbPath + "/" + account + ".cdb");
-    if (!database.open()) {
-        StringCodec error(database.lastError().text());
-        throw DatabaseException(error);
+    database->database.setDatabaseName(dbPath + "/" + state->accountName + ".cdb");
+    if (!database->database.open()) {
+        throw DatabaseException(StringCodec(database->database.lastError().text()));
+    }
+    else {
+        return database;
     }
 
 }
+/*
+void ContactsDatabase::requestCompleted(EnclaveRequestTask *task) {
 
-void ContactsDatabase::requestContact(const ContactRequestOut &request) {
+    QString status;
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::LOAD_CONTACTS_TASK) {
+        status = "Contacts loaded";
+        LoadContactsTask *loadTask = dynamic_cast<LoadContactsTask*>(task);
+        resolveContacts(loadTask->getContacts());
+    }
+    else if (taskName == Constants::ADD_CONTACTS_TASK) {
+        status = "Contacts added";
+    }
 
-    if (request.idTypes == Constants::NICKNAME_NICKNAME
-            || request.idTypes == Constants::NICKNAME_PUBLICID) {
-        pending.contactOf = request.requestingId;
+    emit updateStatus(Constants::CHECK_ICON, status);
+
+}
+
+void ContactsDatabase::requestFailed(EnclaveRequestTask *task) {
+
+    QString status;
+    QString taskName = task->getTaskName();
+    if (taskName == Constants::LOAD_CONTACTS_TASK) {
+        status = "Failed to load contacts - " + task->getError();
     }
-    if (request.idTypes == Constants::NICKNAME_NICKNAME
-            || request.idTypes == Constants::PUBLICID_NICKNAME) {
-        pending.entity.nickname = request.requestedId;
+    else if (taskName == Constants::ADD_CONTACTS_TASK) {
+        status = "Failed to add contacts - " + task->getError();
     }
-    else {
-        pending.entity.publicId = request.requestedId;
-    }
-    contactManager->requestContact(request);
+
+    emit updateStatus(Constants::REDX_ICON, status);
 
 }
 
@@ -309,12 +309,41 @@ void ContactsDatabase::requestsAcknowledged(ContactRequests *acknowledged) {
 
 }
 
+void ContactsDatabase::resolveContacts(const ServerContactList& contacts) {
+
+    //try {
+        if (state->contacts->size() == 0) {
+            // Restoring contacts from the enclave.
+            insertContacts(contacts);
+            emit contactsModified();
+        }
+        // TODO Reconcile contacts?
+    //}
+    //catch (DatabaseException& e) {
+    //    emit updateStatus(Constants::REDBAR_ICON, QString(e.what()));
+    //}
+
+}
+
+void ContactsDatabase::updateContact(const ContactRequestIn &request) {
+/*
+    Contact contact;
+    if (contacts->fromRequestId(request.requestId, contact)) {
+        updateContact(contact, request);
+    }
+    else {
+        emit updateStatus(Constants::CAUTION_ICON, "Contact not found");
+    }
+
+}
+
 /*
  * This will update the provisional contact that was created during the
  * request contact task. The user is the requesting entity.
- */
-void ContactsDatabase:: updateContact(Contact& contact, const ContactRequestIn &request) {
 
+void ContactsDatabase::updateContact(Contact& contact, const ContactRequestIn &request) {
+
+    contact.status = request.status;
     contact.contactOf = request.requesting.nickname;
     contact.entity = request.requested;
     contact.rsaKeys = request.rsaKeys;
@@ -354,15 +383,15 @@ void ContactsDatabase:: updateContact(const Contact &contact) {
     query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
     query.exec();
     if (!query.isActive()) {
-        throw DatabaseException(StringCodec(query.lastError().text()));
+        //throw DatabaseException(StringCodec(query.lastError().text()));
     }
 
     /*
      * This is a no-fault operation. The contact is either updated or added
      * to the enclave.
-     */
-    contactManager->addContact(contact);
+
+    //contactManager->updateContact(contact);
 
 }
-
+*/
 }

@@ -6,6 +6,7 @@
 #include "StringCodec.h"
 #include <QJsonArray>
 #include <QTimer>
+#include <QDebug>
 #include <iostream>
 
 namespace Pippip {
@@ -35,7 +36,7 @@ void RequestManager::ackRequest(const QString &ack, long requestId) {
     ackObj["ack"] = ack;
     ackObj["requestId"] = static_cast<long long>(requestId);
     ackArray.append(ackObj);
-    req.setValue("acknowledgements", ackArray);
+    req.setArrayValue("acknowledgements", ackArray);
     RESTHandler *handler = new RESTHandler(this);
     connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(ackComplete(RESTHandler*)));
     connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(ackComplete(RESTHandler*)));
@@ -79,30 +80,6 @@ void RequestManager::ackTimedOut() {
 
 }
 
-void RequestManager::loadRequests() {
-
-    if (!loaded) {
-        EnclaveRequest req(state);
-        req.setRequestType("getRequests");
-        QJsonArray statusArray;
-        //statusArray.append("active");
-        statusArray.append("pending");
-        //statusArray.append("rejected");
-        req.setValue("status", statusArray);
-        RESTHandler *handler = new RESTHandler(this);
-        connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
-        connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
-        timedOut = false;
-        requestCompleted = false;
-        QTimer::singleShot(10000, this, SLOT(loadTimedOut()));
-        handler->doPost(req);
-    }
-    else {
-        emit requestsLoaded();
-    }
-
-}
-
 bool RequestManager::loadAcknowledged(const QJsonObject &json) {
 
     acknowledged->clear();
@@ -131,12 +108,37 @@ bool RequestManager::loadAcknowledged(const QJsonObject &json) {
         contactRequest.rsaKeys.encryptionRSA = rsaObj["encryptionRSA"].toString();
         contactRequest.rsaKeys.signingRSA = rsaObj["encryptionRSA"].toString();
         QString keyStr = reqObj["keyBlock"].toString();
-        std::cout << "Key block received = " << StringCodec(keyStr) << std::endl;
+        //qDebug() << "Key block received (QString) = " << keyStr;
+        //std::cout << "Key block received (std::string) = " << StringCodec(keyStr) << std::endl;
 
         contactRequest.keyBlock = coder::ByteArray(StringCodec(keyStr), true);
         acknowledged->add(contactRequest);
     }
     return true;
+
+}
+
+void RequestManager::loadRequests() {
+
+    if (!loaded) {
+        EnclaveRequest req(state);
+        req.setRequestType("getRequests");
+        QJsonArray statusArray;
+        //statusArray.append("active");
+        statusArray.append("pending");
+        //statusArray.append("rejected");
+        req.setArrayValue("status", statusArray);
+        RESTHandler *handler = new RESTHandler(this);
+        connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
+        connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestLoadComplete(RESTHandler*)));
+        timedOut = false;
+        requestCompleted = false;
+        QTimer::singleShot(10000, this, SLOT(loadTimedOut()));
+        handler->doPost(req);
+    }
+    else {
+        emit requestsLoaded();
+    }
 
 }
 

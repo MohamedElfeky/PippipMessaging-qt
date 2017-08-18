@@ -1,14 +1,12 @@
 #include "ContactsDialog.h"
-#include "ContactManager.h"
-#include "NicknameManager.h"
 #include "ContactRequest.h"
 #include "ContactHandler.h"
 #include "ContactsDatabase.h"
 #include "RequestHandler.h"
+#include "Nicknames.h"
+#include "LoadNicknamesTask.h"
 #include "ui_ContactsDialog.h"
 #include "SessionState.h"
-#include "ContactManager.h"
-#include "AddContactDialog.h"
 #include "Constants.h"
 #include <QStringList>
 #include <QTableWidgetItem>
@@ -25,7 +23,6 @@ ContactsDialog::ContactsDialog(Pippip::SessionState *st, QWidget *parent)
     // Set up request column headings.
     QStringList headings;
     headings << "Requested ID" << "Requesting Nickname" << "Requesting Public ID";
-    //ui->contactsTableWidget->setHorizontalHeaderLabels(headings);
     ui->requestsTableWidget->setHorizontalHeaderLabels(headings);
     // Initially, the column headings will be equal. After loading, the contacts, the resize
     // mode will be set to ResizeToContents
@@ -55,33 +52,49 @@ void ContactsDialog::contactSelected() {
 
 }
 
-void ContactsDialog::nicknamesLoaded() {
+void ContactsDialog::contactsModified() {
 
-    contactHandler->setNicknames(nicknameManager->getNicknames());
+    contactHandler->loadTable();
 
 }
 
-void ContactsDialog::requestFailed(const QString &reqName, const QString& error) {
+int ContactsDialog::exec() {
 
-    ui->contactsStatusLabel->setText(Constants::REDX_ICON + reqName + " failed - "
-                                     + error);
-    qApp->processEvents();
+    if (state->nicknames->size() == 0) {
+        Pippip::LoadNicknamesTask *task = new Pippip::LoadNicknamesTask(state, this);
+        connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
+                contactHandler, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
+        connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
+                contactHandler, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
+        task->doRequest();
+    }
+    contactHandler->loadTable();
+    updateStatus(Constants::CHECK_ICON, "Contacts loaded");
+    return QDialog::exec();
+
+}
+
+void ContactsDialog::nicknamesLoaded() {
+
+    //contactHandler->setNicknames(nicknameManager->getNicknames());
 
 }
 
 void ContactsDialog::requestsAcknowledged(Pippip::ContactRequests *acknowledged) {
 
-    contactsDatabase->requestsAcknowledged(acknowledged);
+    //contactsDatabase->requestsAcknowledged(acknowledged);
     ui->tabWidget->setCurrentIndex(0);
     contactHandler->loadTable();
 
 }
-
+/*
 void ContactsDialog::setContactsDatabase(Pippip::ContactsDatabase *database) {
 
     contactsDatabase = database;
+    connect(contactsDatabase, SIGNAL(updateStatus(QString,QString)),
+            this, SLOT(updateStatus(QString,QString)));
+    connect(contactsDatabase, SIGNAL(contactsModified()), this, SLOT(contactsModified()));
     contactHandler->setContactsDatabase(database);
-    contactHandler->loadTable();
 
 }
 
@@ -89,12 +102,12 @@ void ContactsDialog::setNicknameManager(Pippip::NicknameManager *manager) {
 
     nicknameManager = manager;
     connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
-    connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-            this, SLOT(requestFailed(QString,QString)));
+    connect(nicknameManager, SIGNAL(updateStatus(QString,QString)),
+            this, SLOT(updateStatus(QString,QString)));
     nicknameManager->loadNicknames();
 
 }
-
+*/
 void ContactsDialog::tabSelected(int tab) {
 
     switch (tab) {
@@ -107,3 +120,11 @@ void ContactsDialog::tabSelected(int tab) {
     }
 
 }
+void ContactsDialog::updateStatus(const QString &icon, const QString& status) {
+
+    ui->statusIconLabel->setText(icon);
+    ui->statusLabel->setText(status);
+    qApp->processEvents();
+
+}
+

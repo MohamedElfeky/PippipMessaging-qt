@@ -64,8 +64,6 @@ Authenticator::~Authenticator() {
 
 void Authenticator::authenticate(const QString &accountName, const QString &passphrase) {
 
-    account = accountName;
-
     emit updateInfo("Opening user vault");
 
     try {
@@ -106,7 +104,7 @@ void Authenticator::authorizeComplete(RESTHandler *handler) {
             state->sessionState = Pippip::SessionState::authenticated;
             emit updateStatus("Authentication Complete");
             emit loginComplete(1);
-            emit authenticationComplete(account);
+            emit authenticationComplete(state->accountName);
         }
         else {
             state->sessionState = Pippip::SessionState::failed;

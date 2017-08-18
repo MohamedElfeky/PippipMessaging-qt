@@ -35,7 +35,7 @@ class ParameterGenerator : public SessionState {
         ParameterGenerator& operator =(const ParameterGenerator& other);
 
     public:
-        void generateParameters(const std::string& username);
+        void generateParameters(const QString& username);
 
 };
 

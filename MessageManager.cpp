@@ -86,7 +86,7 @@ void MessageManager::sendComplete(RESTHandler *handler) {
 void MessageManager::sendMessage(const Message &message) {
 
     messageQueue.push_back(message);
-
+/*
     EnclaveRequest request(state);
     request.setRequestType("sendMessage");
     request.setValue("sender", message.sender);
@@ -102,7 +102,7 @@ void MessageManager::sendMessage(const Message &message) {
     timedOut = requestComplete = false;
     QTimer::singleShot(90000, this, SLOT(sendTimedOut()));
     handler->doPost(request);
-
+*/
 }
 
 void MessageManager::sendMessage(const QString &sender, const QString &recipient, const QString &/* message */) {

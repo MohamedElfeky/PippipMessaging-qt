@@ -17,12 +17,15 @@
  */
 
 #include "ParameterGenerator.h"
+#include "StringCodec.h"
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
 #include <CryptoKitty-C/digest/SHA256.h>
 #include <CryptoKitty-C/digest/SHA1.h>
 #include <coder/ByteStreamCodec.h>
 #include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
 #include <CryptoKitty-C/keys/KeyPair.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
+#include <CryptoKitty-C/keys/RSAPrivateKey.h>
 #include <ctime>
 
 namespace Pippip {
@@ -30,7 +33,9 @@ namespace Pippip {
 ParameterGenerator::ParameterGenerator() {
 }
 
-void ParameterGenerator::generateParameters(const std::string& username) {
+void ParameterGenerator::generateParameters(const QString& username) {
+
+    accountName = username;
 
     CK::FortunaSecureRandom rnd;
 
@@ -72,7 +77,8 @@ void ParameterGenerator::generateParameters(const std::string& username) {
     delete keypair;
 
     CK::SHA1 sha1;
-    sha1.update(coder::ByteArray(username));
+    coder::ByteArray nameBytes(StringCodec(accountName).getStdString());
+    sha1.update(nameBytes);
     clock_gettime(CLOCK_REALTIME, &ctime);
     millis = ctime.tv_sec;
     millis += ctime.tv_nsec / 1.0e06;

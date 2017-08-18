@@ -20,8 +20,6 @@
 #define SESSIONSTATE_H
 
 #include <coder/ByteArray.h>
-#include <CryptoKitty-C/keys/RSAPrivateKey.h>
-#include <CryptoKitty-C/keys/RSAPublicKey.h>
 #include <QString>
 
 namespace CK {
@@ -30,19 +28,21 @@ namespace CK {
 }
 namespace Pippip {
 
+class Nicknames;
+class Contacts;
+
 class SessionState {
 
     public:
-        SessionState() : serverPublicKey(0), userPrivateKey(0), userPublicKey(0) {}
-        ~SessionState() { delete serverPublicKey;
-                          delete userPrivateKey;
-                          delete userPublicKey; }
+        SessionState();
+        ~SessionState();
 
     public:
         enum StateValue { authenticated, established, failed, not_started, started };
         StateValue sessionState;
         uint32_t sessionId;
         uint64_t authToken;
+        QString accountName;
         QString publicId;
         coder::ByteArray genpass;
         coder::ByteArray enclaveKey;
@@ -54,6 +54,10 @@ class SessionState {
         CK::RSAPublicKey *serverPublicKey;
         CK::RSAPrivateKey *userPrivateKey;
         CK::RSAPublicKey *userPublicKey;
+
+        // Messaging objects.
+        Nicknames *nicknames;
+        Contacts *contacts;
 
 };
 

@@ -28,8 +28,9 @@ namespace Ui {
 }
 
 namespace Pippip {
-    class NicknameManager;
     class Nicknames;
+    class SessionState;
+    class EnclaveRequestTask;
 }
 
 class QLineEdit;
@@ -42,10 +43,6 @@ class WhitelistHandler : public QObject
         explicit WhitelistHandler(Ui::NicknamesDialog *ui, QObject *parent = 0);
         ~WhitelistHandler() {}
 
-    public slots:
-        void whitelistUpdated(const QString& status);
-        void taskFailed(const QString& taskName);
-
     private slots:
         void addEntry();
         void deleteEntry();
@@ -53,22 +50,24 @@ class WhitelistHandler : public QObject
         void nicknameEdited();
         void pasteValue();
         void puidEdited();
+        void requestComplete(Pippip::EnclaveRequestTask *task);
+        void requestFailed(Pippip::EnclaveRequestTask *task);
 
     public:
-        void loadTable();
+        int getSelectedRow() const { return selectedRow; }
+        void loadTable(int start = 0);
         void setCurrentIndex(unsigned index);
-        void setNicknameManager(Pippip::NicknameManager *manager);
-
-    private:
-        void removeEntry(const Pippip::Entity& entry);
+        void setCurrentNickname(unsigned index) { currentNickname = index; }
+        void setSelectedRow(int row) { selectedRow = row; }
+        void setSessionState(Pippip::SessionState *st) { state = st; }
 
     private:
         bool newItem;
-        unsigned currentIndex;
+        int selectedRow;
+        unsigned currentNickname;
         Ui::NicknamesDialog *ui;
-        Pippip::Nicknames *nicknames;
-        Pippip::EntityList undo;
-        Pippip::NicknameManager *nicknameManager;
+        Pippip::SessionState *state;
+        Pippip::Entity working;
         QLineEdit *nicknameLineEdit;
         QLineEdit *puidLineEdit;
         EmptyStringValidator *nicknameValidator;

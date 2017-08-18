@@ -2,22 +2,23 @@
 #include "ui_NicknamesDialog.h"
 #include "NicknameHandler.h"
 #include "WhitelistHandler.h"
-#include "NicknameManager.h"
 #include "Nicknames.h"
 #include "Constants.h"
+#include "SessionState.h"
 #include <QHeaderView>
 #include <assert.h>
 
-NicknamesDialog::NicknamesDialog(QWidget *parent)
+NicknamesDialog::NicknamesDialog(Pippip::SessionState *st, QWidget *parent)
 : QDialog(parent),
-  ui(new Ui::NicknamesDialog) {
+  ui(new Ui::NicknamesDialog),
+  state(st) {
 
     ui->setupUi(this);
-    ui->statusLabel->setText(Constants::INFO_ICON + "Fetching nicknames");
+    ui->statusIconLabel->setText(Constants::INFO_ICON);
+    ui->statusLabel->setText("Fetching nicknames");
     nicknameHandler = new NicknameHandler(ui, this);
     whitelistHandler = new WhitelistHandler(ui, this);
-//    connect(whitelistHandler, SIGNAL(whitelistUpdated(Pippip::EntityList)),
-//            nicknameHandler, SLOT(whitelistUpdated(Pippip::EntityList)));
+    whitelistHandler->setSessionState(state);
 
     ui->tabWidget->setTabEnabled(1, false);
 
@@ -47,63 +48,31 @@ NicknamesDialog::~NicknamesDialog() {
     delete ui;
 }
 
+int NicknamesDialog::exec() {
+
+    nicknameHandler->loadNicknames(state);
+    return QDialog::exec();
+
+}
+
 void NicknamesDialog::nicknameSelected() {
 
     ui->deleteNicknameButton->setEnabled(true);
-    bool enableTab = false;
-    unsigned row = ui->nicknameTableWidget->currentRow();
-    assert(row < nicknames->size());
-    nicknames->setCurrentIndex(row);
+    int row = ui->nicknameTableWidget->currentRow();
+    nicknameHandler->setSelectedRow(row);
     QLabel *policyLabel = dynamic_cast<QLabel*>(ui->nicknameTableWidget->cellWidget(row, 1));
-    if (policyLabel != 0) {     // Empty row or widget is QComboBox
-        QString policy = policyLabel->text();
-        enableTab = policy != "Public";
+    if (policyLabel != 0) {
+        bool enableTab = policyLabel->text() != "Public";
+        ui->tabWidget->setTabEnabled(1, enableTab);
     }
-    ui->tabWidget->setTabEnabled(1, enableTab);
 
 }
-/*
-void NicknamesDialog::policyUpdated(const QString& policy) {
 
-    ui->whitelistTab->setEnabled(policy != "Public");
+void NicknamesDialog::updateStatus(const QString &icon, const QString& status) {
 
-}
-*/
-void NicknamesDialog::requestFailed(const QString &reqName, const QString& error) {
-
-    ui->statusLabel->setText(Constants::REDX_ICON + reqName + " failed: " + error);
+    ui->statusIconLabel->setText(icon);
+    ui->statusLabel->setText(status);
     qApp->processEvents();
-
-}
-
-void NicknamesDialog::setManager(Pippip::NicknameManager *manager) {
-
-    nicknameManager = manager;
-    nicknameHandler->setManager(manager);
-    whitelistHandler->setNicknameManager(manager);
-
-    // Nickname handler signals
-    connect(nicknameManager, SIGNAL(addCompleted(QString)),
-            nicknameHandler, SLOT(nicknameAdded(QString)));
-    connect(nicknameManager, SIGNAL(deleteCompleted(QString)),
-            nicknameHandler, SLOT(nicknameDeleted(QString)));
-    connect(nicknameManager, SIGNAL(deleteCompleted(QString)),
-            nicknameHandler, SLOT(nicknameDeleted(QString)));
-    connect(nicknameManager, SIGNAL(nicknamesLoaded()),
-            nicknameHandler, SLOT(nicknamesLoaded()));
-    connect(nicknameManager, SIGNAL(policyUpdated(QString)),
-            nicknameHandler, SLOT(policyUpdated(QString)));
-    connect(nicknameManager, SIGNAL(taskFailed(QString)),
-            nicknameHandler, SLOT(taskFailed(QString)));
-
-    // Whitelist handler signals
-    connect(nicknameManager, SIGNAL(whitelistUpdated(QString)),
-            whitelistHandler, SLOT(whitelistUpdated(QString)));
-    connect(nicknameManager, SIGNAL(taskFailed(QString)),
-            whitelistHandler, SLOT(taskFailed(QString)));
-
-    nicknames = nicknameManager->getNicknames();
-    nicknameManager->loadNicknames();
 
 }
 
@@ -111,7 +80,7 @@ void NicknamesDialog::wlEntrySelected() {
 
     ui->deleteFriendButton->setEnabled(true);
     unsigned row = ui->whitelistTableWidget->currentRow();
-    whitelistHandler->setCurrentIndex(row);
+    whitelistHandler->setSelectedRow(row);
 
 }
 
@@ -119,8 +88,10 @@ void NicknamesDialog::tabChanged(int tab) {
 
     switch (tab) {
         case 0:
+            nicknameHandler->loadTable();
             break;
         case 1:
+            whitelistHandler->setCurrentNickname(ui->nicknameTableWidget->currentRow());
             whitelistHandler->loadTable();
             break;
     }

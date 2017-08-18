@@ -10,7 +10,7 @@ class NicknamesDialog;
 
 namespace Pippip {
     class NicknameManager;
-    class Nicknames;
+    class SessionState;
 }
 
 class NicknameHandler;
@@ -20,25 +20,24 @@ class NicknamesDialog : public QDialog {
         Q_OBJECT
 
     public:
-        explicit NicknamesDialog(QWidget *parent = 0);
+        explicit NicknamesDialog(Pippip::SessionState *state, QWidget *parent = 0);
         ~NicknamesDialog();
 
     public slots:
-        void requestFailed(const QString& reqName, const QString& error);
+        void updateStatus(const QString& icon, const QString& status);
 
     private slots:
         void nicknameSelected();    // Enables delete button
-        //void policyUpdated(const QString&);
         void wlEntrySelected();     // Enables delete button
         void tabChanged(int);
 
     public:
-        void setManager(Pippip::NicknameManager *man);
+        int exec();
 
     private:
         Ui::NicknamesDialog *ui;
         Pippip::NicknameManager *nicknameManager;
-        Pippip::Nicknames *nicknames;
+        Pippip::SessionState *state;
         NicknameHandler *nicknameHandler;
         WhitelistHandler *whitelistHandler;
 

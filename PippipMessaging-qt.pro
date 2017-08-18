@@ -19,7 +19,6 @@ SOURCES += main.cpp\
     Vault.cpp \
     NewAccountCreator.cpp \
     Authenticator.cpp \
-    EnclaveRequester.cpp \
     NewAccountDialog.cpp \
     NewAccountHelpDialog.cpp \
     RESTHandler.cpp \
@@ -41,12 +40,10 @@ SOURCES += main.cpp\
     ClientAuthorized.cpp \
     EnclaveRequest.cpp \
     NicknamesDialog.cpp \
-    NicknameManager.cpp \
     EnclaveResponse.cpp \
     LogoutRequest.cpp \
     ContactsDialog.cpp \
     ContactManager.cpp \
-    AddContactDialog.cpp \
     NicknameHandler.cpp \
     WhitelistHandler.cpp \
     EmptyStringValidator.cpp \
@@ -62,7 +59,18 @@ SOURCES += main.cpp\
     Function.cpp \
     ContactsDatabase.cpp \
     ContactRequests.cpp \
-    RequestManager.cpp
+    RequestManager.cpp \
+    EnclaveRequestTask.cpp \
+    UpdateContactTask.cpp \
+    SessionState.cpp \
+    AddNicknameTask.cpp \
+    LoadNicknamesTask.cpp \
+    DeleteNicknameTask.cpp \
+    UpdateNicknameTask.cpp \
+    RequestContactTask.cpp \
+    AddContactsTask.cpp \
+    GetContactsTask.cpp \
+    ContactAdapter.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -70,7 +78,6 @@ HEADERS  += mainwindow.h \
     Vault.h \
     NewAccountCreator.h \
     Authenticator.h \
-    EnclaveRequester.h \
     NewAccountDialog.h \
     SessionState.h \
     NewAccountHelpDialog.h \
@@ -95,14 +102,12 @@ HEADERS  += mainwindow.h \
     ClientAuthorized.h \
     EnclaveRequest.h \
     NicknamesDialog.h \
-    NicknameManager.h \
     SessionException.h \
     EnclaveResponse.h \
     EnclaveException.h \
     LogoutRequest.h \
     ContactsDialog.h \
     ContactManager.h \
-    AddContactDialog.h \
     Contact.h \
     Nickname.h \
     Entity.h \
@@ -123,10 +128,21 @@ HEADERS  += mainwindow.h \
     Nicknames.h \
     Contacts.h \
     Function.h \
-    DatabaseException.h \
     ContactsDatabase.h \
     ContactRequests.h \
-    RequestManager.h
+    RequestManager.h \
+    EnclaveRequestTask.h \
+    UpdateContactTask.h \
+    TaskException.h \
+    AddNicknameTask.h \
+    LoadNicknamesTask.h \
+    DeleteNicknameTask.h \
+    UpdateNicknameTask.h \
+    RequestContactTask.h \
+    AddContactsTask.h \
+    GetContactsTask.h \
+    ContactAdapter.h \
+    DatabaseException.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

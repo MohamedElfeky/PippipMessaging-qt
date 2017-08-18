@@ -2,18 +2,18 @@
 #include "ui_mainwindow.h"
 #include "Authenticator.h"
 #include "Constants.h"
+#include "Contacts.h"
 #include "ContactsDatabase.h"
 #include "ContactsDialog.h"
-#include "DatabaseException.h"
 #include "EntropyStream.h"
 #include "KeyFilter.h"
 #include "LoginDialog.h"
 #include "MessageException.h"
 #include "MessageManager.h"
 #include "NewAccountDialog.h"
-#include "NicknameManager.h"
 #include "NicknamesDialog.h"
 #include "ParameterGenerator.h"
+#include "DatabaseException.h"
 #include "UDPListener.h"
 #include "Vault.h"
 #include <QComboBox>
@@ -21,15 +21,14 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSettings>
+#include <QMessageBox>
 #include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
   ui(new Ui::MainWindow),
   createMessage(false),
-  session(0),
-  nicknameManager(0),
-  contactsDatabase(0) {
+  session(0) {
 
     ui->setupUi(this);
     setDefaults();
@@ -43,20 +42,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->NewMessageAction, SIGNAL(triggered()), this, SLOT(newMessage()));
 
     QWidget *status = new QWidget(this);
-    //QHBoxLayout *layout = new QHBoxLayout(this);
     iconLabel = new QLabel(status);
     iconLabel->setTextFormat(Qt::RichText);
     iconLabel->setText(Constants::INFO_ICON);
     statusLabel = new QLabel(status);
     statusLabel->setTextFormat(Qt::RichText);
     statusLabel->setText("Log In");
-    //statusLabel->setMargin(3);
     statusLabel->setAlignment(Qt::AlignVCenter);
     statusLabel->setIndent(5);
-    //layout->addWidget(iconLabel);
-    //layout->addWidget(statusLabel);
-    //status->setLayout(layout);
-    //statusBar()->addWidget(status);
     statusBar()->addWidget(iconLabel);
     statusBar()->addWidget(statusLabel);
 
@@ -72,7 +65,6 @@ MainWindow::~MainWindow() {
 
     delete session;
     delete ui;
-    delete contactsDatabase;
 
 }
 
@@ -99,11 +91,12 @@ void MainWindow::logIn() {
     Pippip::Vault *vault = new Pippip::Vault;
     session = vault;
     LoginDialog *dialog = new LoginDialog(vault, this);
+    updateStatus(Constants::INFO_ICON, "Logging in");
     dialog->exec();
 
 }
 
-void MainWindow::loggedIn(const QString& account) {
+void MainWindow::loggedIn() {
 
     try {
         // Do this first in case the database open fails
@@ -115,30 +108,31 @@ void MainWindow::loggedIn(const QString& account) {
         ui->ContactsAction->setEnabled(true);
         ui->NicknamesAction->setEnabled(true);
         ui->NewMessageAction->setEnabled(true);
-        nicknameManager = new Pippip::NicknameManager(this, session);
-        //connect(nicknameManager, SIGNAL(nicknamesLoaded()), this, SLOT(nicknamesLoaded()));
-        //connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-        //        this, SLOT(requestFailed(QString,QString)));
-        //contactManager = new Pippip::ContactManager(this, session);
-        //connect(contactManager, SIGNAL(requestFailed(QString,QString)),
-        //        this, SLOT(requestFailed(QString,QString)));
-        //contactManager->loadContacts();
 
-        Pippip::ContactsDatabase::initialize(account);
-        contactsDatabase = new Pippip::ContactsDatabase(session, this);
-        connect(contactsDatabase, SIGNAL(updateStatus(QString,QString)),
-                this, SLOT(updateStatus(QString,QString)));
-        contactsDatabase->open(account);
-        contactsDatabase->loadContacts();
+        Pippip::ContactsDatabase::initialize(session);
+        Pippip::ContactsDatabase *contactsDatabase =
+                                    Pippip::ContactsDatabase::open(session);
+        Pippip::DatabaseContactList contacts;
+        contactsDatabase->getContacts(contacts);
+        contactsDatabase->close();
+        session->contacts->load(contacts, session);
 
         updateStatus(Constants::CHECK_ICON, "Authentication Complete");
     }
-    catch (Pippip::MessageException& e) {
-        updateStatus(Constants::REDX_ICON, "Authentication failed - " + QString(e.what()));
-    }
+    //catch (Pippip::MessageException& e) {
+    //    updateStatus(Constants::REDX_ICON, "Authentication failed - " + QString(e.what()));
+    //}
     catch (Pippip::DatabaseException& e) {
-        // TODO Log out
-        updateStatus(Constants::REDX_ICON, "Authentication failed - " + QString(e.what()));
+        QMessageBox alert(QMessageBox::Critical, "Database Error",
+                          "A database error occurred. Click OK to continue, Cancel to log out",
+                          QMessageBox::Ok | QMessageBox::Cancel);
+        alert.setDetailedText(e.what());
+        if (alert.exec() == QDialog::Accepted) {
+            updateStatus(Constants::REDX_ICON, "Database error - " + QString(e.what()));
+        }
+        else {
+            logOut();
+        }
     }
 
 }
@@ -156,20 +150,16 @@ void MainWindow::loggedOut() {
 
     delete session;
     session = 0;
-    nicknameManager->deleteLater();
-    nicknameManager = 0;
     //messageManager->deleteLater();
     //messageManager = 0;
-    contactsDatabase->close();
-    contactsDatabase->deleteLater();
-    contactsDatabase = 0;
     ui->LoginAction->setEnabled(true);
     ui->NewAccountAction->setEnabled(true);
     ui->LogoutAction->setEnabled(false);
     ui->NicknamesAction->setEnabled(false);
     ui->ContactsAction->setEnabled(false);
     ui->NewMessageAction->setEnabled(false);
-    updateStatus(Constants::INFO_ICON, "Logged out");
+
+    updateStatus(Constants::INFO_ICON, "Offline");
 
 }
 
@@ -177,23 +167,18 @@ void MainWindow::manageContacts() {
 
     statusLabel->clear();
     ContactsDialog *dialog = new ContactsDialog(session, this);
-    dialog->setContactsDatabase(contactsDatabase);
-    dialog->setNicknameManager(nicknameManager);
+    updateStatus(Constants::INFO_ICON, "Managing contacts");
     dialog->exec();
+    updateStatus(Constants::CHECK_ICON, "Online");
 
 }
 
 void MainWindow::manageNicknames() {
 
-    NicknamesDialog *dialog = new NicknamesDialog(this);
-    disconnect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-                                        this, SLOT(requestFailed(QString,QString)));
-    connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-                                        dialog, SLOT(requestFailed(QString,QString)));
-    dialog->setManager(nicknameManager);
+    NicknamesDialog *dialog = new NicknamesDialog(session, this);
+    updateStatus(Constants::INFO_ICON, "Managing nicknames");
     dialog->exec();
-    connect(nicknameManager, SIGNAL(requestFailed(QString,QString)),
-                                        dialog, SLOT(requestFailed(QString,QString)));
+    updateStatus(Constants::CHECK_ICON, "Online");
 
 }
 

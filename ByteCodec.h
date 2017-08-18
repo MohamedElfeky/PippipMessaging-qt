@@ -14,7 +14,7 @@ class ByteCodec {
         ~ByteCodec();
 
     public:
-        operator const char* () const { return data; }
+        explicit operator const char* () const { return data; }
         operator const QByteArray& () const { return qtBytes; }
         operator const coder::ByteArray& () const { return coderBytes; }
 

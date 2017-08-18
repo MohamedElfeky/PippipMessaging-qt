@@ -17,6 +17,8 @@
  */
 
 #include "MessageDatabase.h"
+#include "SessionState.h"
+#include "StringCodec.h"
 #include <QSettings>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -60,7 +62,7 @@ void MessageDatabase::close() {
 
 }
 
-bool MessageDatabase::create(const QString &account) {
+bool MessageDatabase::create(SessionState *state) {
 
     bool success = false;
 
@@ -68,7 +70,7 @@ bool MessageDatabase::create(const QString &account) {
 
     QSettings settings;
     QString dbPath = settings.value("Defaults/dbPath").toString();
-    db.setDatabaseName(dbPath + "/" + account + ".mdb");
+    db.setDatabaseName(dbPath + "/" + state->accountName + ".mdb");
     if (db.open()) {
         QSqlQuery query("CREATE TABLE messages (id INTEGER PRIMARY KEY, version TEXT, "
                         "timestamp INTEGER, sender TEXT, recipient TEXT, recipientId TEXT, "
@@ -76,9 +78,8 @@ bool MessageDatabase::create(const QString &account) {
         success = query.isActive();
         if (!success) {
             std::cout << "Failed to create message database for "
-                      << account.toUtf8().toStdString()
-                      << ", reason: "
-                      << query.lastError().text().toUtf8().toStdString() << std::endl;
+                      << StringCodec(state->accountName).getStdString() << ", reason: "
+                      << StringCodec(query.lastError().text()).getStdString() << std::endl;
         }
         db.close();
     }
