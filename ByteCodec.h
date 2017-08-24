@@ -11,6 +11,7 @@ class ByteCodec {
     public:
         ByteCodec(const QByteArray& qtBytes);
         ByteCodec(const coder::ByteArray& coderBytes);
+        ByteCodec(const QString& str);
         ~ByteCodec();
 
     public:

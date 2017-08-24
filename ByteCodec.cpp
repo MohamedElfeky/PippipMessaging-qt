@@ -1,4 +1,5 @@
 #include "ByteCodec.h"
+#include <QString>
 
 namespace Pippip {
 
@@ -20,6 +21,17 @@ ByteCodec::ByteCodec(const coder::ByteArray& c)
 
     data = reinterpret_cast<char*>(coderBytes.asArray());
     qtBytes = QByteArray(data, byteSize);
+
+}
+
+ByteCodec::ByteCodec(const QString &str)
+: qtBytes(str.toUtf8()),
+  qt(true),
+  byteSize(str.length()) {
+
+    data = qtBytes.data();
+    uint8_t *ubytes = reinterpret_cast<uint8_t*>(data);
+    coderBytes = coder::ByteArray(ubytes, byteSize);
 
 }
 

@@ -17,7 +17,8 @@
  */
 
 #include "ParameterGenerator.h"
-#include "StringCodec.h"
+//#include "StringCodec.h"
+#include "ByteCodec.h"
 #include <CryptoKitty-C/random/FortunaSecureRandom.h>
 #include <CryptoKitty-C/digest/SHA256.h>
 #include <CryptoKitty-C/digest/SHA1.h>
@@ -76,8 +77,9 @@ void ParameterGenerator::generateParameters(const QString& username) {
     keypair->releaseKeys();
     delete keypair;
 
+    //Generate the public ID
     CK::SHA1 sha1;
-    coder::ByteArray nameBytes(StringCodec(accountName).getStdString());
+    ByteCodec nameBytes(accountName);
     sha1.update(nameBytes);
     clock_gettime(CLOCK_REALTIME, &ctime);
     millis = ctime.tv_sec;
