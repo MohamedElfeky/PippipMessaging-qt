@@ -26,6 +26,7 @@ const QString Constants::LOAD_NICKNAMES_TASK = "getNicknames";
 const QString Constants::UPDATE_NICKNAME_TASK = "updateNickname";
 const QString Constants::UPDATE_CONTACT_TASK = "updateContact";
 const QString Constants::GET_CONTACTS_TASK = "getContacts";
+const QString Constants::GET_REQUESTS_TASK = "getRequests";
 const QString Constants::REQUEST_CONTACT_TASK = "requestContact";
 
 // Policy names

@@ -15,13 +15,13 @@ class GetContactsTask : public EnclaveRequestTask {
 
     public:
         void doRequest();
-        const ServerContactList& getContacts() const { return contacts; }
+        //const ServerContactList& getContacts() const { return contacts; }
 
     protected:
         bool requestComplete();
 
     private:
-        ServerContactList contacts;
+        //ServerContactList contacts;
 
 };
 

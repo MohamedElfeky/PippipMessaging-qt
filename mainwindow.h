@@ -10,6 +10,7 @@ class MainWindow;
 namespace Pippip {
     class SessionState;
     class MessageManager;
+    class ContactDirector;
 }
 
 class QLabel;
@@ -29,7 +30,7 @@ class MainWindow : public QMainWindow {
         //void fortunaUDPError(QString error, bool fatal);
         void logIn();
         void logOut();
-        void loggedIn();
+        void loggedIn(bool newAccount);
         void loggedOut();
         void manageContacts();
         void manageNicknames();
@@ -38,6 +39,8 @@ class MainWindow : public QMainWindow {
         void nicknamesLoaded();
         void requestFailed(const QString& reqName, const QString& error);
         void sendMessage(Qt::Key);
+
+    public:
         void updateStatus(const QString& icon, const QString& status);
 
     protected:
@@ -54,6 +57,7 @@ class MainWindow : public QMainWindow {
         Pippip::SessionState *session;
         QLabel *iconLabel;
         QLabel *statusLabel;
+        Pippip::ContactDirector *contactDirector;
         Pippip::MessageManager *messageManager;
 
 };

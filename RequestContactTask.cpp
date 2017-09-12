@@ -3,7 +3,6 @@
 #include "EnclaveResponse.h"
 #include "ContactRequest.h"
 #include "SessionState.h"
-#include "ContactsDatabase.h"
 #include "StringCodec.h"
 #include "ByteCodec.h"
 #include "Function.h"
@@ -46,18 +45,18 @@ void RequestContactTask::buildAndStoreContact() {
     CK::GCMCodec codec;
     codec << contact;
     codec.encrypt(state->contactKey, state->authData);
-    DatabaseContact databaseContact;
-    databaseContact.id = 0;
-    databaseContact.contact = ByteCodec(codec.toArray());
+    //DatabaseContact databaseContact;
+    //databaseContact.id = 0;
+    //databaseContact.contact = ByteCodec(codec.toArray());
 
-    ContactsDatabase *database = ContactsDatabase::open(state);
-    database->addContact(databaseContact);
-    database->close();
+    //ContactsDatabase *database = ContactsDatabase::open(state);
+    //database->addContact(databaseContact);
+    //database->close();
 
     state->contacts->add(contact);
-    serverContact.contactId = databaseContact.id;
-    serverContact.contact = databaseContact.contact;
-    serverContact.status = contact.status;
+    //serverContact.contactId = databaseContact.id;
+    //serverContact.contact = databaseContact.contact;
+    //serverContact.status = contact.status;
 
 }
 

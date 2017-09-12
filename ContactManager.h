@@ -2,70 +2,38 @@
 #define CONTACTMANAGER_H
 
 #include "Contact.h"
-#include <QObject>
-
-class QJsonObject;
-class QJsonArray;
+#include <map>
 
 namespace Pippip {
 
 class SessionState;
-struct ContactRequestOut;
-struct ContactRequestIn;
-class RESTHandler;
+class ContactsDatabase;
 class Contacts;
+struct ContactRequestIn;
 
-class ContactManager : public QObject {
-        Q_OBJECT
-
-    public:
-        explicit ContactManager(SessionState *state, QObject *parent = 0);
-        ~ContactManager();
-
-    signals:
-        void contactRequestComplete(long, const QString&);
-        void contactRequestFailed(const QString& error);
-        void contactsLoaded();
-        void deleteFailed(const QString& error);
-        void loadFailed(const QString& error);
-        void queryRequestComplete(const Pippip::ContactRequestIn& request);
-        void queryRequestFailed(const QString& error);
-        void updateContactFailed(const QString& error);
-
-    protected slots:
-        void contactLoadComplete(RESTHandler*);
-        void contactRequestComplete(RESTHandler*);
-        void contactRequestTimedOut();
-        void deleteComplete(RESTHandler*);
-        void deleteTimedOut();
-        void loadTimedOut();
-        void queryComplete(RESTHandler*);
-        void queryTimedOut();
-        //void updateContactComplete(RESTHandler*);
-        //void updateContactTimedOut();
+class ContactManager {
 
     public:
-        Contacts *getContacts() { return contacts; }
-        void loadContacts();
-        void queryContact(long requestId, bool acknowledge);
-        void reconcile(const Contacts& record);
-        void requestContact(const ContactRequestOut& request);
-        void updateContact(const Contact& contact);
+        ContactManager(SessionState *state);
+        ~ContactManager() {}
 
-    private:
-        void addContacts();
-        void deleteContacts();
-        void encodeContacts(const ContactList& list, QJsonArray& array);
-        bool loadContacts(const QJsonObject& json);
+    public:
+        void loadContacts(ContactsDatabase *contactsDb);
+        void processContact(ContactRequestIn& request);
+        void updateContact(ContactRequestIn& request);
 
     private:
         SessionState *state;
-        bool requestCompleted;
-        bool timedOut;
+        ContactsDatabase *contactsDb;
 
-        Contacts *contacts;
-        ContactList toAdd;
-        ContactList toDelete;
+        typedef std::map<qint64, quint32> RequestMap;
+        typedef RequestMap::const_iterator ReqConstIter;
+        RequestMap requestMap;
+
+        typedef std::map<qint32, Contact> ContactMap;
+        typedef ContactMap::iterator ContactIter;
+        typedef ContactMap::const_iterator ContactConstIter;
+        ContactMap contactMap;
 
 };
 

@@ -13,7 +13,7 @@ ContactAdapter::ContactAdapter(const Contact& contact)
   localContact(contact) {
 
 }
-
+/*
 ContactAdapter::ContactAdapter(const ServerContact& contact)
 : type(server_contact),
   serverContact(contact) {
@@ -25,19 +25,19 @@ ContactAdapter::ContactAdapter(const DatabaseContact& contact)
   databaseContact(contact) {
 
 }
-
+*/
 void ContactAdapter::decode(SessionState *state) {
 
     coder::ByteArray bytes;
 
     switch (type) {
         case database_contact:
-            bytes = ByteCodec(databaseContact.contact);
+            //bytes = ByteCodec(databaseContact.contact);
             break;
         case local_contact:
             break;
         case server_contact:
-            bytes = ByteCodec(serverContact.contact);
+            //bytes = ByteCodec(serverContact.contact);
             break;
     }
 
@@ -55,7 +55,7 @@ void ContactAdapter::encode(SessionState *state) {
     encoded = ByteCodec(codec.toArray());
 
 }
-
+/*
 const DatabaseContact& ContactAdapter::toDatabase(SessionState *state) {
 
     switch (type) {
@@ -75,18 +75,18 @@ const DatabaseContact& ContactAdapter::toDatabase(SessionState *state) {
     return databaseContact;
 
 }
-
+*/
 const Contact& ContactAdapter::toLocal(SessionState *state) {
 
     switch (type) {
         case local_contact:
             assert(false);
         case server_contact:
-            localContact.contactId = serverContact.contactId;
+            //localContact.contactId = serverContact.contactId;
             decode(state);
             break;
         case database_contact:
-            localContact.contactId = databaseContact.id;
+            //localContact.contactId = databaseContact.id;
             decode(state);
             break;
     }
@@ -94,7 +94,7 @@ const Contact& ContactAdapter::toLocal(SessionState *state) {
     return localContact;
 
 }
-
+/*
 const ServerContact& ContactAdapter::toServer(SessionState *state) {
 
     switch (type) {
@@ -117,5 +117,5 @@ const ServerContact& ContactAdapter::toServer(SessionState *state) {
     return serverContact;
 
 }
-
+*/
 }

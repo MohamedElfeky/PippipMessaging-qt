@@ -15,7 +15,7 @@ class RequestContactTask : public EnclaveRequestTask {
         ~RequestContactTask() {}
 
     public:
-        const ServerContact& getServerContact() const { return serverContact; }
+        //const ServerContact& getServerContact() const { return serverContact; }
         long getRequestId() const { return requestId; }
         const QString& getStatus() const { return status; }
         void setRequest(const ContactRequestOut& out);
@@ -28,7 +28,7 @@ class RequestContactTask : public EnclaveRequestTask {
 
     private:
         ContactRequestOut requestOut;
-        ServerContact serverContact;
+        //ServerContact serverContact;
         long requestId;
         QString status;
 

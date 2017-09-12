@@ -14,9 +14,9 @@ class AddContactsTask : public EnclaveRequestTask {
         ~AddContactsTask() {}
 
     public:
-        void addContact(const ServerContact& contact);
+        //void addContact(const ServerContact& contact);
         const QString& getStatus() const { return status; }
-        void setContacts(const ServerContactList& list) { contacts = list; }
+        //void setContacts(const ServerContactList& list) { contacts = list; }
 
     public:
         void doRequest();
@@ -26,7 +26,7 @@ class AddContactsTask : public EnclaveRequestTask {
 
     private:
         QString status;
-        ServerContactList contacts;
+        //ServerContactList contacts;
 
 };
 

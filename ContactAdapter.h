@@ -12,14 +12,14 @@ class ContactAdapter {
 
     public:
         ContactAdapter(const Contact& contact);
-        ContactAdapter(const ServerContact& contact);
-        ContactAdapter(const DatabaseContact& contact);
+        //ContactAdapter(const ServerContact& contact);
+        //ContactAdapter(const DatabaseContact& contact);
         ~ContactAdapter() {}
 
     public:
-        const DatabaseContact& toDatabase(SessionState *state); // throws CK::EncodingException
+        //const DatabaseContact& toDatabase(SessionState *state); // throws CK::EncodingException
         const Contact& toLocal(SessionState *state);            // throws CK::EncodingException
-        const ServerContact& toServer(SessionState *state);     // throws CK::EncodingException
+        //const ServerContact& toServer(SessionState *state);     // throws CK::EncodingException
 
     private:
         void decode(SessionState *state);
@@ -30,8 +30,8 @@ class ContactAdapter {
         Type type;
 
         Contact localContact;
-        ServerContact serverContact;
-        DatabaseContact databaseContact;
+        //ServerContact serverContact;
+        //DatabaseContact databaseContact;
         QByteArray encoded;
 
 };

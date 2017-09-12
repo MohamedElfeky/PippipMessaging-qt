@@ -30,23 +30,6 @@ struct Contact {
 
 typedef std::vector<Contact> ContactList;
 
-// REST contact
-struct ServerContact {
-    unsigned contactId;
-    QString status;
-    QByteArray contact;
-};
-
-typedef std::vector<ServerContact> ServerContactList;
-
-// Database contact
-struct DatabaseContact {
-    unsigned id;
-    QByteArray contact;
-};
-
-typedef std::vector<DatabaseContact> DatabaseContactList;
-
 }
 
 #endif // CONTACT_H

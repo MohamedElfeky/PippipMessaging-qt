@@ -57,7 +57,6 @@ SOURCES += main.cpp\
     Nicknames.cpp \
     Contacts.cpp \
     Function.cpp \
-    ContactsDatabase.cpp \
     ContactRequests.cpp \
     RequestManager.cpp \
     EnclaveRequestTask.cpp \
@@ -70,7 +69,12 @@ SOURCES += main.cpp\
     RequestContactTask.cpp \
     AddContactsTask.cpp \
     GetContactsTask.cpp \
-    ContactAdapter.cpp
+    ContactAdapter.cpp \
+    ContactDirector.cpp \
+    SQLLiteContactsDatabaseImpl.cpp \
+    DatabaseImpl.cpp \
+    GetRequestsTask.cpp \
+    StatusController.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -128,7 +132,6 @@ HEADERS  += mainwindow.h \
     Nicknames.h \
     Contacts.h \
     Function.h \
-    ContactsDatabase.h \
     ContactRequests.h \
     RequestManager.h \
     EnclaveRequestTask.h \
@@ -142,7 +145,13 @@ HEADERS  += mainwindow.h \
     AddContactsTask.h \
     GetContactsTask.h \
     ContactAdapter.h \
-    DatabaseException.h
+    DatabaseException.h \
+    ContactDirector.h \
+    SQLLiteContactsDatabaseImpl.h \
+    ContactsDatabase.h \
+    DatabaseImpl.h \
+    GetRequestsTask.h \
+    StatusController.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

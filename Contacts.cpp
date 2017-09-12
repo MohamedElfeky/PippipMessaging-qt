@@ -120,7 +120,7 @@ bool Contacts::fromRequestId(long long requestId, Contact &contact) const {
     return false;
 
 }
-
+/*
 void Contacts::load(const DatabaseContactList &list, SessionState *state) {
 
     for (auto contact : list) {
@@ -128,7 +128,7 @@ void Contacts::load(const DatabaseContactList &list, SessionState *state) {
     }
 
 }
-
+*/
 void Contacts::remove(const Contact &contact) {
 
     ContactList tmp;

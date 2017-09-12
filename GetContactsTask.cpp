@@ -39,11 +39,11 @@ bool GetContactsTask::requestComplete() {
             return false;
         }
         QJsonObject contactObj = val.toObject();
-        ServerContact contact;
+/*        ServerContact contact;
         contact.contactId = contactObj["contactId"].toInt();
         QString encoded = contactObj["contact"].toString();
         contact.contact = QByteArray::fromHex(encoded.toUtf8());
-        contacts.push_back(contact);
+        contacts.push_back(contact);*/
     }
 
     return true;

@@ -1,55 +1,40 @@
-#ifndef CONTACTSDATABASE_H
-#define CONTACTSDATABASE_H
+#ifndef SQLLITECONTACTSDATABASEIMPL_H
+#define SQLLITECONTACTSDATABASEIMPL_H
 
-#include "Contact.h"
+#include "ContactsDatabase.h"
 #include <QSqlDatabase>
 
 namespace Pippip {
-/*
-class EnclaveRequestTask;
-class Contacts;
-struct ContactRequestOut;
-struct ContactRequestIn;
-class ContactRequests;
-*/
-class SessionState;
 
-class ContactsDatabase {
+class SQLLiteContactsDatabaseImpl : public ContactsDatabase {
 
     protected:
-        ContactsDatabase(SessionState *state);
+        friend class DatabaseImpl;
+        SQLLiteContactsDatabaseImpl();
 
     public:
-        ~ContactsDatabase() {}
+        ~SQLLiteContactsDatabaseImpl() {}
 
     public:
-        void addContact(DatabaseContact& contact);
-        void addContacts(const DatabaseContactList& list);
+        void addContact(const Contact& contact, SessionState *state);
         void close();
-        static void createDatabase(const QString& account);
-        void deleteContact(unsigned id);
-        void getContacts(DatabaseContactList& list);
-        static void initialize(SessionState *state);
-        static ContactsDatabase *open(SessionState *state);
-        void updateContact(const DatabaseContact& contact);
+        void create(const QString& account);
+        int getNextContactId();
+        void getContacts(ContactList& list, SessionState *state);
+        void open(const QString& account);
+        void updateContact(const Contact& contact, SessionState *state);
 
     private:
-        bool contactExists(unsigned id);
-/*        void createContact(Contact& contact, const ContactRequestIn& request);
-        void insertContacts(const ServerContactList& contacts);
-        void loadServerContacts();
-        void newContact(const ContactRequestIn& request);
-        void resolveContacts(const ServerContactList& serverContacts);
-        void updateContact(const Contact& contact);
-        void updateContact(Contact& contact, const ContactRequestIn& request);
-*/
+        bool contactExists(int contactId);
+        void initialize();
+
     private:
         static bool once;
-        SessionState *state;
+        bool closed;
         QSqlDatabase database;
 
 };
 
 }
 
-#endif // CONTACTSDATABASE_H
+#endif // SQLLITECONTACTSDATABASEIMPL_H

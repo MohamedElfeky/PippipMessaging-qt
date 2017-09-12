@@ -33,7 +33,7 @@ class Contacts {
         void fill(const Contacts& other);
         bool fromPublicId(const QString& publicId, Contact& contact) const;
         bool fromRequestId(long long requestId, Contact& contact) const;
-        void load(const DatabaseContactList& list, SessionState *state);
+        //void load(const DatabaseContactList& list, SessionState *state);
         void remove(const Contact& contact);
         void replace(const Contact& contact);
         unsigned size() const;

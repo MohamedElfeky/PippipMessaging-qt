@@ -39,8 +39,8 @@ NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *par
     connect(ui->buttonBox, SIGNAL(helpRequested()), this, SLOT(doHelp()));
     MainWindow *mainWindow = dynamic_cast<MainWindow*>(parent);
     creator = new Pippip::NewAccountCreator(this, generator);
-    connect(creator, SIGNAL(accountComplete(int)), mainWindow, SLOT(loggedIn()));
-    connect(creator, SIGNAL(accountComplete(QString)), this, SLOT(accountComplete(QString)));
+    connect(creator, SIGNAL(accountComplete(bool)), mainWindow, SLOT(loggedIn(bool)));
+    //connect(creator, SIGNAL(accountComplete(QString)), this, SLOT(accountComplete(QString)));
 
 }
 

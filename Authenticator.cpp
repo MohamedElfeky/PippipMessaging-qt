@@ -104,7 +104,7 @@ void Authenticator::authorizeComplete(RESTHandler *handler) {
             state->sessionState = Pippip::SessionState::authenticated;
             emit updateStatus("Authentication Complete");
             emit loginComplete(1);
-            emit authenticationComplete(state->accountName);
+            emit authenticationComplete(false); // Not a new account.
         }
         else {
             state->sessionState = Pippip::SessionState::failed;

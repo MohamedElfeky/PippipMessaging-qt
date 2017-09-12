@@ -1,7 +1,7 @@
 #include "ContactsDialog.h"
 #include "ContactRequest.h"
 #include "ContactHandler.h"
-#include "ContactsDatabase.h"
+#include "SQLLiteContactsDatabaseImpl.h"
 #include "RequestHandler.h"
 #include "Nicknames.h"
 #include "LoadNicknamesTask.h"
@@ -77,6 +77,7 @@ int ContactsDialog::exec() {
 void ContactsDialog::nicknamesLoaded() {
 
     //contactHandler->setNicknames(nicknameManager->getNicknames());
+    ui->addButton->setEnabled(true);
 
 }
 

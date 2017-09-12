@@ -44,7 +44,7 @@ class NewAccountCreator : public SessionTask {
         NewAccountCreator& operator =(const NewAccountCreator& other);
 
     signals:
-        void accountComplete(int);
+        void accountComplete(bool newAccount);
         void incrementProgress(int incr);
         void resetProgress();
         void updateInfo(QString info);

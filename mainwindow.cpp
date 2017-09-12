@@ -3,7 +3,7 @@
 #include "Authenticator.h"
 #include "Constants.h"
 #include "Contacts.h"
-#include "ContactsDatabase.h"
+#include "ContactDirector.h"
 #include "ContactsDialog.h"
 #include "EntropyStream.h"
 #include "KeyFilter.h"
@@ -16,6 +16,7 @@
 #include "DatabaseException.h"
 #include "UDPListener.h"
 #include "Vault.h"
+#include "StatusController.h"
 #include <QComboBox>
 #include <QDir>
 #include <QHBoxLayout>
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
     statusLabel->setIndent(5);
     statusBar()->addWidget(iconLabel);
     statusBar()->addWidget(statusLabel);
+    StatusController::init(this);
 
     KeyFilter *keyFilter = new KeyFilter(ui->messageTextEdit);
     keyFilter->addKey(Qt::Key_Enter);
@@ -96,7 +98,7 @@ void MainWindow::logIn() {
 
 }
 
-void MainWindow::loggedIn() {
+void MainWindow::loggedIn(bool newAccount) {
 
     try {
         // Do this first in case the database open fails
@@ -109,6 +111,16 @@ void MainWindow::loggedIn() {
         ui->NicknamesAction->setEnabled(true);
         ui->NewMessageAction->setEnabled(true);
 
+        contactDirector = new Pippip::ContactDirector(session, this);
+        if (newAccount) {
+            contactDirector->createDatabase(session->accountName);
+        }
+        else {
+            contactDirector->openDatabase(session->accountName);
+        }
+        contactDirector->start();
+
+        /*
         Pippip::ContactsDatabase::initialize(session);
         Pippip::ContactsDatabase *contactsDatabase =
                                     Pippip::ContactsDatabase::open(session);
@@ -116,7 +128,7 @@ void MainWindow::loggedIn() {
         contactsDatabase->getContacts(contacts);
         contactsDatabase->close();
         session->contacts->load(contacts, session);
-
+        */
         updateStatus(Constants::CHECK_ICON, "Authentication Complete");
     }
     //catch (Pippip::MessageException& e) {
@@ -148,6 +160,8 @@ void MainWindow::logOut() {
 
 void MainWindow::loggedOut() {
 
+    contactDirector->end();
+    contactDirector->deleteLater();
     delete session;
     session = 0;
     //messageManager->deleteLater();

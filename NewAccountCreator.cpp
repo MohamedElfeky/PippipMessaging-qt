@@ -26,9 +26,6 @@
 #include "NewAccountFinal.h"
 #include "Vault.h"
 #include "VaultException.h"
-#include "DatabaseException.h"
-#include "ContactsDatabase.h"
-#include "MessageDatabase.h"
 #include <QMessageBox>
 #include <QApplication>
 #include <QTimer>
@@ -65,12 +62,19 @@ void NewAccountCreator::addAccount(const QString& newUser) {
     QByteArray json = settings.value("User/accounts").value<QByteArray>();
     QJsonDocument doc = QJsonDocument::fromJson(json);
     QJsonObject accountsObj = doc.object();
-    QJsonArray accounts = accountsObj["users"].toArray();
-    accounts.append(newUser);
+    QJsonArray accountsIn = accountsObj["users"].toArray();
+    QJsonArray accountsOut;
+    // We will overwrite new users, so we don't want to add anyone twice.
+    accountsOut.append(newUser);
+    for (auto var : accountsIn) {
+        QString account = var.toString();
+        if (account != newUser) {
+            accountsOut.append(account);
+        }
+    }
     QJsonObject newAccounts;
-    newAccounts["users"] = accounts;
+    newAccounts["users"] = accountsOut;
     QJsonDocument newDoc(newAccounts);
-    QString newjson = QString(newDoc.toJson());
     settings.setValue("User/accounts", newDoc.toJson());
 
 }
@@ -127,23 +131,14 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
             requestFailed(handler->getError());
         }
         else if (final) {
-            if (MessageDatabase::create(state)) {
-                try {
-                    std::unique_ptr<Vault> vault(new Vault(*state));
-                    vault->storeVault(passphrase);
-                    addAccount(vault->accountName);
-                    Pippip::ContactsDatabase::initialize(state);
-                    emit accountComplete(0);
-                }
-                catch (VaultException& e) {
-                    requestFailed(QString(e.what()));
-                }
-                catch (DatabaseException& e) {
-                    requestFailed(QString(e.what()));
-                }
+            try {
+                std::unique_ptr<Vault> vault(new Vault(*state));
+                vault->storeVault(passphrase);
+                addAccount(vault->accountName);
+                emit accountComplete(true); // New account.
             }
-            else {
-                requestFailed("Failed to create message database");
+            catch (VaultException& e) {
+                requestFailed(QString(e.what()));
             }
         }
         else {

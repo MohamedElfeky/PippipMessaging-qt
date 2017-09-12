@@ -42,7 +42,7 @@ class Authenticator : public SessionTask {
         Authenticator& operator =(const Authenticator& other);
 
     signals:
-        void authenticationComplete(const QString& account);
+        void authenticationComplete(bool);
         void loginComplete(int);
         void loginReset();
         void loggedOut();

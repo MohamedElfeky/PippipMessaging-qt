@@ -11,15 +11,15 @@ AddContactsTask::AddContactsTask(SessionState *state, QObject *parent)
     taskName = Constants::ADD_CONTACTS_TASK;
 
 }
-
+/*
 void AddContactsTask::addContact(const ServerContact &contact) {
 
     contacts.push_back(contact);
 
 }
-
+*/
 void AddContactsTask::doRequest() {
-
+/*
     QJsonArray contactsArray;
     for (ServerContact contact : contacts) {
         QJsonObject contactObj;
@@ -29,7 +29,7 @@ void AddContactsTask::doRequest() {
         contactsArray.append(contactObj);
     }
     request.setArrayValue("contacts", contactsArray);
-
+*/
     EnclaveRequestTask::doRequest();
 
 }

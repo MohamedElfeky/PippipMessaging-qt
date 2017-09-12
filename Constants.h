@@ -34,6 +34,7 @@ class Constants
         static const QString LOAD_NICKNAMES_TASK;
         static const QString UPDATE_NICKNAME_TASK;
         static const QString GET_CONTACTS_TASK;
+        static const QString GET_REQUESTS_TASK;
         static const QString UPDATE_CONTACT_TASK;
         static const QString REQUEST_CONTACT_TASK;
 

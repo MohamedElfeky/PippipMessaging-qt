@@ -19,7 +19,7 @@
 #include "ContactHandler.h"
 #include "ui_ContactsDialog.h"
 #include "KeyFilter.h"
-#include "ContactsDatabase.h"
+#include "SQLLiteContactsDatabaseImpl.h"
 #include "ContactManager.h"
 #include "SessionState.h"
 #include "Nicknames.h"
@@ -147,7 +147,7 @@ void ContactHandler::loadTable(int startingRow) {
     }
 
     int row = startingRow;
-    for (const auto contact : *state->contacts) {
+    for (const auto& contact : *state->contacts) {
         QLabel *statusLabel = new QLabel(contact.status);
         statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         statusLabel->setMargin(5);
@@ -201,7 +201,7 @@ void ContactHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
     else if (taskName == Constants::REQUEST_CONTACT_TASK) {
         Pippip::RequestContactTask *reqTask = dynamic_cast<Pippip::RequestContactTask*>(task);
         Pippip::AddContactsTask *addTask = new Pippip::AddContactsTask(state, this);
-        addTask->addContact(reqTask->getServerContact());
+        //addTask->addContact(reqTask->getServerContact());
         connect(addTask, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
                 this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
         connect(addTask, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
