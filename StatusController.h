@@ -26,6 +26,9 @@ class MainWindow;
 class StatusController : public QObject{
         Q_OBJECT
 
+    public:
+        enum StatusSeverity { success, info, warn, error, fatal };
+
     private:
         StatusController(MainWindow *parent);
 
@@ -36,7 +39,7 @@ class StatusController : public QObject{
 
     public slots:
         void timerExpired();
-        void updateStatus(const QString& icon, const QString& status);
+        void updateStatus(StatusSeverity severity, const QString& status);
 
     public:
         static void init(MainWindow *parent);
@@ -45,6 +48,7 @@ class StatusController : public QObject{
     private:
         bool statusActive;
         bool newStatus;
+        int fadeTime;
         MainWindow *mainWindow;
 
 };

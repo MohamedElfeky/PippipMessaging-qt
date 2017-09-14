@@ -135,6 +135,7 @@ void NewAccountCreator::finishComplete(RESTHandler *handler) {
                 std::unique_ptr<Vault> vault(new Vault(*state));
                 vault->storeVault(passphrase);
                 addAccount(vault->accountName);
+                generator->sessionState = SessionState::authenticated;
                 emit accountComplete(true); // New account.
             }
             catch (VaultException& e) {

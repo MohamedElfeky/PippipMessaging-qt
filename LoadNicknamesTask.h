@@ -20,7 +20,7 @@ class LoadNicknamesTask : public EnclaveRequestTask {
         ~LoadNicknamesTask() {}
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         bool decodeEntity(const QJsonObject& obj, Entity& entity) const;

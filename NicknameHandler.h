@@ -52,7 +52,7 @@ class NicknameHandler : public QObject {
         void nicknameEdited();
         void policyEdited(Qt::Key);
         void requestComplete(Pippip::EnclaveRequestTask *task);
-        void requestFailed(Pippip::EnclaveRequestTask *task);
+        void requestFailed(const QString& error);
 
     public:
         void loadNicknames(Pippip::SessionState *state);
@@ -68,6 +68,7 @@ class NicknameHandler : public QObject {
         bool nicknamesValid;
         bool newItem;
         int selectedRow;
+        QString taskName;
         Ui::NicknamesDialog *ui;
         QComboBox *policyComboBox;
         QLineEdit *nicknameLineEdit;

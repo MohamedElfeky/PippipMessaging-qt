@@ -21,7 +21,7 @@ class RequestContactTask : public EnclaveRequestTask {
         void setRequest(const ContactRequestOut& out);
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         void buildAndStoreContact();

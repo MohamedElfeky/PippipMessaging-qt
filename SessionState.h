@@ -29,7 +29,6 @@ namespace CK {
 namespace Pippip {
 
 class Nicknames;
-class Contacts;
 
 class SessionState {
 
@@ -57,7 +56,6 @@ class SessionState {
 
         // Messaging objects.
         Nicknames *nicknames;
-        Contacts *contacts;
 
 };
 

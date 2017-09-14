@@ -1,24 +1,15 @@
 #include "ContactManager.h"
-//#include "EnclaveRequest.h"
-//#include "EnclaveResponse.h"
 #include "ContactRequest.h"
 #include "Contact.h"
 #include "ContactsDatabase.h"
 #include "Constants.h"
-//#include "RESTHandler.h"
 #include "SessionState.h"
-//#include "Message.h"
-//#include "Function.h"
 #include "ByteCodec.h"
 #include "StringCodec.h"
 #include "StatusController.h"
 #include "DatabaseException.h"
-//#include <QTimer>
-//#include <QJsonArray>
-//#include <QJsonObject>
 #include <QDebug>
 #include <CryptoKitty-C/encoding/GCMCodec.h>
-//#include <CryptoKitty-C/exceptions/EncodingException.h>
 
 namespace Pippip {
 
@@ -48,7 +39,7 @@ void ContactManager::loadContacts(ContactsDatabase *db) {
     }
     catch (DatabaseException& e) {
         QString prefix("Database error while loading contacts - ");
-        StatusController::instance()->updateStatus(Constants::REDX_ICON,prefix + StringCodec(e.what()));
+        StatusController::instance()->updateStatus(StatusController::error, prefix + StringCodec(e.what()));
     }
 
 }

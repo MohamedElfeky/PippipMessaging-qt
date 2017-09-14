@@ -16,16 +16,17 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AckRequestsTask.h"
+#include "Constants.h"
 #include "ContactDirector.h"
 #include "ContactManager.h"
+#include "ContactRequest.h"
 #include "ContactsDatabase.h"
 #include "DatabaseImpl.h"
 #include "DatabaseException.h"
-#include "GetRequestsTask.h"
-#include "Constants.h"
-#include "StatusController.h"
-#include "ContactRequest.h"
 #include "EnclaveException.h"
+#include "GetRequestsTask.h"
+#include "StatusController.h"
 #include "StringCodec.h"
 #include <QTimer>
 
@@ -33,6 +34,11 @@ namespace Pippip {
 
 static const int PROCESS_INTERVAL = 15;
 
+/**
+ * @brief ContactDirector::ContactDirector
+ * @param st
+ * @param parent
+ */
 ContactDirector::ContactDirector(SessionState *st, QObject *parent)
 : QObject(parent),
   state(st) {
@@ -41,9 +47,17 @@ ContactDirector::ContactDirector(SessionState *st, QObject *parent)
     getRequestsTask = new GetRequestsTask(state, this);
     connect(getRequestsTask, SIGNAL(getRequestsComplete()), this, SLOT(getRequestsComplete()));
     connect(getRequestsTask, SIGNAL(getRequestsFailed(QString)), this, SLOT(getRequestsFailed(QString)));
+    connect(getRequestsTask, SIGNAL(enclaveRequestTimedOut()), this, SLOT(requestTimedOut()));
+    ackRequestsTask = new AckRequestsTask(state, this);
+    connect(ackRequestsTask, SIGNAL(ackRequestsComplete()), this, SLOT(ackRequestsComplete()));
+    connect(ackRequestsTask, SIGNAL(ackRequestsFailed(QString)), this, SLOT(ackRequestsFailed(QString)));
+    connect(ackRequestsTask, SIGNAL(enclaveRequestTimedOut()), this, SLOT(requestTimedOut()));
 
 }
 
+/**
+ * @brief ContactDirector::~ContactDirector
+ */
 ContactDirector::~ContactDirector() {
 
     delete contactManager;
@@ -51,6 +65,10 @@ ContactDirector::~ContactDirector() {
 
 }
 
+/**
+ * @brief ContactDirector::createDatabase
+ * @param accountName
+ */
 void ContactDirector::createDatabase(const QString &accountName) {
 
     contactsDb = DatabaseImpl::createContactsDatabase(accountName);
@@ -59,48 +77,94 @@ void ContactDirector::createDatabase(const QString &accountName) {
 
 }
 
+/**
+ * @brief ContactDirector::end
+ */
 void ContactDirector::end() {
 
     contactsDb->close();
 
 }
 
+/**
+ * @brief ContactDirector::ackRequestsComplete
+ */
+void ContactDirector::ackRequestsComplete() {
+
+    const RequestList& requests = ackRequestsTask->getRequestList();
+    for (auto request : requests) {
+        contactManager->updateContact(request);
+    }
+
+}
+
+/**
+ * @brief ContactDirector::ackRequestsFailed
+ * @param error
+ */
+void ContactDirector::ackRequestsFailed(const QString &error) {
+
+    StatusController::instance()->updateStatus(StatusController::error, error);
+
+}
+
+/**
+ * @brief ContactDirector::getRequests
+ */
 void ContactDirector::getRequests() {
 
     try {
-        getRequestsTask->doRequest();
+        getRequestsTask->getRequests("requested");
     }
     catch (EnclaveException& e) {
-        StatusController::instance()->updateStatus(Constants::REDX_ICON, StringCodec(e.what()));
+        StatusController::instance()->updateStatus(StatusController::error, StringCodec(e.what()));
         QTimer::singleShot(PROCESS_INTERVAL *1000, this, SLOT(getRequests()));
     }
 
 }
 
+/**
+ * @brief ContactDirector::getRequestsComplete
+ */
 void ContactDirector::getRequestsComplete() {
 
     try {
+        ackRequestsTask->clear();
         RequestList requests = getRequestsTask->getRequestList();
         for (auto request : requests) {
-            contactManager->processContact(request);
+            if (request.status == "pending") {
+                contactManager->processContact(request);
+            }
+            else if (request.status == "active") {
+                ackRequestsTask->addAcknowledgement(request.requestId, "accept");
+            }
+            ackRequestsTask->acknowledgeRequests();
         }
     }
     catch (DatabaseException& e) {
         QString prefix("Database error while processing contacts - ");
-        StatusController::instance()->updateStatus(Constants::REDX_ICON, prefix + StringCodec(e.what()));
+        StatusController::instance()->updateStatus(StatusController::error, prefix + StringCodec(e.what()));
     }
 
     QTimer::singleShot(PROCESS_INTERVAL *1000, this, SLOT(getRequests()));
 
 }
 
+/**
+ * @brief ContactDirector::getRequestsFailed
+ * @param error
+ */
 void ContactDirector::getRequestsFailed(const QString &error) {
 
-    StatusController::instance()->updateStatus(Constants::REDX_ICON, error);
+    StatusController::instance()->updateStatus(StatusController::error, error);
     QTimer::singleShot(PROCESS_INTERVAL *1000, this, SLOT(getRequests()));
 
 }
 
+/**
+ * @brief ContactDirector::openDatabase
+ * @param accountName
+ */
 void ContactDirector::openDatabase(const QString &accountName) {
 
     contactsDb = DatabaseImpl::openContactsDatabase(accountName);
@@ -108,6 +172,18 @@ void ContactDirector::openDatabase(const QString &accountName) {
 
 }
 
+/**
+ * @brief ContactDirector::requestTimedOut
+ */
+void ContactDirector::requestTimedOut() {
+
+    StatusController::instance()->updateStatus(StatusController::error, "Contact request timed out");
+
+}
+
+/**
+ * @brief ContactDirector::start
+ */
 void ContactDirector::start() {
 
     // Starts the get requests cycle.

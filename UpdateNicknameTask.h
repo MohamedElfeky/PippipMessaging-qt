@@ -26,7 +26,7 @@ class UpdateNicknameTask : public EnclaveRequestTask {
         void setWhitelistEntity(const Entity& entity);
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         Nickname& getUpdatedNickname();

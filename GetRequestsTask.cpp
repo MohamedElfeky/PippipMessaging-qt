@@ -18,6 +18,15 @@
 
 #include "GetRequestsTask.h"
 #include "Constants.h"
+#include "ContactRequest.h"
+#include "EnclaveRequest.h"
+#include "EnclaveResponse.h"
+#include "EnclaveException.h"
+#include "JsonValidator.h"
+#include "StringCodec.h"
+#include "ValidationException.h"
+#include <QDebug>
+#include <QJsonArray>
 
 namespace Pippip {
 
@@ -26,13 +35,77 @@ GetRequestsTask::GetRequestsTask(SessionState *state, QObject *parent)
 
     taskName = Constants::GET_REQUESTS_TASK;
 
-    request.setStringValue("requester", "requested");
+}
+
+void GetRequestsTask::getRequests(const QString& requester) {
+
+    request->setStringValue("requester", requester);
+    doRequest(10);  // 10 second timeout.
 
 }
 
-bool GetRequestsTask::requestComplete() {
+void GetRequestsTask::restComplete(const QJsonObject& resp) {
 
-    return false;
+    response = new EnclaveResponse(resp, state);
+    if (*response) {
+        try {
+            QJsonArray requestsArray = response->getResponseArray("requests");
+            qDebug() << "Get requests complete. Retrieved " << requestsArray.size() << " requests";
+            setRequests(requestsArray);
+            emit getRequestsComplete();
+        }
+        catch (EnclaveException& e) {
+            QString prefix = "Enclave error in get requests task - ";
+            emit getRequestsFailed(prefix + e.what());
+        }
+        catch (ValidationException& e) {
+            QString prefix = "Validation error in get requests task - ";
+            emit getRequestsFailed(prefix + e.what());
+        }
+    }
+    else {
+        emit getRequestsFailed(response->getError());
+    }
+
+}
+
+/**
+ * @brief GetRequestsTask::restFailed
+ * @param error
+ */
+void GetRequestsTask::restFailed(const QString &error) {
+
+    emit getRequestsFailed(error);
+
+}
+
+/**
+ * @brief GetRequestsTask::setRequests
+ * @param requests
+ */
+void GetRequestsTask::setRequests(const QJsonArray &requests) {
+
+    for (auto var : requests) {
+        if (!var.isObject()) {
+            throw EnclaveException("Invalid server response, not a request object");
+        }
+        QJsonObject reqObj = var.toObject();
+        ContactRequestIn request;
+        request.status = JsonValidator(reqObj, "status").getString();
+        request.requestId = JsonValidator(reqObj, "requestId").getLong();
+        QJsonObject requested = JsonValidator(reqObj, "requested").getObject();
+        request.requested.nickname = JsonValidator(requested, "nickname").getString();
+        request.requested.publicId = JsonValidator(requested, "publicId").getString();
+        QJsonObject requesting = JsonValidator(reqObj, "requesting").getObject();
+        request.requesting.nickname = JsonValidator(requesting, "nickname").getString();
+        request.requesting.publicId = JsonValidator(requesting, "publicId").getString();
+        QJsonObject rsaKeys = JsonValidator(reqObj, "rsaKeys").getObject();
+        request.rsaKeys.encryptionRSA = JsonValidator(rsaKeys, "encryptionRSA").getString();
+        request.rsaKeys.signingRSA = JsonValidator(rsaKeys, "signingRSA").getString();
+        std::string keyBlock = StringCodec(JsonValidator(reqObj, "keyBlock").getString());
+        request.keyBlock = coder::ByteArray(keyBlock, true);
+        requestList.push_back(request);
+    }
 
 }
 

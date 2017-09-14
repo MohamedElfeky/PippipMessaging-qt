@@ -22,7 +22,7 @@ class AddContactsTask : public EnclaveRequestTask {
         void doRequest();
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         QString status;

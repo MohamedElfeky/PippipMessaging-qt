@@ -1,5 +1,6 @@
 #include "UpdateContactTask.h"
 #include "EnclaveResponse.h"
+#include "EnclaveRequest.h"
 #include "Contact.h"
 #include "Function.h"
 #include "SessionState.h"
@@ -20,9 +21,9 @@ UpdateContactTask::UpdateContactTask(SessionState *state, QObject *parent)
 
 bool UpdateContactTask::requestComplete() {
 
-    QJsonValue resultVal = response->getValue("result");
+    QJsonValue resultVal = response->getResponseValue("result");
     if (!resultVal.isString()) {
-        error = "Invalid server response";
+        //error = "Invalid server response";
         return false;
     }
 
@@ -42,7 +43,7 @@ void UpdateContactTask::setContact(const Contact &contact) {
         codec.encrypt(state->contactKey, state->authData);
         StringCodec encoded(codec.toArray().toHexString());
         contactObj["encoded"] = encoded.getQtString();
-        request.setObjectValue("contact", contactObj);
+        request->setObjectValue("contact", contactObj);
     }
     catch (CK::EncodingException& e) {
         throw TaskException(std::string("Contact encoding error - ") + e.what());

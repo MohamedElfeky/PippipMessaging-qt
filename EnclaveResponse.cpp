@@ -1,6 +1,8 @@
 #include "EnclaveResponse.h"
 #include "SessionState.h"
+#include "JsonValidator.h"
 #include <QJsonValue>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QByteArray>
 #include <QDebug>
@@ -9,11 +11,19 @@
 
 namespace Pippip {
 
+/**
+ * @brief EnclaveResponse::EnclaveResponse
+ * @param j
+ * @param sess
+ */
 EnclaveResponse::EnclaveResponse(const QJsonObject& j, SessionState *sess)
 : json(j),
   state(sess) {
 }
 
+/**
+ * @brief EnclaveResponse::operator bool
+ */
 EnclaveResponse::operator bool() {
 
     QJsonValue value = json["error"];
@@ -56,7 +66,23 @@ EnclaveResponse::operator bool() {
 
 }
 
-QJsonValue EnclaveResponse::getValue(const QString &name) const {
+/**
+ * @brief EnclaveResponse::getResponseArray
+ * @param name
+ * @return
+ */
+QJsonArray EnclaveResponse::getResponseArray(const QString& name) const {
+
+    return JsonValidator(json, name).getArray();
+
+}
+
+/**
+ * @brief EnclaveResponse::getResponseValue
+ * @param name
+ * @return
+ */
+QJsonValue EnclaveResponse::getResponseValue(const QString &name) const {
 
     return json[name];
 

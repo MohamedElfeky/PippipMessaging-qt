@@ -23,7 +23,6 @@
 #include "ContactManager.h"
 #include "SessionState.h"
 #include "Nicknames.h"
-#include "Contacts.h"
 #include "Constants.h"
 #include "RequestContactTask.h"
 #include "AddContactsTask.h"
@@ -141,13 +140,13 @@ void ContactHandler::idTypeSelected(Qt::Key) {
 void ContactHandler::loadTable(int startingRow) {
 
     ui->contactsTableWidget->clearContents();
-    ui->contactsTableWidget->setRowCount(state->contacts->size() + startingRow);
+    //ui->contactsTableWidget->setRowCount(state->contacts->size() + startingRow);
     if (startingRow == 0) {
         ui->contactsTableWidget->setHorizontalHeaderLabels(contactHeadings);
     }
 
     int row = startingRow;
-    for (const auto& contact : *state->contacts) {
+    /*for (const auto& contact : *state->contacts) {
         QLabel *statusLabel = new QLabel(contact.status);
         statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         statusLabel->setMargin(5);
@@ -167,7 +166,7 @@ void ContactHandler::loadTable(int startingRow) {
         puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         puidLabel->setMargin(5);
         ui->contactsTableWidget->setCellWidget(row++, 3, puidLabel);
-    }
+    }*/
     if (startingRow > 0) {
         ui->contactsTableWidget->selectRow(0);
     }
@@ -252,7 +251,7 @@ void ContactHandler::requestContact() {
 }
 
 void ContactHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
-
+/*
     QString status;
     QString taskName = task->getTaskName();
     if (taskName == Constants::LOAD_NICKNAMES_TASK) {
@@ -267,7 +266,7 @@ void ContactHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
 
     updateStatus(Constants::REDX_ICON, status);
     task->deleteLater();
-
+*/
 }
 
 /*
@@ -289,7 +288,7 @@ void ContactHandler::requestedIdEdited() {
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    task->doRequest();
+    //task->doRequest();
 
 }
 

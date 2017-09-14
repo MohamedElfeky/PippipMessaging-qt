@@ -17,6 +17,7 @@
  */
 
 #include "EnclaveRequestTask.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include "EnclaveException.h"
 #include "SessionState.h"
@@ -25,70 +26,59 @@
 
 namespace Pippip {
 
+/**
+ * @brief EnclaveRequestTask::EnclaveRequestTask
+ * @param st
+ * @param parent
+ */
 EnclaveRequestTask::EnclaveRequestTask(SessionState *st, QObject *parent)
-: QObject(parent),
-  request(st),
+: RESTTask(parent),
+  request(new EnclaveRequest(st)),
   response(0),
   state(st) {
 }
 
+/**
+ * @brief EnclaveRequestTask::~EnclaveRequestTask
+ */
 EnclaveRequestTask::~EnclaveRequestTask() {
 
     delete response;
+    delete request;
 
 }
 
-void EnclaveRequestTask::doRequest() {
+/**
+ * @brief EnclaveRequestTask::doRequest
+ * @param timeout
+ */
+void EnclaveRequestTask::doRequest(int timeout) {
 
     if (state->sessionState != SessionState::authenticated) {
         throw EnclaveException("Session not authenticated");
     }
 
-    requestCompleted = timedOut = false;
-
-    request.setRequestType(taskName);
-    RESTHandler *handler = new RESTHandler;
-    connect(handler, SIGNAL(requestComplete(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
-    connect(handler, SIGNAL(requestFailed(RESTHandler*)), this, SLOT(requestComplete(RESTHandler*)));
-    QTimer::singleShot(10000, this, SLOT(requestTimedOut()));
-    handler->doPost(request);
+    request->setRequestType(taskName);
+    doRESTPost(timeout, *request);
 
 }
 
-void EnclaveRequestTask::requestComplete(RESTHandler *handler) {
+/**
+ * @brief EnclaveRequestTask::restFailed
+ * @param error
+ */
+void EnclaveRequestTask::restFailed(const QString &error) {
 
-    if (!timedOut) {
-        requestCompleted = true;
-
-        response = new EnclaveResponse(handler->getResponse(), state);
-        if (!handler->successful()) {
-            error = handler->getError();
-            emit requestFailed(this);
-        }
-        else if (*response) {
-            if (requestComplete()) {
-                emit requestComplete(this);
-            }
-            else {
-                emit requestFailed(this);
-            }
-        }
-        else {
-            error = response->getError();
-            emit requestFailed(this);
-        }
-    }
-    handler->deleteLater();
+    emit enclaveRequestFailed(error);
 
 }
 
-void EnclaveRequestTask::requestTimedOut() {
+/**
+ * @brief EnclaveRequestTask::restTimedOut
+ */
+void EnclaveRequestTask::restTimedOut() {
 
-    if (!requestCompleted) {
-        timedOut = true;
-        error = "Request timed out";
-        emit requestFailed(this);
-    }
+    emit enclaveRequestTimedOut();
 
 }
 

@@ -1,5 +1,6 @@
 #include "UpdateNicknameTask.h"
 #include "Constants.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include "SessionState.h"
 #include "Nicknames.h"
@@ -15,8 +16,8 @@ UpdateNicknameTask::UpdateNicknameTask(SessionState *state, QObject *parent)
 
 }
 
-bool UpdateNicknameTask::requestComplete() {
-
+void UpdateNicknameTask::restComplete(const QJsonObject& resp) {
+/*
     QJsonValue statusVal = response->getValue("status");
     if (!statusVal.isString()) {
         error = "Invalid server response";
@@ -44,7 +45,7 @@ bool UpdateNicknameTask::requestComplete() {
         error = "Friends list entry not found";
     }
     return false;
-
+*/
 }
 
 Nickname& UpdateNicknameTask::getUpdatedNickname() {
@@ -63,36 +64,36 @@ Nickname& UpdateNicknameTask::getUpdatedNickname() {
 void UpdateNicknameTask::setNickname(const QString& nick) {
 
     nickname = nick;
-    request.setStringValue("nickname", nickname);
+    request->setStringValue("nickname", nickname);
 
 }
 
 void UpdateNicknameTask::setPolicy(const QString& pol) {
 
     policy = pol;
-    request.setStringValue("policy", policy);
+    request->setStringValue("policy", policy);
 
 }
 
 void UpdateNicknameTask::setUpdateAction(const QString& action) {
 
     updateAction = action;
-    request.setStringValue("action", action);
+    request->setStringValue("action", action);
 
 }
 
 void UpdateNicknameTask::setUpdateType(const QString& type) {
 
     updateType = type;
-    request.setStringValue("type", type);
+    request->setStringValue("type", type);
 
 }
 
 void UpdateNicknameTask::setWhitelistEntity(const Entity& wlEntry) {
 
     entity = wlEntry;
-    request.setStringValue("whitelistNickname", entity.nickname);
-    request.setStringValue("whitelistPublicId", entity.publicId);
+    request->setStringValue("whitelistNickname", entity.nickname);
+    request->setStringValue("whitelistPublicId", entity.publicId);
 
 }
 

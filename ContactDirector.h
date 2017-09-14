@@ -27,6 +27,7 @@ class SessionState;
 class ContactsDatabase;
 class ContactManager;
 class GetRequestsTask;
+class AckRequestsTask;
 
 class ContactDirector : public QObject {
         Q_OBJECT
@@ -38,9 +39,12 @@ class ContactDirector : public QObject {
     signals:
 
     public slots:
+        void ackRequestsComplete();
+        void ackRequestsFailed(const QString& error);
         void getRequests();
         void getRequestsComplete();
         void getRequestsFailed(const QString& error);
+        void requestTimedOut();
 
     public:
         void createDatabase(const QString& accountName);
@@ -53,6 +57,7 @@ class ContactDirector : public QObject {
         ContactsDatabase *contactsDb;
         ContactManager *contactManager;
         GetRequestsTask *getRequestsTask;
+        AckRequestsTask *ackRequestsTask;
 
 };
 

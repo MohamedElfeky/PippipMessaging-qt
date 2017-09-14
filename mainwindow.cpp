@@ -2,34 +2,31 @@
 #include "ui_mainwindow.h"
 #include "Authenticator.h"
 #include "Constants.h"
-#include "Contacts.h"
 #include "ContactDirector.h"
 #include "ContactsDialog.h"
+#include "DatabaseException.h"
 #include "EntropyStream.h"
 #include "KeyFilter.h"
 #include "LoginDialog.h"
-#include "MessageException.h"
-#include "MessageManager.h"
 #include "NewAccountDialog.h"
 #include "NicknamesDialog.h"
 #include "ParameterGenerator.h"
-#include "DatabaseException.h"
+#include "StatusController.h"
 #include "UDPListener.h"
 #include "Vault.h"
-#include "StatusController.h"
 #include <QComboBox>
 #include <QDir>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QSettings>
 #include <QMessageBox>
+#include <QSettings>
 #include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
   ui(new Ui::MainWindow),
   createMessage(false),
-  session(0) {
+  session(0),
+  contactDirector(0) {
 
     ui->setupUi(this);
     setDefaults();
@@ -160,8 +157,12 @@ void MainWindow::logOut() {
 
 void MainWindow::loggedOut() {
 
-    contactDirector->end();
-    contactDirector->deleteLater();
+    if (contactDirector != 0) {
+        contactDirector->end();
+        contactDirector->deleteLater();
+        contactDirector = 0;
+    }
+
     delete session;
     session = 0;
     //messageManager->deleteLater();
@@ -290,7 +291,7 @@ void MainWindow::sendMessage(Qt::Key) {
         ui->messagesTable->clearContents();
         ui->messageTextEdit->clear();
     }
-    messageManager->sendMessage(sender, recipient, message);
+    //messageManager->sendMessage(sender, recipient, message);
 
 }
 

@@ -1,6 +1,7 @@
 #include "AddNicknameTask.h"
 #include "SessionState.h"
 #include "EnclaveResponse.h"
+#include "EnclaveRequest.h"
 #include "Nicknames.h"
 #include "Constants.h"
 #include <QJsonArray>
@@ -30,14 +31,14 @@ QJsonArray AddNicknameTask::encodeWhitelist() {
 void AddNicknameTask::setNickname(const Nickname &nick) {
 
     nickname = nick;
-    request.setStringValue("nickname", nick.entity.nickname);
-    request.setStringValue("policy", nick.policy);
-    request.setArrayValue("whitelist", encodeWhitelist());
+    request->setStringValue("nickname", nick.entity.nickname);
+    request->setStringValue("policy", nick.policy);
+    request->setArrayValue("whitelist", encodeWhitelist());
 
 }
 
-bool AddNicknameTask::requestComplete() {
-
+void AddNicknameTask::restComplete(const QJsonObject& resp) {
+/*
     QJsonValue statusVal = response->getValue("status");
     if (!statusVal.isString()) {
         error = "Invalid server response";
@@ -55,9 +56,7 @@ bool AddNicknameTask::requestComplete() {
     else {
         error = "Invalid server response";
     }
-
-    return false;
-
+*/
 }
 
 }

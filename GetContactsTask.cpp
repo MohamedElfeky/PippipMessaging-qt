@@ -1,5 +1,6 @@
 #include "GetContactsTask.h"
 #include "Constants.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include <QJsonArray>
 
@@ -18,14 +19,14 @@ void GetContactsTask::doRequest() {
     statusArray.append("active");
     statusArray.append("pending");
     statusArray.append("rejected");
-    request.setArrayValue("status", statusArray);
+    request->setArrayValue("status", statusArray);
 
-    EnclaveRequestTask::doRequest();
+    EnclaveRequestTask::doRequest(10);
 
 }
 
-bool GetContactsTask::requestComplete() {
-
+void GetContactsTask::restComplete(const QJsonObject& resp) {
+/*
     QJsonValue contactsVal = response->getValue("contacts");
     if (!contactsVal.isArray()) {
         error = "Invalid server response";
@@ -39,15 +40,15 @@ bool GetContactsTask::requestComplete() {
             return false;
         }
         QJsonObject contactObj = val.toObject();
-/*        ServerContact contact;
+        ServerContact contact;
         contact.contactId = contactObj["contactId"].toInt();
         QString encoded = contactObj["contact"].toString();
         contact.contact = QByteArray::fromHex(encoded.toUtf8());
-        contacts.push_back(contact);*/
+        contacts.push_back(contact);
     }
 
     return true;
-
+*/
 }
 
 }

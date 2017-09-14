@@ -79,7 +79,7 @@ void NicknameHandler::deleteNickname() {
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    task->doRequest();
+    //task->doRequest();
 
 }
 
@@ -140,7 +140,7 @@ void NicknameHandler::loadNicknames(Pippip::SessionState *st) {
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    task->doRequest();
+    //task->doRequest();
 
 }
 
@@ -206,7 +206,7 @@ void NicknameHandler::policyEdited(Qt::Key) {
                 this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
         connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
                 this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-        task->doRequest();
+        //task->doRequest();
     }
     else {
         QLabel *policyLabel = new QLabel(policyName);
@@ -220,7 +220,7 @@ void NicknameHandler::policyEdited(Qt::Key) {
                 this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
         connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
                 this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-        task->doRequest();
+        //task->doRequest();
     }
     ui->addNicknameButton->setEnabled(true);
     ui->nicknameTableWidget->setFocus();
@@ -228,7 +228,7 @@ void NicknameHandler::policyEdited(Qt::Key) {
 }
 
 void NicknameHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
-
+/*
     ui->statusIconLabel->setText(Constants::CHECK_ICON);
     QString taskName = task->getTaskName();
     if (taskName == Constants::ADD_NICKNAME_TASK) {
@@ -255,15 +255,14 @@ void NicknameHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
     loadTable();
     qApp->processEvents();
     task->deleteLater();
-
+*/
 }
 
-void NicknameHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
+void NicknameHandler::requestFailed(const QString& error) {
 
     ui->statusIconLabel->setText(Constants::REDX_ICON);
-    QString taskName = task->getTaskName();
     if (taskName == Constants::ADD_NICKNAME_TASK) {
-        ui->statusLabel->setText(QString("Failed to add nickname - ") + task->getError());
+        ui->statusLabel->setText(QString("Failed to add nickname - ") + error);
         selectedRow = 0;
     }
     else if (taskName == Constants::LOAD_NICKNAMES_TASK) {
@@ -271,16 +270,14 @@ void NicknameHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
         selectedRow = 0;
     }
     else if (taskName == Constants::DELETE_NICKNAME_TASK) {
-        ui->statusLabel->setText(QString("Failed to delete nickname - ") + task->getError());
+        ui->statusLabel->setText(QString("Failed to delete nickname - ") + error);
         selectedRow = 0;
     }
     else if (taskName == Constants::UPDATE_NICKNAME_TASK) {
-        ui->statusLabel->setText(QString("Failed to update contact policy - ")
-                                 + task->getError());
+        ui->statusLabel->setText(QString("Failed to update contact policy - " + error));
         loadTable();
     }
 
     qApp->processEvents();
-    task->deleteLater();
 
 }

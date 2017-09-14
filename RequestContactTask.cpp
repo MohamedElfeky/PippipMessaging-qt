@@ -1,12 +1,12 @@
 #include "RequestContactTask.h"
 #include "Constants.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include "ContactRequest.h"
 #include "SessionState.h"
 #include "StringCodec.h"
 #include "ByteCodec.h"
 #include "Function.h"
-#include "Contacts.h"
 #include "DatabaseException.h"
 #include <QJsonValue>
 #include <CryptoKitty-C/encoding/GCMCodec.h>
@@ -53,15 +53,15 @@ void RequestContactTask::buildAndStoreContact() {
     //database->addContact(databaseContact);
     //database->close();
 
-    state->contacts->add(contact);
+    //state->contacts->add(contact);
     //serverContact.contactId = databaseContact.id;
     //serverContact.contact = databaseContact.contact;
     //serverContact.status = contact.status;
 
 }
 
-bool RequestContactTask::requestComplete() {
-
+void RequestContactTask::restComplete(const QJsonObject& resp) {
+/*
     QJsonValue idValue = response->getValue("requestId");
     if (!idValue.isDouble()) {
         error = "Invalid server response";
@@ -89,15 +89,15 @@ bool RequestContactTask::requestComplete() {
     }
 
     return true;
-
+*/
 }
 
 void RequestContactTask::setRequest(const ContactRequestOut &out) {
 
     requestOut = out;
-    request.setStringValue("idTypes", out.idTypes);
-    request.setStringValue("requestedId", out.requestedId);
-    request.setStringValue("requestingId", out.requestingId);
+    request->setStringValue("idTypes", out.idTypes);
+    request->setStringValue("requestedId", out.requestedId);
+    request->setStringValue("requestingId", out.requestingId);
 
 }
 

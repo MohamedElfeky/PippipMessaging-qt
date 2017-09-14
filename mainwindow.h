@@ -9,7 +9,7 @@ class MainWindow;
 
 namespace Pippip {
     class SessionState;
-    class MessageManager;
+    //class MessageManager;
     class ContactDirector;
 }
 
@@ -58,7 +58,7 @@ class MainWindow : public QMainWindow {
         QLabel *iconLabel;
         QLabel *statusLabel;
         Pippip::ContactDirector *contactDirector;
-        Pippip::MessageManager *messageManager;
+        //Pippip::MessageManager *messageManager;
 
 };
 

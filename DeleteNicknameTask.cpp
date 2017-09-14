@@ -1,4 +1,5 @@
 #include "DeleteNicknameTask.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include "Constants.h"
 #include "Nicknames.h"
@@ -13,8 +14,8 @@ DeleteNicknameTask::DeleteNicknameTask(SessionState *state, QObject *parent)
 
 }
 
-bool DeleteNicknameTask::requestComplete() {
-
+void DeleteNicknameTask::restComplete(const QJsonObject& resp) {
+/*
     QString status = response->getValue("status").toString();
     if (status == "deleted") {
         state->nicknames->erase(nickname);
@@ -27,13 +28,13 @@ bool DeleteNicknameTask::requestComplete() {
         error = "Invalid server response";
     }
     return false;
-
+*/
 }
 
 void DeleteNicknameTask::setNickname(const QString &nick) {
 
     nickname = nick;
-    request.setStringValue("nickname", nickname);
+    request->setStringValue("nickname", nickname);
 
 }
 

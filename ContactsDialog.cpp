@@ -66,7 +66,7 @@ int ContactsDialog::exec() {
                 contactHandler, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
         connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
                 contactHandler, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-        task->doRequest();
+        //task->doRequest();
     }
     contactHandler->loadTable();
     updateStatus(Constants::CHECK_ICON, "Contacts loaded");

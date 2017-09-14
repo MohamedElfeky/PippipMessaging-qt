@@ -50,7 +50,7 @@ class NewAccountDialog : public QDialog {
         void updateInfo(QString info);
 
     private slots:
-        void accountComplete(const QString& account);
+        void accountComplete(bool newAccount);
 
     protected:
         void showEvent(QShowEvent *);

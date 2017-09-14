@@ -17,7 +17,6 @@
  */
 
 #include "SessionState.h"
-#include "Contacts.h"
 #include "Nicknames.h"
 #include <CryptoKitty-C/keys/RSAPrivateKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
@@ -28,8 +27,7 @@ SessionState::SessionState()
 : serverPublicKey(0),
   userPrivateKey(0),
   userPublicKey(0),
-  nicknames(new Nicknames),
-  contacts(new Contacts) {
+  nicknames(new Nicknames) {
 
 }
 
@@ -39,7 +37,6 @@ SessionState::~SessionState() {
     delete userPrivateKey;
     delete userPublicKey;
     delete nicknames;
-    delete contacts;
 
 }
 

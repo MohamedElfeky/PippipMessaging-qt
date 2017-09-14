@@ -17,7 +17,7 @@ class DeleteNicknameTask : public EnclaveRequestTask {
         void setNickname(const QString& nickname);
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         QString nickname;

@@ -55,7 +55,6 @@ SOURCES += main.cpp\
     Constants.cpp \
     KeyFilter.cpp \
     Nicknames.cpp \
-    Contacts.cpp \
     Function.cpp \
     ContactRequests.cpp \
     RequestManager.cpp \
@@ -74,7 +73,11 @@ SOURCES += main.cpp\
     SQLLiteContactsDatabaseImpl.cpp \
     DatabaseImpl.cpp \
     GetRequestsTask.cpp \
-    StatusController.cpp
+    StatusController.cpp \
+    RESTTask.cpp \
+    JsonValidator.cpp \
+    ServerProgressPopover.cpp \
+    AckRequestsTask.cpp
 
 HEADERS  += mainwindow.h \
     AccountParameters.h \
@@ -130,7 +133,6 @@ HEADERS  += mainwindow.h \
     Constants.h \
     KeyFilter.h \
     Nicknames.h \
-    Contacts.h \
     Function.h \
     ContactRequests.h \
     RequestManager.h \
@@ -151,7 +153,12 @@ HEADERS  += mainwindow.h \
     ContactsDatabase.h \
     DatabaseImpl.h \
     GetRequestsTask.h \
-    StatusController.h
+    StatusController.h \
+    RESTTask.h \
+    ValidationException.h \
+    JsonValidator.h \
+    ServerProgressPopover.h \
+    AckRequestsTask.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \
@@ -159,7 +166,8 @@ FORMS    += mainwindow.ui \
     LoginDialog.ui \
     NicknamesDialog.ui \
     ContactsDialog.ui \
-    AddContactDialog.ui
+    AddContactDialog.ui \
+    ServerProgressPopover.ui
 
 QT += network
 

@@ -30,12 +30,12 @@ void AddContactsTask::doRequest() {
     }
     request.setArrayValue("contacts", contactsArray);
 */
-    EnclaveRequestTask::doRequest();
+    EnclaveRequestTask::doRequest(10);
 
 }
 
-bool AddContactsTask::requestComplete() {
-
+void AddContactsTask::restComplete(const QJsonObject& resp) {
+/*
     QJsonValue statusVal = response->getValue("status");
     if (!statusVal.isString()) {
         error = "Invalid server response";
@@ -43,7 +43,7 @@ bool AddContactsTask::requestComplete() {
     }
     status = statusVal.toString();
     return true;
-
+*/
 }
 
 }

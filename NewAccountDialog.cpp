@@ -40,7 +40,7 @@ NewAccountDialog::NewAccountDialog(Pippip::ParameterGenerator *gen, QWidget *par
     MainWindow *mainWindow = dynamic_cast<MainWindow*>(parent);
     creator = new Pippip::NewAccountCreator(this, generator);
     connect(creator, SIGNAL(accountComplete(bool)), mainWindow, SLOT(loggedIn(bool)));
-    //connect(creator, SIGNAL(accountComplete(QString)), this, SLOT(accountComplete(QString)));
+    connect(creator, SIGNAL(accountComplete(bool)), this, SLOT(accountComplete(bool)));
 
 }
 
@@ -82,16 +82,17 @@ void NewAccountDialog::accept() {
 
 }
 
-void NewAccountDialog::accountComplete(const QString& account) {
+void NewAccountDialog::accountComplete(bool /* newAccount */) {
 
     ui->AccountNameText->clear();
     ui->PassphraseText->clear();
     QMessageBox *message = new QMessageBox;
     message->addButton(QMessageBox::Ok);
     message->setWindowTitle("Account Complete");
-    message->setText("New account created for " + account);
+    message->setText("New account created for " + generator->accountName);
     message->setIcon(QMessageBox::Information);
     message->exec();
+    QDialog::accept();
 
 }
 

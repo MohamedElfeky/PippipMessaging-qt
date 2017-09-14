@@ -17,10 +17,13 @@
  */
 
 #include "StatusController.h"
+#include "Constants.h"
 #include "mainwindow.h"
 #include <QTimer>
 
 static StatusController *theInstance = 0;
+static const int FADE_TIME = 10;
+static const int ERROR_FADE_TIME = 20;
 
 /**
  * @brief StatusController::StatusController
@@ -80,7 +83,28 @@ void StatusController::timerExpired() {
  * @param icon
  * @param status
  */
-void StatusController::updateStatus(const QString &icon, const QString &status) {
+void StatusController::updateStatus(StatusSeverity sev, const QString &status) {
+
+    QString icon = Constants::CHECK_ICON;
+    fadeTime = FADE_TIME * 1000;
+    switch (sev) {
+        case success:
+            break;
+        case warn:
+            icon = Constants::CAUTION_ICON;
+            break;
+        case info:
+            icon = Constants::INFO_ICON;
+            break;
+        case error:
+            icon = Constants::REDX_ICON;
+            fadeTime = ERROR_FADE_TIME * 1000;
+            break;
+        case fatal:
+            icon = Constants::REDBAR_ICON;
+            fadeTime = ERROR_FADE_TIME * 1000;
+            break;
+    }
 
     mainWindow->updateStatus(icon, status);
     if (statusActive) {
@@ -89,6 +113,6 @@ void StatusController::updateStatus(const QString &icon, const QString &status) 
     else {
         statusActive = true;
     }
-    QTimer::singleShot(5000, this, SLOT(timerExpired()));
+    QTimer::singleShot(fadeTime, this, SLOT(timerExpired()));
 
 }

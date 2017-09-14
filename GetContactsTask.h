@@ -18,7 +18,7 @@ class GetContactsTask : public EnclaveRequestTask {
         //const ServerContactList& getContacts() const { return contacts; }
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         //ServerContactList contacts;

@@ -92,8 +92,8 @@ bool LoadNicknamesTask::decodeRSAKeys(const QJsonObject &obj, RSAKeys &rsaKeys) 
 
 }
 
-bool LoadNicknamesTask::requestComplete() {
-
+void LoadNicknamesTask::restComplete(const QJsonObject& resp) {
+/*
     state->nicknames->clear();
     QJsonValue nickValue = response->getValue("nicknames");
     if (!nickValue.isArray()) {
@@ -111,7 +111,7 @@ bool LoadNicknamesTask::requestComplete() {
         state->nicknames->append(nickname);
     }
     return true;
-
+*/
 }
 
 }

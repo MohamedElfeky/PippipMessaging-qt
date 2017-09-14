@@ -19,16 +19,15 @@
 #ifndef EnclaveRequestTask_H
 #define EnclaveRequestTask_H
 
-#include "EnclaveRequest.h"
-#include <QObject>
+#include "RESTTask.h"
 
 namespace Pippip {
 
 class SessionState;
-class RESTHandler;
+class EnclaveRequest;
 class EnclaveResponse;
 
-class EnclaveRequestTask : public QObject {
+class EnclaveRequestTask : public RESTTask {
     Q_OBJECT
 
     protected:
@@ -42,31 +41,22 @@ class EnclaveRequestTask : public QObject {
         EnclaveRequestTask& operator=(const EnclaveRequestTask& other);
 
     signals:
-        void requestComplete(Pippip::EnclaveRequestTask *task);
-        void requestFailed(Pippip::EnclaveRequestTask *task);
-
-    public slots:
-        void requestComplete(RESTHandler *handler);
-        void requestTimedOut();
+        void enclaveRequestFailed(const QString& error);
+        void enclaveRequestTimedOut();
 
     public:
-        virtual void doRequest();
-        const QString& getError() const { return error; }
         const QString& getTaskName() const { return taskName; }
 
     protected:
-        virtual bool requestComplete()=0;
+        virtual void doRequest(int timeout);
+        void restFailed(const QString& error);
+        void restTimedOut();
 
     protected:
-        EnclaveRequest request;
+        EnclaveRequest *request;
         EnclaveResponse *response;
         SessionState *state;
         QString taskName;
-        QString error;
-
-    private:
-        bool requestCompleted;
-        bool timedOut;
 
 };
 

@@ -25,7 +25,7 @@ class AddNicknameTask : public EnclaveRequestTask {
         const QString& getStatus() const { return status; }
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
 
     private:
         QJsonArray encodeWhitelist();

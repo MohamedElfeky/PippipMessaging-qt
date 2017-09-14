@@ -37,9 +37,14 @@ class GetRequestsTask : public EnclaveRequestTask {
 
     public:
         const RequestList& getRequestList() const { return requestList; }
+        void getRequests(const QString& requester);
 
     protected:
-        bool requestComplete();
+        void restComplete(const QJsonObject& resp);
+        void restFailed(const QString& error);
+
+    private:
+        void setRequests(const QJsonArray& requests);
 
     private:
         RequestList requestList;

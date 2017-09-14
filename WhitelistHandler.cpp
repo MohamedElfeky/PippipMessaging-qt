@@ -83,7 +83,7 @@ void WhitelistHandler::deleteEntry() {
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    task->doRequest();
+    //task->doRequest();
 }
 
 /*
@@ -185,7 +185,7 @@ void WhitelistHandler::puidEdited() {
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    task->doRequest();
+    //task->doRequest();
 
     ui->addFriendButton->setEnabled(true);
     ui->pastePushButton->setEnabled(false);
@@ -217,7 +217,7 @@ void WhitelistHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
 }
 
 void WhitelistHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
-
+/*
     selectedRow = 0;
     ui->statusIconLabel->setText(Constants::REDX_ICON);
     Pippip::UpdateNicknameTask *updateTask =
@@ -236,5 +236,5 @@ void WhitelistHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
     loadTable();
     qApp->processEvents();
     task->deleteLater();
-
+*/
 }

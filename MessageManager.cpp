@@ -6,7 +6,6 @@
 #include "RESTHandler.h"
 #include "SessionState.h"
 #include "ContactManager.h"
-#include "Contacts.h"
 #include "ByteCodec.h"
 #include <CryptoKitty-C/encoding/GCMCodec.h>
 #include <QTimer>
@@ -59,8 +58,8 @@ void MessageManager::sendComplete(RESTHandler *handler) {
         else if (response) {
             Message message = messageQueue.front();
             messageQueue.pop_front();
-            QJsonValue tsValue = response.getValue("timestamp");
-            QJsonValue idValue = response.getValue("requestId");
+            QJsonValue tsValue = response.getResponseValue("timestamp");
+            QJsonValue idValue = response.getResponseValue("requestId");
             if (idValue.isDouble() && tsValue.isDouble()) {
                 message.timestamp = tsValue.toDouble();
                 message.messageId = idValue.toDouble();
