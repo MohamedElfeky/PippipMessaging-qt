@@ -18,6 +18,8 @@ class ContactManager {
         ~ContactManager() {}
 
     public:
+        void addRequested(long requestId, const QString& status);
+        void loadContactList(ContactList& list);
         void loadContacts(ContactsDatabase *contactsDb);
         void processContact(ContactRequestIn& request);
         void updateContact(ContactRequestIn& request);

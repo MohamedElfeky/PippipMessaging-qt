@@ -18,14 +18,16 @@
 
 #include "ContactHandler.h"
 #include "ui_ContactsDialog.h"
-#include "KeyFilter.h"
-#include "SQLLiteContactsDatabaseImpl.h"
-#include "ContactManager.h"
-#include "SessionState.h"
-#include "Nicknames.h"
 #include "Constants.h"
+#include "ContactDirector.h"
+#include "ContactManager.h"
+#include "DatabaseException.h"
+#include "KeyFilter.h"
+#include "Nickname.h"
 #include "RequestContactTask.h"
-#include "AddContactsTask.h"
+#include "SessionState.h"
+#include "StatusController.h"
+#include "StringCodec.h"
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
@@ -52,6 +54,11 @@ ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, Q
     requestHeadings << "Status" << "Requesting ID" << "Requested ID Type" << "Requested ID";
     contactHeadings << "Status" << "My Nickname" << "Contact Nickname" << "Contact Public ID";
 
+    requestContactTask = new Pippip::RequestContactTask(state, this);
+    connect(requestContactTask, SIGNAL(requestContactComplete()), this, SLOT(requestContactComplete()));
+    connect(requestContactTask, SIGNAL(requestContactFailed(QString)),
+            this, SLOT(requestContactFailed(QString)));
+
 }
 
 void ContactHandler::checkButtons() {
@@ -61,9 +68,11 @@ void ContactHandler::checkButtons() {
     int row = ui->contactsTableWidget->currentRow();
     QLabel *statusLabel =
             dynamic_cast<QLabel*>(ui->contactsTableWidget->cellWidget(row, 0));
-    QString status = statusLabel->text();
-    ui->queryButton->setEnabled(status == "pending");
-    ui->suspendButton->setEnabled(status == "active");
+    if (statusLabel != 0) {
+        QString status = statusLabel->text();
+        ui->queryButton->setEnabled(status == "pending");
+        ui->suspendButton->setEnabled(status == "active");
+    }
 
 }
 
@@ -103,8 +112,12 @@ void ContactHandler::contactRequestFailed(const QString &error) {
 
 }
 */
-/*
- * Invoked by key filter signal on enter or return pressed.
+
+/**
+ * Invoked by key filter signal on enter or return pressed. Step 3 of the
+ * new contact request process.
+ *
+ * @brief ContactHandler::idTypeSelected
  */
 void ContactHandler::idTypeSelected(Qt::Key) {
 
@@ -140,13 +153,15 @@ void ContactHandler::idTypeSelected(Qt::Key) {
 void ContactHandler::loadTable(int startingRow) {
 
     ui->contactsTableWidget->clearContents();
-    //ui->contactsTableWidget->setRowCount(state->contacts->size() + startingRow);
+    Pippip::ContactList contacts;
+    contactManager->loadContactList(contacts);
+    ui->contactsTableWidget->setRowCount(contacts.size() + startingRow);
     if (startingRow == 0) {
         ui->contactsTableWidget->setHorizontalHeaderLabels(contactHeadings);
     }
 
     int row = startingRow;
-    /*for (const auto& contact : *state->contacts) {
+    for (const auto& contact : contacts) {
         QLabel *statusLabel = new QLabel(contact.status);
         statusLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         statusLabel->setMargin(5);
@@ -166,7 +181,7 @@ void ContactHandler::loadTable(int startingRow) {
         puidLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         puidLabel->setMargin(5);
         ui->contactsTableWidget->setCellWidget(row++, 3, puidLabel);
-    }*/
+    }
     if (startingRow > 0) {
         ui->contactsTableWidget->selectRow(0);
     }
@@ -188,7 +203,6 @@ void ContactHandler::queryFailed(const QString &error) {
     qApp->processEvents();
 
 }
-*/
 void ContactHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
 
     QString status;
@@ -215,7 +229,13 @@ void ContactHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
     task->deleteLater();
 
 }
+*/
 
+/**
+ * Request a new contact. Step 1 in the new contact request process.
+ *
+ * @brief ContactHandler::requestContact
+ */
 void ContactHandler::requestContact() {
 
     ui->addButton->setEnabled(false);
@@ -232,7 +252,8 @@ void ContactHandler::requestContact() {
 
     requestingIdComboBox = new QComboBox;
     QStringList items;
-    for (auto nickname : *state->nicknames) {
+    const Pippip::NicknameList& nicknames = contactDirector->getNicknames();
+    for (auto nickname : nicknames) {
         items << nickname.entity.nickname;
     }
     items << Constants::MY_PUBLIC_ID;
@@ -250,27 +271,40 @@ void ContactHandler::requestContact() {
 
 }
 
-void ContactHandler::requestFailed(Pippip::EnclaveRequestTask *task) {
-/*
-    QString status;
-    QString taskName = task->getTaskName();
-    if (taskName == Constants::LOAD_NICKNAMES_TASK) {
-        status = "Failed to load nicknames - " + task->getError();
+/**
+ * @brief ContactHandler::requestContactComplete
+ */
+void ContactHandler::requestContactComplete() {
+
+    try {
+        contactManager->addRequested(requestContactTask->getRequestId(),
+                                     requestContactTask->getStatus());
     }
-    else if (taskName == Constants::REQUEST_CONTACT_TASK) {
-        status = "Contact request failed - " + task->getError();
-    }
-    else if (taskName == Constants::ADD_CONTACTS_TASK) {
-        status = "Failed to upload contacts - " + task->getError();
+    catch (Pippip::DatabaseException& e) {
+        QString fullError = QString("Unable to add requested contact - ") + e.getMessage();
+        updateStatus(Constants::REDX_ICON, fullError);
+        StatusController::instance()->updateStatus(StatusController::error, fullError);
     }
 
-    updateStatus(Constants::REDX_ICON, status);
-    task->deleteLater();
-*/
 }
 
-/*
- * Invoked by the requested ID line edit editing finished signal.
+/**
+ * @brief ContactHandler::requestContactFailed
+ * @param error
+ */
+void ContactHandler::requestContactFailed(const QString& error) {
+
+    loadTable();
+    updateStatus(Constants::REDX_ICON, error);
+    StatusController::instance()->updateStatus(StatusController::error, error);
+
+}
+
+/**
+ * Invoked by key filter signal on enter or return pressed. Step 4 of the
+ * new contact request process.
+ *
+ * @brief ContactHandler::requestedIdEdited
  */
 void ContactHandler::requestedIdEdited() {
 
@@ -282,18 +316,15 @@ void ContactHandler::requestedIdEdited() {
     workingRequest.requestedId = requestedIdLineEdit->text();
     workingRequest.idTypes = requestingType + requestedType;
 
-    Pippip::RequestContactTask *task = new Pippip::RequestContactTask(state, this);
-    task->setRequest(workingRequest);
-    connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
-            this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
-    connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
-            this, SLOT(requestFailed(Pippip::EnclaveRequestTask*)));
-    //task->doRequest();
+    requestContactTask->requestContact(workingRequest);
 
 }
 
-/*
- * Invoked by key filter signal on enter or return pressed.
+/**
+ * Invoked by key filter signal on enter or return pressed. Step 2 of the
+ * new contact request process.
+ *
+ * @brief ContactHandler::requestingIdSelected
  */
 void ContactHandler::requestingIdSelected(Qt::Key) {
 
@@ -327,16 +358,18 @@ void ContactHandler::requestingIdSelected(Qt::Key) {
     idTypeComboBox->setFocus();
 
 }
-/*
-void ContactHandler::setContactsDatabase(Pippip::ContactsDatabase *database) {
 
-    contactsDatabase = database;
-    ui->statusIconLabel->setText(Constants::CHECK_ICON);
-    ui->statusLabel->setText("Contacts loaded");
-    qApp->processEvents();
+/**
+ * @brief ContactHandler::setContactDirector
+ * @param director
+ */
+void ContactHandler::setContactDirector(Pippip::ContactDirector *director) {
+
+    contactDirector = director;
+    contactManager = contactDirector->getContactManager();
 
 }
-*/
+
 void ContactHandler::updateStatus(const QString &icon, const QString &status) {
 
     ui->statusIconLabel->setText(icon);

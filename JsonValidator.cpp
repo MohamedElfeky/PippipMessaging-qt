@@ -1,4 +1,6 @@
 #include "JsonValidator.h"
+#include "Function.h"
+#include "StringCodec.h"
 #include "ValidationException.h"
 #include <QJsonArray>
 #include <sstream>
@@ -29,8 +31,8 @@ QJsonArray JsonValidator::getArray() const {
     }
     else {
         std::ostringstream estr;
-        estr << "'" << key.constData() << "' is not an array";
-        throw ValidationException(estr.str());
+        estr << "'" << key << "' is not an array";
+        throw ValidationException(StringCodec(estr.str()));
     }
 
 }
@@ -47,8 +49,8 @@ qint64 JsonValidator::getLong() const {
     }
     else {
         std::ostringstream estr;
-        estr << "'" << key.constData() << "' is not a long integer";
-        throw ValidationException(estr.str());
+        estr << "'" << key << "' is not a long integer";
+        throw ValidationException(StringCodec(estr.str()));
     }
 
 }
@@ -65,8 +67,8 @@ QJsonObject JsonValidator::getObject() const {
     }
     else {
         std::ostringstream estr;
-        estr << "'" << key.constData() << "' is not an object";
-        throw ValidationException(estr.str());
+        estr << "'" << key << "' is not an object";
+        throw ValidationException(StringCodec(estr.str()));
     }
 
 }
@@ -83,8 +85,8 @@ QString JsonValidator::getString() const {
     }
     else {
         std::ostringstream estr;
-        estr << "'" << key.constData() << "' is not a string";
-        throw ValidationException(estr.str());
+        estr << "'" << key << "' is not a string";
+        throw ValidationException(StringCodec(estr.str()));
     }
 
 }
@@ -96,8 +98,8 @@ void JsonValidator::nullCheck() const {
 
     if (var.isNull()) {
         std::ostringstream estr;
-        estr << "'" << key.constData() << "' is null";
-        throw ValidationException(estr.str());
+        estr << "'" << key << "' is null";
+        throw ValidationException(StringCodec(estr.str()));
     }
 
 }

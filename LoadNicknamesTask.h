@@ -2,15 +2,13 @@
 #define LOADNICKNAMESTASK_H
 
 #include "EnclaveRequestTask.h"
+#include "Nickname.h"
 
 class QJsonObject;
 
 namespace Pippip {
 
 class SessionState;
-struct Nickname;
-struct Entity;
-struct RSAKeys;
 
 class LoadNicknamesTask : public EnclaveRequestTask {
         Q_OBJECT
@@ -19,13 +17,26 @@ class LoadNicknamesTask : public EnclaveRequestTask {
         LoadNicknamesTask(SessionState *state, QObject *parent = 0);
         ~LoadNicknamesTask() {}
 
+    signals:
+        void loadNicknamesComplete();
+        void loadNicknamesFailed(const QString& error);
+
+    public:
+        const NicknameList& getNicknameList() const { return nicknameList; }
+        void loadNicknames();
+
     protected:
         void restComplete(const QJsonObject& resp);
+        void restFailed(const QString& error);
+        void restTimedOut();
 
     private:
-        bool decodeEntity(const QJsonObject& obj, Entity& entity) const;
-        bool decodeNickname(const QJsonObject& obj, Nickname& nickname) const;
-        bool decodeRSAKeys(const QJsonObject& obj, RSAKeys& rsaKey) const;
+        void decodeEntity(const QJsonObject& obj, Entity& entity) const;
+        void decodeNickname(const QJsonObject& obj, Nickname& nickname) const;
+        void decodeRSAKeys(const QJsonObject& obj, RSAKeys& rsaKey) const;
+
+    private:
+        NicknameList nicknameList;
 
 };
 

@@ -31,10 +31,11 @@ namespace Ui {
 }
 
 namespace Pippip {
-    class ContactsDatabase;
+    class ContactDirector;
+    class ContactManager;
     class SessionState;
     struct ContactRequestIn;
-    class EnclaveRequestTask;
+    class RequestContactTask;
 }
 
 class QLineEdit;
@@ -48,8 +49,8 @@ class ContactHandler : public QObject {
         ~ContactHandler() {}
 
     public slots:
-        void requestComplete(Pippip::EnclaveRequestTask *task);
-        void requestFailed(Pippip::EnclaveRequestTask *task);
+        void requestContactComplete();
+        void requestContactFailed(const QString& error);
         void updateStatus(const QString& icon, const QString& status);
 
     private slots:
@@ -62,6 +63,7 @@ class ContactHandler : public QObject {
     public:
         void checkButtons();
         void loadTable(int startingRow = 0);
+        void setContactDirector(Pippip::ContactDirector *director);
 
     private:
         int columnGeometry() const;
@@ -69,7 +71,8 @@ class ContactHandler : public QObject {
     private:
         Ui::ContactsDialog *ui;
         Pippip::SessionState *state;
-        Pippip::ContactsDatabase *contactsDatabase;
+        Pippip::ContactDirector *contactDirector;
+        Pippip::ContactManager *contactManager;
         // Editing widgets
         QStringList requestHeadings;
         QStringList contactHeadings;
@@ -84,6 +87,8 @@ class ContactHandler : public QObject {
         Pippip::ContactRequestOut workingRequest;
         QString requestingType;     // P or N
         QString requestedType;      // P or N
+        // Contact tasks
+        Pippip::RequestContactTask *requestContactTask;
 
 };
 

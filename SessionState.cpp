@@ -17,7 +17,6 @@
  */
 
 #include "SessionState.h"
-#include "Nicknames.h"
 #include <CryptoKitty-C/keys/RSAPrivateKey.h>
 #include <CryptoKitty-C/keys/RSAPublicKey.h>
 
@@ -26,8 +25,7 @@ namespace Pippip {
 SessionState::SessionState()
 : serverPublicKey(0),
   userPrivateKey(0),
-  userPublicKey(0),
-  nicknames(new Nicknames) {
+  userPublicKey(0) {
 
 }
 
@@ -36,7 +34,6 @@ SessionState::~SessionState() {
     delete serverPublicKey;
     delete userPrivateKey;
     delete userPublicKey;
-    delete nicknames;
 
 }
 
