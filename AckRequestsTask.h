@@ -18,7 +18,7 @@ class AckRequestsTask : public EnclaveRequestTask {
         void ackRequestsFailed(const QString& error);
 
     public:
-        void acknowledgeRequests();
+        void acknowledgeRequests(const QString& requester);
         void addAcknowledgement(qint64 requestId, const QString& ack);
         void clear();
         const RequestList& getRequestList() const { return requestList; }

@@ -138,8 +138,8 @@ void ContactDirector::getRequestsComplete() {
             else if (request.status == "active") {
                 ackRequestsTask->addAcknowledgement(request.requestId, "accept");
             }
-            ackRequestsTask->acknowledgeRequests();
         }
+        ackRequestsTask->acknowledgeRequests("requester");
     }
     catch (DatabaseException& e) {
         QString prefix("Database error while processing contacts - ");

@@ -1,5 +1,6 @@
 #include "AckRequestsTask.h"
 #include "EnclaveException.h"
+#include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
 #include "JsonValidator.h"
 #include "StringCodec.h"
@@ -22,10 +23,19 @@ AckRequestsTask::AckRequestsTask(SessionState *state, QObject *parent)
 /**
  * @brief AckRequestsTask::acknowledgeRequests
  */
-void AckRequestsTask::acknowledgeRequests() {
+void AckRequestsTask::acknowledgeRequests(const QString& requester) {
 
     if (ackList.size() > 0) {
-        doRequest(20);
+        QJsonArray acks;
+        for (auto ackRequest : ackList) {
+            QJsonObject ackObj;
+            ackObj["requestId"] = ackRequest.requestId;
+            ackObj["ack"] = ackRequest.ack;
+            acks.append(ackObj);
+        }
+        request->setArrayValue("acknowledgements", acks);
+        request->setStringValue("requester", requester);
+        doRequest(10);
     }
 
 }
