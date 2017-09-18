@@ -23,6 +23,36 @@ ContactManager::ContactManager(SessionState *st)
 }
 
 /**
+ * @brief ContactManager::addRequested
+ * @param requestId
+ * @param status
+ */
+void ContactManager::addRequested(long requestId, const QString &status) {
+
+    Contact contact;
+    contact.contactId = contactsDb->getNextContactId();
+    contact.requestId = requestId;
+    contact.status = status;
+    contact.currentKey = contact.currentSequence = 0;
+    contactsDb->addContact(contact, state);
+    requestMap[contact.requestId] = contact.contactId;
+    contactMap[contact.contactId] = contact;
+
+}
+
+/**
+ * @brief ContactManager::loadContactList
+ * @param list
+ */
+void ContactManager::loadContactList(ContactList &list) {
+
+    for (ContactConstIter it = contactMap.begin(); it != contactMap.end(); ++it) {
+        list.push_back(it->second);
+    }
+
+}
+
+/**
  * @brief ContactManager::loadContacts
  * @param db
  */

@@ -56,8 +56,8 @@ void WhitelistHandler::addEntry() {
     ui->deleteFriendButton->setEnabled(false);
     ui->pastePushButton->setEnabled(true);
     // Grow the table widget
-    unsigned size = (*state->nicknames)[currentNickname].whitelist.size();
-    ui->whitelistTableWidget->setRowCount(size + 1);
+    //unsigned size = (*state->nicknames)[currentNickname].whitelist.size();
+    //ui->whitelistTableWidget->setRowCount(size + 1);
     loadTable(1);
     selectedRow = 0;
     // Set up the nickname editing widget
@@ -77,8 +77,8 @@ void WhitelistHandler::deleteEntry() {
     Pippip::UpdateNicknameTask *task = new Pippip::UpdateNicknameTask(state, this);
     task->setUpdateType("whitelist");
     task->setUpdateAction("delete");
-    task->setWhitelistEntity((*state->nicknames)[currentNickname].whitelist[selectedRow]);
-    task->setNickname((*state->nicknames)[currentNickname].entity.nickname);
+    //task->setWhitelistEntity((*state->nicknames)[currentNickname].whitelist[selectedRow]);
+    //task->setNickname((*state->nicknames)[currentNickname].entity.nickname);
     connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
@@ -98,9 +98,9 @@ void WhitelistHandler::editEntry(int row, int /* column */) {
     ui->deleteFriendButton->setEnabled(false);
     ui->pastePushButton->setEnabled(true);
 
-    Pippip::Entity& wlEntry = (*state->nicknames)[currentNickname].whitelist[selectedRow];
-    working.nickname = wlEntry.nickname;
-    puidLineEdit = new QLineEdit(wlEntry.publicId);
+    //Pippip::Entity& wlEntry = (*state->nicknames)[currentNickname].whitelist[selectedRow];
+    //working.nickname = wlEntry.nickname;
+    //puidLineEdit = new QLineEdit(wlEntry.publicId);
     puidLineEdit->setValidator(puidValidator);
     ui->whitelistTableWidget->setCellWidget(selectedRow, 1, puidLineEdit);
     puidLineEdit->setFocus();
@@ -111,8 +111,8 @@ void WhitelistHandler::editEntry(int row, int /* column */) {
 void WhitelistHandler::loadTable(int start) {
 
     ui->whitelistTableWidget->clearContents();
-    const Pippip::Nickname& nickname = (*state->nicknames)[currentNickname];
-    if (nickname.whitelist.size() > 0) {
+    //const Pippip::Nickname& nickname = (*state->nicknames)[currentNickname];
+    /*if (nickname.whitelist.size() > 0) {
         ui->whitelistTableWidget->setRowCount(nickname.whitelist.size() + start);
         int row = start;
         for (auto entity : nickname.whitelist) {
@@ -129,7 +129,7 @@ void WhitelistHandler::loadTable(int start) {
         else {
             ui->whitelistTableWidget->selectRow(selectedRow);
         }
-    }
+    }*/
 
 }
 
@@ -180,7 +180,7 @@ void WhitelistHandler::puidEdited() {
     task->setUpdateType("whitelist");
     task->setUpdateAction(action);
     task->setWhitelistEntity(working);
-    task->setNickname((*state->nicknames)[currentNickname].entity.nickname);
+    //task->setNickname((*state->nicknames)[currentNickname].entity.nickname);
     connect(task, SIGNAL(requestComplete(Pippip::EnclaveRequestTask*)),
             this, SLOT(requestComplete(Pippip::EnclaveRequestTask*)));
     connect(task, SIGNAL(requestFailed(Pippip::EnclaveRequestTask*)),
@@ -200,7 +200,7 @@ void WhitelistHandler::requestComplete(Pippip::EnclaveRequestTask *task) {
     QString action = updateTask->getUpdateAction();
     if (action == "add") {
         ui->statusLabel->setText("Friend added");
-        selectedRow = (*state->nicknames)[currentNickname].whitelist.size() - 1;
+        //selectedRow = (*state->nicknames)[currentNickname].whitelist.size() - 1;
     }
     else if (action == "delete") {
         ui->statusLabel->setText("Friend deleted");

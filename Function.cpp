@@ -3,6 +3,12 @@
 #include "StringCodec.h"
 #include <coder/ByteStreamCodec.h>
 
+/**
+ * @brief operator >>
+ * @param in
+ * @param str
+ * @return
+ */
 coder::ByteStreamCodec& operator >> (coder::ByteStreamCodec& in, QString& str) {
 
     std::string inString;
@@ -13,6 +19,12 @@ coder::ByteStreamCodec& operator >> (coder::ByteStreamCodec& in, QString& str) {
 
 }
 
+/**
+ * @brief operator <<
+ * @param out
+ * @param str
+ * @return
+ */
 coder::ByteStreamCodec& operator << (coder::ByteStreamCodec& out, const QString& str) {
 
     Pippip::StringCodec outCodec(str);
@@ -32,7 +44,12 @@ coder::ByteStreamCodec& operator << (coder::ByteStreamCodec& out, const QString&
  * int currentKey;
  * int currentSequence;
  */
-
+/**
+ * @brief operator >>
+ * @param in
+ * @param contact
+ * @return
+ */
 coder::ByteStreamCodec& operator >> (coder::ByteStreamCodec& in, Pippip::Contact& contact) {
 
     in >> contact.version >> contact.status >> contact.contactId >> contact.requestId
@@ -54,6 +71,12 @@ coder::ByteStreamCodec& operator >> (coder::ByteStreamCodec& in, Pippip::Contact
 
 }
 
+/**
+ * @brief operator <<
+ * @param out
+ * @param contact
+ * @return
+ */
 coder::ByteStreamCodec& operator << (coder::ByteStreamCodec& out, const Pippip::Contact& contact) {
 
     out << contact.version << contact.status << contact.contactId << contact.requestId
@@ -70,6 +93,34 @@ coder::ByteStreamCodec& operator << (coder::ByteStreamCodec& out, const Pippip::
     out << contact.currentKey << contact.currentSequence;
 
     return out;
+
+}
+
+/**
+ * @brief operator <<
+ * @param out
+ * @param str
+ * @return
+ */
+std::ostream& operator << (std::ostream& out, const QString& str) {
+
+    out << Pippip::StringCodec(str).getStdString();
+    return out;
+
+}
+
+/**
+ * @brief operator >>
+ * @param in
+ * @param str
+ * @return
+ */
+std::istream& operator >> (std::istream& in, QString& str) {
+
+    std::string instr;
+    in >> instr;
+    str = Pippip::StringCodec(instr).getQtString();
+    return in;
 
 }
 

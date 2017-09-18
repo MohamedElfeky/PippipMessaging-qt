@@ -180,8 +180,8 @@ void MainWindow::loggedOut() {
 
 void MainWindow::manageContacts() {
 
-    statusLabel->clear();
     ContactsDialog *dialog = new ContactsDialog(session, this);
+    dialog->setContactDirector(contactDirector);
     updateStatus(Constants::INFO_ICON, "Managing contacts");
     dialog->exec();
     updateStatus(Constants::CHECK_ICON, "Online");

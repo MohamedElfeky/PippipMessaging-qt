@@ -78,6 +78,28 @@ QJsonArray EnclaveResponse::getResponseArray(const QString& name) const {
 }
 
 /**
+ * @brief EnclaveResponse::getResponseLong
+ * @param name
+ * @return
+ */
+qint64 EnclaveResponse::getResponseLong(const QString &name) const {
+
+    return JsonValidator(json, name).getLong();
+
+}
+
+/**
+ * @brief EnclaveResponse::getResponseString
+ * @param name
+ * @return
+ */
+QString EnclaveResponse::getResponseString(const QString &name) const {
+
+    return JsonValidator(json, name).getString();
+
+}
+
+/**
  * @brief EnclaveResponse::getResponseValue
  * @param name
  * @return

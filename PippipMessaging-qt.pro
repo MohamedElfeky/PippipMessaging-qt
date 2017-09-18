@@ -158,7 +158,8 @@ HEADERS  += mainwindow.h \
     ValidationException.h \
     JsonValidator.h \
     ServerProgressPopover.h \
-    AckRequestsTask.h
+    AckRequestsTask.h \
+    PippipException.h
 
 FORMS    += mainwindow.ui \
     NewAccountDialog.ui \

@@ -25,6 +25,8 @@ class EnclaveResponse {
         const QString& getError() const { return error; }
         const QString& getResponseType() const { return responseType; }
         QJsonArray getResponseArray(const QString& name) const;
+        qint64 getResponseLong(const QString& name) const;
+        QString getResponseString(const QString& name) const;
         QJsonValue getResponseValue(const QString& name) const;
         const QJsonObject& getJson() const { return json; }
 

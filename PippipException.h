@@ -1,5 +1,5 @@
 /*
- * VaultException.h
+ * PippipException.h
  * Copyright (C) 2017 Steve Brenneis <steve.brenneis@secomm.org>
  *
  * PippipMessaging is free software: you can redistribute it and/or modify it
@@ -16,26 +16,32 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VAULTEXCEPTION_H
-#define VAULTEXCEPTION_H
+#ifndef PIPPIPEXCEPTION_H
+#define PIPPIPEXCEPTION_H
 
-#include "PippipException.h"
+#include <QException>
 
 namespace Pippip {
 
-class VaultException  : public PippipException {
+class PippipException : public QException {
+
+    protected:
+        PippipException() {}
+        PippipException(const QString& msg) : message(msg) {}
+        PippipException(const PippipException& other) : message(other.message) {}
 
     public:
-        VaultException() {}
-        VaultException(const QString& msg) : PippipException(msg) {}
-        VaultException(const VaultException& other) : PippipException(other) {}
-        ~VaultException() noexcept {}
+        ~PippipException() noexcept {}
 
     public:
-        QException *clone() const { return new VaultException(*this); }
+        virtual const QString& getMessage() const noexcept { return message; }
+        void raise() const { throw *this; }
+
+    protected:
+        QString message;
 
 };
 
 }
 
-#endif // VAULTEXCEPTION_H
+#endif // PIPPIPEXCEPTION_H

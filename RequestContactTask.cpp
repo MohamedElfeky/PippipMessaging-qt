@@ -1,19 +1,37 @@
+/*
+ * RequestContactTask.cpp
+ * Copyright (C) 2017 Steve Brenneis <steve.brenneis@secomm.org>
+ *
+ * PippipMessaging is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PippipMessaging is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "RequestContactTask.h"
 #include "Constants.h"
+#include "ContactRequest.h"
 #include "EnclaveRequest.h"
 #include "EnclaveResponse.h"
-#include "ContactRequest.h"
-#include "SessionState.h"
 #include "StringCodec.h"
-#include "ByteCodec.h"
-#include "Function.h"
-#include "DatabaseException.h"
-#include <QJsonValue>
-#include <CryptoKitty-C/encoding/GCMCodec.h>
-#include <CryptoKitty-C/exceptions/EncodingException.h>
+#include "ValidationException.h"
+#include <sstream>
 
 namespace Pippip {
 
+/**
+ * @brief RequestContactTask::RequestContactTask
+ * @param state
+ * @param parent
+ */
 RequestContactTask::RequestContactTask(SessionState *state, QObject *parent)
 : EnclaveRequestTask(state, parent) {
 
@@ -21,83 +39,60 @@ RequestContactTask::RequestContactTask(SessionState *state, QObject *parent)
 
 }
 
-void RequestContactTask::buildAndStoreContact() {
+/**
+ * @brief RequestContactTask::requestContact
+ * @param out
+ */
+void RequestContactTask::requestContact(const ContactRequestOut &out) {
 
-    Contact contact;
-    contact.status = status;
-    contact.requestId = requestId;
-
-    if (requestOut.idTypes == Constants::NICKNAME_NICKNAME) {
-        contact.contactOf = requestOut.requestingId;
-        contact.entity.nickname = requestOut.requestedId;
-    }
-    else if (requestOut.idTypes == Constants::NICKNAME_PUBLICID) {
-        contact.contactOf = requestOut.requestingId;
-        contact.entity.publicId = requestOut.requestedId;
-    }
-    else if (requestOut.idTypes == Constants::PUBLICID_NICKNAME) {
-        contact.entity.nickname = requestOut.requestedId;
-    }
-    else if (requestOut.idTypes == Constants::PUBLICID_PUBLICID) {
-        contact.entity.publicId = requestOut.requestedId;
-    }
-
-    CK::GCMCodec codec;
-    codec << contact;
-    codec.encrypt(state->contactKey, state->authData);
-    //DatabaseContact databaseContact;
-    //databaseContact.id = 0;
-    //databaseContact.contact = ByteCodec(codec.toArray());
-
-    //ContactsDatabase *database = ContactsDatabase::open(state);
-    //database->addContact(databaseContact);
-    //database->close();
-
-    //state->contacts->add(contact);
-    //serverContact.contactId = databaseContact.id;
-    //serverContact.contact = databaseContact.contact;
-    //serverContact.status = contact.status;
-
-}
-
-void RequestContactTask::restComplete(const QJsonObject& resp) {
-/*
-    QJsonValue idValue = response->getValue("requestId");
-    if (!idValue.isDouble()) {
-        error = "Invalid server response";
-        return false;
-    }
-    requestId = idValue.toDouble();
-
-    QJsonValue statusValue = response->getValue("status");
-    if (!statusValue.isString()) {
-        error = "Invalid server response";
-        return false;
-    }
-    status = statusValue.toString();
-
-    try {
-        buildAndStoreContact();
-    }
-    catch (CK::EncodingException& e) {
-        error = "Encoding error - " + StringCodec(e.what());
-        return false;
-    }
-    catch (DatabaseException& e) {
-        error = "Database error - " + StringCodec(e.what());
-        return false;
-    }
-
-    return true;
-*/
-}
-
-void RequestContactTask::setRequest(const ContactRequestOut &out) {
-
-    requestOut = out;
     request->setStringValue("idTypes", out.idTypes);
     request->setStringValue("requestedId", out.requestedId);
     request->setStringValue("requestingId", out.requestingId);
+    doRequest(10);
+
+}
+
+/**
+ * @brief RequestContactTask::restComplete
+ * @param resp
+ */
+void RequestContactTask::restComplete(const QJsonObject& resp) {
+
+    response = new EnclaveResponse(resp, state);
+    try {
+        if (*response) {
+            requestId = response->getResponseLong("requestId");
+            status = response->getResponseString("status");
+            emit requestContactComplete();
+        }
+        else {
+            emit requestContactFailed(response->getError());
+        }
+    }
+    catch (ValidationException& e) {
+        std::ostringstream estr;
+        estr << "Request contact failed - " << e.what();
+        emit requestContactFailed(StringCodec(estr.str()));
+    }
+
+}
+
+/**
+ * @brief RequestContactTask::restFailed
+ * @param error
+ */
+void RequestContactTask::restFailed(const QString &error) {
+
+    emit requestContactFailed(error);
+
+}
+
+/**
+ * @brief RequestContactTask::restTimedOut
+ */
+void RequestContactTask::restTimedOut() {
+
+    emit requestContactFailed("Contact request timed out");
 
 }
 

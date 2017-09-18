@@ -58,7 +58,7 @@ void SQLLiteContactsDatabaseImpl::addContact(const Contact& contact, SessionStat
     catch (CK::EncodingException& e) {
         std::ostringstream estr;
         estr << "Encoding/Encryption error in add contact - " << e.what();
-        throw DatabaseException(estr.str());
+        throw DatabaseException(StringCodec(estr.str()));
     }
 
     QSqlQuery query(database);
@@ -68,7 +68,7 @@ void SQLLiteContactsDatabaseImpl::addContact(const Contact& contact, SessionStat
     query.bindValue(":contact", dbContact.contact);
     query.exec();
     if (!query.isActive()) {
-        throw DatabaseException(StringCodec(query.lastError().text()));
+        throw DatabaseException(query.lastError().text());
     }
 
 }
@@ -95,7 +95,7 @@ bool SQLLiteContactsDatabaseImpl::contactExists(int contactId) {
     query.bindValue(":contactId", contactId);
     query.exec();
     if (!query.isActive()) {
-        throw DatabaseException(StringCodec(query.lastError().text()));
+        throw DatabaseException(query.lastError().text());
     }
 
     return query.next();
@@ -119,24 +119,24 @@ void SQLLiteContactsDatabaseImpl::create(const QString &account) {
         if (!contactsQuery.isActive()) {
             QString error = contactsQuery.lastError().text();
             db.close();
-            throw DatabaseException(StringCodec(error));
+            throw DatabaseException(error);
         }
         QSqlQuery idQuery("CREATE TABLE ids (contactId INTEGER)", db);
         if (!idQuery.isActive()) {
             QString error = idQuery.lastError().text();
             db.close();
-            throw DatabaseException(StringCodec(error));
+            throw DatabaseException(error);
         }
         QSqlQuery initQuery("INSERT INTO ids (contactId) VALUES(1)", db);
         if (!initQuery.isActive()) {
             QString error = initQuery.lastError().text();
             db.close();
-            throw DatabaseException(StringCodec(error));
+            throw DatabaseException(error);
         }
         db.close();
     }
     else {
-        throw DatabaseException(StringCodec(db.lastError().text()));
+        throw DatabaseException(db.lastError().text());
     }
 
 }
@@ -172,12 +172,12 @@ void SQLLiteContactsDatabaseImpl::getContacts(ContactList& list, SessionState *s
             catch (CK::EncodingException& e) {
                 std::ostringstream estr;
                 estr << "Encoding/Encryption error in get contacts - " << e.what();
-                throw DatabaseException(estr.str());
+                throw DatabaseException(StringCodec(estr.str()));
             }
         }
     }
     else {
-        throw DatabaseException(StringCodec(query.lastError().text()));
+        throw DatabaseException(query.lastError().text());
     }
 
 }
@@ -201,7 +201,7 @@ int SQLLiteContactsDatabaseImpl::getNextContactId() {
         contactId = getQuery.value(0).toInt();
     }
     else {
-        throw DatabaseException(StringCodec(getQuery.lastError().text()));
+        throw DatabaseException(getQuery.lastError().text());
     }
 
     QSqlQuery setQuery(database);
@@ -209,7 +209,7 @@ int SQLLiteContactsDatabaseImpl::getNextContactId() {
     setQuery.bindValue(":contactId", contactId + 1);
     setQuery.exec();
     if (!setQuery.isActive()) {
-        throw DatabaseException(StringCodec(setQuery.lastError().text()));
+        throw DatabaseException(setQuery.lastError().text());
     }
 
     return contactId;
@@ -243,7 +243,7 @@ void SQLLiteContactsDatabaseImpl::open(const QString& account) {
     QString dbPath = settings.value("Defaults/dbPath").toString();
     database.setDatabaseName(dbPath + "/" + account + ".cdb");
     if (!database.open()) {
-        throw DatabaseException(StringCodec(database.lastError().text()));
+        throw DatabaseException(database.lastError().text());
     }
     closed = false;
 
@@ -268,7 +268,7 @@ void SQLLiteContactsDatabaseImpl:: updateContact(const Contact &contact, Session
     catch (CK::EncodingException& e) {
         std::ostringstream estr;
         estr << "Encoding/Encryption error in update contacts - " << e.what();
-        throw DatabaseException(estr.str());
+        throw DatabaseException(StringCodec(estr.str()));
     }
 
     QSqlQuery query(database);
@@ -277,7 +277,7 @@ void SQLLiteContactsDatabaseImpl:: updateContact(const Contact &contact, Session
     query.bindValue(":encoded", ByteCodec(codec.toArray()).getQtBytes());
     query.exec();
     if (!query.isActive()) {
-        throw DatabaseException(StringCodec(query.lastError().text()));
+        throw DatabaseException(query.lastError().text());
     }
 
 }

@@ -50,11 +50,11 @@ void UpdateNicknameTask::restComplete(const QJsonObject& resp) {
 
 Nickname& UpdateNicknameTask::getUpdatedNickname() {
 
-    for (auto& nick : *state->nicknames) {
-        if (nick.entity.nickname == nickname) {
-            return nick;
-        }
-    }
+    //for (auto& nick : *state->nicknames) {
+    //    if (nick.entity.nickname == nickname) {
+    //        return nick;
+    //    }
+    //}
 
     // Never happen.
     return EMPTY;

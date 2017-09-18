@@ -89,7 +89,7 @@ void NicknameHandler::editPolicy(int row, int /* column */) {
     ui->addNicknameButton->setEnabled(false);
     ui->deleteNicknameButton->setEnabled(false);
     selectedRow = row;
-    working = (*state->nicknames)[row];
+    //working = (*state->nicknames)[row];
     policyComboBox = new QComboBox;
     QStringList items;
     items << POLICY_NAMES[0] << POLICY_NAMES[1] << POLICY_NAMES[2];
@@ -101,11 +101,11 @@ void NicknameHandler::editPolicy(int row, int /* column */) {
     policyComboBox->installEventFilter(keyFilter);
     connect(keyFilter, SIGNAL(keyPressed(Qt::Key)), this, SLOT(policyEdited(Qt::Key)));
     ui->nicknameTableWidget->setCellWidget(row, 1, policyComboBox);
-    for (int index = 0; index < 3; ++index) {
-        if ((*state->nicknames)[row].policy == Constants::POLICIES[index]) {
-            policyComboBox->setCurrentIndex(index);
-        }
-    }
+    //for (int index = 0; index < 3; ++index) {
+    //    if ((*state->nicknames)[row].policy == Constants::POLICIES[index]) {
+    //        policyComboBox->setCurrentIndex(index);
+    //    }
+    //}
     policyComboBox->setFocus();
 
 }
@@ -147,7 +147,7 @@ void NicknameHandler::loadNicknames(Pippip::SessionState *st) {
 void NicknameHandler::loadTable(int start) {
 
     ui->nicknameTableWidget->clearContents();
-    if (state->nicknames->size() > 0) {
+    /*if (state->nicknames->size() > 0) {
         ui->nicknameTableWidget->setRowCount(state->nicknames->size() + start);
         int row = start;
         for (auto nickname : *state->nicknames) {
@@ -165,7 +165,7 @@ void NicknameHandler::loadTable(int start) {
         else {
             ui->nicknameTableWidget->selectRow(selectedRow);
         }
-    }
+    }*/
     ui->addNicknameButton->setEnabled(true);
 
 }

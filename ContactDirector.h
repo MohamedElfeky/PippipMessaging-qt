@@ -19,6 +19,7 @@
 #ifndef CONTACTDIRECTOR_H
 #define CONTACTDIRECTOR_H
 
+#include "Nickname.h"
 #include <QObject>
 
 namespace Pippip {
@@ -49,7 +50,10 @@ class ContactDirector : public QObject {
     public:
         void createDatabase(const QString& accountName);
         void end();
+        ContactManager *getContactManager() { return contactManager; }
+        const NicknameList& getNicknames() const { return nicknames; }
         void openDatabase(const QString& accountName);
+        void setNicknames(const NicknameList& nicks) { nicknames = nicks; }
         void start();
 
     private:
@@ -58,6 +62,7 @@ class ContactDirector : public QObject {
         ContactManager *contactManager;
         GetRequestsTask *getRequestsTask;
         AckRequestsTask *ackRequestsTask;
+        NicknameList nicknames;
 
 };
 

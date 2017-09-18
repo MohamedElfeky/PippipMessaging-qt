@@ -28,8 +28,6 @@ namespace CK {
 }
 namespace Pippip {
 
-class Nicknames;
-
 class SessionState {
 
     public:
@@ -53,9 +51,6 @@ class SessionState {
         CK::RSAPublicKey *serverPublicKey;
         CK::RSAPrivateKey *userPrivateKey;
         CK::RSAPublicKey *userPublicKey;
-
-        // Messaging objects.
-        Nicknames *nicknames;
 
 };
 

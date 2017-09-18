@@ -282,6 +282,22 @@
     <enum>Qt::RichText</enum>
    </property>
   </widget>
+  <widget class="QPushButton" name="reloadNicknamesButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>43</x>
+     <y>289</y>
+     <width>161</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reload Nicknames</string>
+   </property>
+  </widget>
  </widget>
  <resources>
   <include location="pippip.qrc"/>

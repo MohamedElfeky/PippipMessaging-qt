@@ -1,13 +1,20 @@
 #include "LoadNicknamesTask.h"
 #include "Constants.h"
 #include "EnclaveResponse.h"
-#include "SessionState.h"
-#include "Nicknames.h"
+#include "JsonValidator.h"
+#include "StringCodec.h"
+#include "ValidationException.h"
 #include <QJsonObject>
 #include <QJsonArray>
+#include <sstream>
 
 namespace Pippip {
 
+/**
+ * @brief LoadNicknamesTask::LoadNicknamesTask
+ * @param state
+ * @param parent
+ */
 LoadNicknamesTask::LoadNicknamesTask(SessionState *state, QObject *parent)
 : EnclaveRequestTask(state, parent) {
 
@@ -15,103 +22,118 @@ LoadNicknamesTask::LoadNicknamesTask(SessionState *state, QObject *parent)
 
 }
 
-bool LoadNicknamesTask::decodeEntity(const QJsonObject &obj, Entity &entity) const {
+/**
+ * @brief LoadNicknamesTask::decodeEntity
+ * @param obj
+ * @param entity
+ */
+void LoadNicknamesTask::decodeEntity(const QJsonObject &obj, Entity &entity) const {
 
-    QJsonValue nicknameValue = obj["nickname"];
-    if (!nicknameValue.isString()) {
-        return false;
-    }
-    entity.nickname = nicknameValue.toString();
-
-    QJsonValue publicIdValue = obj["publicId"];
-    if (!publicIdValue.isString()) {
-        return false;
-    }
-    entity.publicId = publicIdValue.toString();
-
-    return true;
+    entity.nickname = JsonValidator(obj, "nickname").getString();
+    entity.publicId = JsonValidator(obj, "publicId").getString();
 
 }
 
-bool LoadNicknamesTask::decodeNickname(const QJsonObject &obj, Nickname &nickname) const {
+/**
+ * @brief LoadNicknamesTask::decodeNickname
+ * @param obj
+ * @param nickname
+ */
+void LoadNicknamesTask::decodeNickname(const QJsonObject &obj, Nickname &nickname) const {
 
-    QJsonValue entityValue = obj["entity"];
-    if (!entityValue.isObject()) {
-        return false;
-    }
-    if (!decodeEntity(entityValue.toObject(), nickname.entity)) {
-        return false;
-    }
+    QJsonObject entityObj = JsonValidator(obj, "entity").getObject();
+    decodeEntity(entityObj, nickname.entity);
 
-    QJsonValue rsaKeysValue = obj["rsaKeys"];
-    if (!rsaKeysValue.isObject()) {
-        return false;
-    }
-    if (!decodeRSAKeys(rsaKeysValue.toObject(), nickname.rsaKeys)) {
-        return false;
-    }
+    QJsonObject rsaKeysObj = JsonValidator(obj, "rsaKeys").getObject();
+    decodeRSAKeys(rsaKeysObj, nickname.rsaKeys);
 
-    QJsonValue policyValue = obj["policy"];
-    if (!policyValue.isString()) {
-        return false;
-    }
-    nickname.policy = policyValue.toString();
+    nickname.policy = JsonValidator(obj, "policy").getString();
 
-    QJsonValue whitelistValue = obj["whitelist"];
-    if (!whitelistValue.isArray()) {
-        return false;
-    }
-    QJsonArray whitelist = whitelistValue.toArray();
+    QJsonArray whitelist = JsonValidator(obj, "whitelist").getArray();
     for (const QJsonValue& wlEntityValue : whitelist) {
         Entity wlEntity;
-        if (!wlEntityValue.isObject() || !decodeEntity(wlEntityValue.toObject(), wlEntity)) {
-            return false;
+        if (wlEntityValue.isObject()) {
+            decodeEntity(wlEntityValue.toObject(), wlEntity);
+        }
+        else {
+            throw ValidationException("Whitelist entry not an object");
         }
         nickname.whitelist.push_back(wlEntity);
     }
 
-    return true;
+}
+
+/**
+ * @brief LoadNicknamesTask::decodeRSAKeys
+ * @param obj
+ * @param rsaKeys
+ */
+void LoadNicknamesTask::decodeRSAKeys(const QJsonObject &obj, RSAKeys &rsaKeys) const {
+
+    rsaKeys.encryptionRSA = JsonValidator(obj, "encryptionRSA").getString();
+    rsaKeys.signingRSA = JsonValidator(obj, "signingRSA").getString();
 
 }
 
-bool LoadNicknamesTask::decodeRSAKeys(const QJsonObject &obj, RSAKeys &rsaKeys) const {
+/**
+ * @brief LoadNicknamesTask::loadNicknames
+ */
+void LoadNicknamesTask::loadNicknames() {
 
-    QJsonValue encryptionRSAValue = obj["encryptionRSA"];
-    if (!encryptionRSAValue.isString()) {
-        return false;
-    }
-    rsaKeys.encryptionRSA = encryptionRSAValue.toString();
-
-    QJsonValue signingRSAValue = obj["signingRSA"];
-    if (!signingRSAValue.isString()) {
-        return false;
-    }
-    rsaKeys.signingRSA = signingRSAValue.toString();
-
-    return true;
+    nicknameList.clear();
+    doRequest(10);
 
 }
 
+/**
+ * @brief LoadNicknamesTask::restComplete
+ * @param resp
+ */
 void LoadNicknamesTask::restComplete(const QJsonObject& resp) {
-/*
-    state->nicknames->clear();
-    QJsonValue nickValue = response->getValue("nicknames");
-    if (!nickValue.isArray()) {
-        error = "Invalid server response";
-        return false;
+
+    try {
+        response = new EnclaveResponse(resp, state);
+        if (*response) {
+            QJsonArray nickArray = response->getResponseArray("nicknames");
+            for (const QJsonValue& value : nickArray) {
+                Nickname nickname;
+                if (value.isObject()) {
+                    decodeNickname(value.toObject(), nickname);
+                    nicknameList.push_back(nickname);
+                }
+                // TODO Handle type error.
+            }
+            emit loadNicknamesComplete();
+        }
+        else {
+            emit loadNicknamesFailed(response->getError());
+        }
+    }
+    catch (ValidationException& e) {
+        std::ostringstream estr;
+        estr << "Invalid server response - " << e.what();
+        emit loadNicknamesFailed(StringCodec(estr.str()));
     }
 
-    QJsonArray nicknamesJson = nickValue.toArray();
-    for (const QJsonValue& value : nicknamesJson) {
-        Nickname nickname;
-        if (!value.isObject() || !decodeNickname(value.toObject(), nickname)) {
-            error = "Invalid server response";
-            return false;
-        }
-        state->nicknames->append(nickname);
-    }
-    return true;
-*/
+}
+
+/**
+ * @brief LoadNicknamesTask::restFailed
+ * @param error
+ */
+void LoadNicknamesTask::restFailed(const QString &error) {
+
+    emit loadNicknamesFailed(error);
+
+}
+
+/**
+ * @brief LoadNicknamesTask::restTimedOut
+ */
+void LoadNicknamesTask::restTimedOut() {
+
+    emit loadNicknamesFailed("Load nicknames request timed out");
+
 }
 
 }
