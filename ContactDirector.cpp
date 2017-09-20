@@ -45,7 +45,7 @@ ContactDirector::ContactDirector(SessionState *st, QObject *parent)
 
     contactManager = new ContactManager(state);
     getRequestsTask = new GetRequestsTask(state, this);
-    connect(getRequestsTask, SIGNAL(getRequestsComplete()), this, SLOT(getRequestsComplete()));
+    connect(getRequestsTask, SIGNAL(getRequestsComplete(QString)), this, SLOT(getRequestsComplete(QString)));
     connect(getRequestsTask, SIGNAL(getRequestsFailed(QString)), this, SLOT(getRequestsFailed(QString)));
     connect(getRequestsTask, SIGNAL(enclaveRequestTimedOut()), this, SLOT(requestTimedOut()));
     ackRequestsTask = new AckRequestsTask(state, this);
@@ -109,12 +109,14 @@ void ContactDirector::ackRequestsFailed(const QString &error) {
 }
 
 /**
+ * Gets incoming contact requests. Invoked by the timer expired signal.
+ *
  * @brief ContactDirector::getRequests
  */
 void ContactDirector::getRequests() {
 
     try {
-        getRequestsTask->getRequests("requested");
+        getRequests("requested");
     }
     catch (EnclaveException& e) {
         StatusController::instance()->updateStatus(StatusController::error, StringCodec(e.what()));
@@ -124,22 +126,35 @@ void ContactDirector::getRequests() {
 }
 
 /**
+ * Get requests for specified requester. May throw EnclaveException.
+ *
+ * @brief ContactDirector::getRequests
+ * @param requester
+ */
+void ContactDirector::getRequests(const QString& requester) {
+
+    getRequestsTask->getRequests(requester);
+
+}
+
+/**
  * @brief ContactDirector::getRequestsComplete
  */
-void ContactDirector::getRequestsComplete() {
+void ContactDirector::getRequestsComplete(const QString& requester) {
 
     try {
         ackRequestsTask->clear();
         RequestList requests = getRequestsTask->getRequestList();
         for (auto request : requests) {
-            if (request.status == "pending") {
+            if (request.status == "pending" && requester == "requested") {
                 contactManager->processContact(request);
             }
-            else if (request.status == "active") {
+            else if (request.status == "active" && requester = "requesting") {
+                contactManager->updateContact(request);
                 ackRequestsTask->addAcknowledgement(request.requestId, "accept");
             }
         }
-        ackRequestsTask->acknowledgeRequests("requester");
+        ackRequestsTask->acknowledgeRequests(requester);
     }
     catch (DatabaseException& e) {
         QString prefix("Database error while processing contacts - ");

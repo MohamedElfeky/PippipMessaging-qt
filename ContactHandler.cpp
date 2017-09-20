@@ -23,6 +23,7 @@
 #include "ContactManager.h"
 #include "DatabaseException.h"
 #include "KeyFilter.h"
+#include "Function.h"
 #include "Nickname.h"
 #include "RequestContactTask.h"
 #include "SessionState.h"
@@ -34,6 +35,7 @@
 #include <QStringList>
 #include <QRegularExpressionValidator>
 #include <QDebug>
+#include <sstream>
 
 ContactHandler::ContactHandler(Ui::ContactsDialog *u, Pippip::SessionState *s, QObject *parent)
 : QObject(parent),
@@ -279,6 +281,9 @@ void ContactHandler::requestContactComplete() {
     try {
         contactManager->addRequested(requestContactTask->getRequestId(),
                                      requestContactTask->getStatus());
+        std::ostringstream ustr;
+        ustr << "Contact with '" << workingRequest.requestedId << "' requested";
+        updateStatus(Constants::CHECK_ICON, Pippip::StringCodec(ustr.str()));
     }
     catch (Pippip::DatabaseException& e) {
         QString fullError = QString("Unable to add requested contact - ") + e.getMessage();

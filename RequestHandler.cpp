@@ -92,7 +92,7 @@ void RequestHandler::loadTable() {
 
 void RequestHandler::requestsAcknowledged() {
 
-    dialog->requestsAcknowledged(acknowledged);
+    //dialog->requestsAcknowledged(acknowledged);
 
 }
 

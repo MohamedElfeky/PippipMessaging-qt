@@ -32,7 +32,7 @@ class GetRequestsTask : public EnclaveRequestTask {
         ~GetRequestsTask() {}
 
     signals:
-        void getRequestsComplete();
+        void getRequestsComplete(const QString& requester);
         void getRequestsFailed(const QString& error);
 
     public:
@@ -48,6 +48,7 @@ class GetRequestsTask : public EnclaveRequestTask {
 
     private:
         RequestList requestList;
+        QString requester;
 
 };
 

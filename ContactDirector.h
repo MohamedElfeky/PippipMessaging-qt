@@ -43,7 +43,7 @@ class ContactDirector : public QObject {
         void ackRequestsComplete();
         void ackRequestsFailed(const QString& error);
         void getRequests();
-        void getRequestsComplete();
+        void getRequestsComplete(const QString& requester);
         void getRequestsFailed(const QString& error);
         void requestTimedOut();
 
@@ -52,6 +52,7 @@ class ContactDirector : public QObject {
         void end();
         ContactManager *getContactManager() { return contactManager; }
         const NicknameList& getNicknames() const { return nicknames; }
+        void getRequests(const QString& requester);
         void openDatabase(const QString& accountName);
         void setNicknames(const NicknameList& nicks) { nicknames = nicks; }
         void start();

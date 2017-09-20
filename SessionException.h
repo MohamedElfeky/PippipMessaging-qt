@@ -8,17 +8,17 @@
 
 namespace Pippip {
 
-class SessionException  : public std::exception {
+class xSessionException  : public std::exception {
 
     public:
-        SessionException() {}
-        SessionException(const std::string& msg) : message(msg) {}
-        SessionException(const SessionException& other)
+        xSessionException() {}
+        xSessionException(const std::string& msg) : message(msg) {}
+        xSessionException(const SessionException& other)
                 : message(other.message) {}
-        ~SessionException() {}
+        ~xSessionException() {}
 
     private:
-        SessionException& operator= (const SessionException& other);
+        xSessionException& operator= (const xSessionException& other);
 
     public:
         const char *what() const EXCEPTION_THROW_SPEC { return message.c_str(); }

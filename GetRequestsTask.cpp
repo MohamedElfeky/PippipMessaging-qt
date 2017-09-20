@@ -37,8 +37,9 @@ GetRequestsTask::GetRequestsTask(SessionState *state, QObject *parent)
 
 }
 
-void GetRequestsTask::getRequests(const QString& requester) {
+void GetRequestsTask::getRequests(const QString& req) {
 
+    requester = req;
     request->setStringValue("requester", requester);
     doRequest(10);  // 10 second timeout.
 
@@ -52,7 +53,7 @@ void GetRequestsTask::restComplete(const QJsonObject& resp) {
             QJsonArray requestsArray = response->getResponseArray("requests");
             qDebug() << "Get requests complete. Retrieved " << requestsArray.size() << " requests";
             setRequests(requestsArray);
-            emit getRequestsComplete();
+            emit getRequestsComplete(requester);
         }
         catch (EnclaveException& e) {
             QString prefix = "Enclave error in get requests task - ";

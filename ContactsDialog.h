@@ -11,13 +11,13 @@ class ContactsDialog;
 
 namespace Pippip {
     class ContactDirector;
-    class ContactRequests;
     class SessionState;
     class LoadNicknamesTask;
 }
 
 class ContactHandler;
 class RequestHandler;
+class ServerProgressPopover;
 
 class ContactsDialog : public QDialog {
         Q_OBJECT
@@ -40,12 +40,13 @@ class ContactsDialog : public QDialog {
 
     public:
         int exec();
-        void requestsAcknowledged(Pippip::ContactRequests *acknowledged);
+        //void requestsAcknowledged(Pippip::ContactRequests *acknowledged);
         void setContactDirector(Pippip::ContactDirector *director);
 
     private:
         Ui::ContactsDialog *ui;
         Pippip::SessionState *state;
+        ServerProgressPopover *popover;
         ContactHandler *contactHandler;
         RequestHandler *requestHandler;
         Pippip::ContactDirector *contactDirector;

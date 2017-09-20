@@ -7,6 +7,7 @@
 #include "Nicknames.h"
 #include "LoadNicknamesTask.h"
 #include "RequestHandler.h"
+#include "ServerProgressPopover.h"
 #include "SessionState.h"
 #include "StatusController.h"
 #include <QStringList>
@@ -50,6 +51,8 @@ ContactsDialog::ContactsDialog(Pippip::SessionState *st, QWidget *parent)
     connect(loadNicknamesTask, SIGNAL(loadNicknamesComplete()), this, SLOT(nicknamesLoaded()));
     connect(loadNicknamesTask, SIGNAL(loadNicknamesFailed(QString)),
             this, SLOT(loadNicknamesFailed(QString)));
+
+    popover = new ServerProgressPopover(this);
 
 }
 
@@ -132,7 +135,6 @@ void ContactsDialog::reloadNicknames() {
 /**
  * @brief ContactsDialog::requestsAcknowledged
  * @param acknowledged
- */
 void ContactsDialog::requestsAcknowledged(Pippip::ContactRequests *acknowledged) {
 
     //contactsDatabase->requestsAcknowledged(acknowledged);
@@ -140,6 +142,7 @@ void ContactsDialog::requestsAcknowledged(Pippip::ContactRequests *acknowledged)
     contactHandler->loadTable();
 
 }
+ */
 
 /**
  * @brief ContactsDialog::setContactDirector
